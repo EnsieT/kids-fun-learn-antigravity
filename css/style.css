@@ -1,3 +1,6 @@
+/* ===== Google Font: Baloo 2 (Latin + Devanagari) ===== */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700;800;900&family=Noto+Sans+Devanagari:wght@400;700;900&display=swap');
+
 /* ===== Global Reset & Base ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,7 +16,7 @@
   --card-bg: #FFFFFF;
   --shadow: 0 4px 16px rgba(0,0,0,0.12);
   --radius: 20px;
-  --font: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font: 'Baloo 2', 'Noto Sans Devanagari', 'Kohinoor Devanagari', 'Nirmala UI', 'Mangal', 'Devanagari Sangam MN', 'Segoe UI', Roboto, sans-serif;
 }
 
 html { font-size: 18px; scroll-behavior: smooth; }
