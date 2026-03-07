@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Odd One Out 🔀 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔀 Odd One Out</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text">अलग कौन है? Which one doesn't belong?</p>
+  </div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="choices-grid" id="choices-grid" style="max-width:700px"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+// Each puzzle: 3 items from same category + 1 odd one
+const PUZZLES = [
+  { items:['🥭','🍌','🥥','🐄'], odd:'🐄',  hint:'Fruits vs Animal' },
+  { items:['🐘','🦚','🥭','🐯'], odd:'🥭',  hint:'Animals vs Fruit' },
+  { items:['🔴','🟦','🟢','🥔'], odd:'🥔',  hint:'Colors vs Veggie' },
+  { items:['🚗','🚌','🐘','🚲'], odd:'🐘',  hint:'Vehicles vs Animal' },
+  { items:['🍆','🥒','🧅','🍌'], odd:'🍌',  hint:'Vegetables vs Fruit' },
+  { items:['🐄','🐕','🐈','🌻'], odd:'🌻',  hint:'Animals vs Flower' },
+  { items:['✏️','📚','🖊️','🐒'], odd:'🐒',  hint:'School items vs Animal' },
+  { items:['🪔','🎆','🎇','🥥'], odd:'🥥',  hint:'Festival vs Fruit' },
+  { items:['🏠','🏫','🏥','🍎'], odd:'🍎',  hint:'Buildings vs Fruit' },
+  { items:['🌧️','☀️','❄️','🐯'], odd:'🐯',  hint:'Weather vs Animal' },
+  { items:['🥭','🥔','🍆','🧅'], odd:'🥭',  hint:'Vegetables vs Fruit' },
+  { items:['🚌','✈️','🚂','🦜'], odd:'🦜',  hint:'Transport vs Bird' },
+  { items:['🐒','🦁','🐯','🚗'], odd:'🚗',  hint:'Animals vs Vehicle' },
+  { items:['📱','💻','📺','🥦'], odd:'🥦',  hint:'Electronics vs Veggie' },
+  { items:['🌸','🌺','🌻','🐘'], odd:'🐘',  hint:'Flowers vs Animal' },
+];
+
+const TOTAL_ROUNDS = 10;
+let round = 0, mistakes = 0, answered = false;
+let usedPuzzles = [];
+
+function initGame() {
+  round = 0; mistakes = 0; answered = false;
+  usedPuzzles = shuffle(PUZZLES).slice(0, TOTAL_ROUNDS);
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('odd-one-out', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  updateProgress(round, TOTAL_ROUNDS);
+
+  const puzzle = usedPuzzles[round];
+  const items  = shuffle(puzzle.items);
+
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  items.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.style.fontSize = '3rem';
+    btn.style.minWidth = '90px';
+    btn.style.minHeight = '90px';
+    btn.textContent = emoji;
+    btn.onclick = () => handleChoice(btn, emoji, puzzle.odd);
+    grid.appendChild(btn);
+  });
+}
+
+function handleChoice(btn, emoji, odd) {
+  if (answered) return;
+  if (emoji === odd) {
+    answered = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    round++;
+    setTimeout(() => { btn.classList.remove('correct'); nextRound(); }, 1500);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => btn.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

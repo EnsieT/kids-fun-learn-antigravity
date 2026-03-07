@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fruits &amp; Veggies 🥭 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🥭 Fruits &amp; Veggies</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Tap the correct one!</p>
+  </div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="emoji-grid" id="emoji-grid"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const ITEMS = [
+  {emoji:'🥭', en:'Mango',    hi:'आम'},
+  {emoji:'🍌', en:'Banana',   hi:'केला'},
+  {emoji:'🥥', en:'Coconut',  hi:'नारियल'},
+  {emoji:'🍐', en:'Guava',    hi:'अमरूद'},
+  {emoji:'🍅', en:'Tomato',   hi:'टमाटर'},
+  {emoji:'🥔', en:'Potato',   hi:'आलू'},
+  {emoji:'🍆', en:'Brinjal',  hi:'बैंगन'},
+  {emoji:'🌽', en:'Corn',     hi:'मकई'},
+  {emoji:'🥦', en:'Okra',     hi:'भिंडी'},
+  {emoji:'🥒', en:'Karela',   hi:'करेला'},
+  {emoji:'🧅', en:'Onion',    hi:'प्याज'},
+  {emoji:'🫑', en:'Lauki',    hi:'लौकी'},
+];
+
+const TOTAL_ROUNDS = 10;
+let round = 0, mistakes = 0, answered = false, correctItem = null;
+
+function initGame() {
+  round = 0; mistakes = 0; answered = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('identify-fruits', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  updateProgress(round, TOTAL_ROUNDS);
+
+  const pool = shuffle(ITEMS).slice(0, 6);
+  correctItem = pool[Math.floor(Math.random() * pool.length)];
+  document.getElementById('question-text').innerHTML =
+    `Tap the <strong>${correctItem.hi} (${correctItem.en})</strong>! 👆`;
+
+  const grid = document.getElementById('emoji-grid');
+  grid.innerHTML = '';
+  pool.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'emoji-item';
+    div.innerHTML = `<span class="item-emoji">${item.emoji}</span>
+                     <span class="item-label">${item.hi}<br/>${item.en}</span>`;
+    div.onclick = () => handleTap(div, item);
+    grid.appendChild(div);
+  });
+}
+
+function handleTap(el, item) {
+  if (answered) return;
+  if (item.emoji === correctItem.emoji) {
+    answered = true;
+    el.classList.add('correct');
+    showFeedback(true);
+    round++;
+    setTimeout(() => { el.classList.remove('correct'); nextRound(); }, 1500);
+  } else {
+    mistakes++;
+    el.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => el.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

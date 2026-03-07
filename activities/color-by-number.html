@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Color by Number 🎨 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .cbn-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+  }
+  .cbn-svg {
+    max-width: 380px;
+    width: 95vw;
+    touch-action: manipulation;
+  }
+  .cbn-region {
+    cursor: pointer;
+    transition: filter 0.2s;
+    stroke: #555;
+    stroke-width: 2.5;
+  }
+  .cbn-region:hover { filter: brightness(1.12); }
+  .cbn-region.correct-fill { stroke: #4CAF50; stroke-width: 4; }
+  .color-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    padding: 10px 16px;
+  }
+  .palette-btn {
+    width: 62px; height: 62px;
+    border-radius: 50%;
+    border: 5px solid transparent;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 900;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transition: transform 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .palette-btn:hover  { transform: scale(1.15); }
+  .palette-btn.active { border-color: #333; transform: scale(1.2); box-shadow: 0 0 0 3px #333; }
+  .palette-num { font-size: 1.2rem; line-height: 1; }
+  .color-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 8px 16px;
+    max-width: 500px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #fff;
+    border-radius: 50px;
+    padding: 5px 13px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+  .legend-swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.15);
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; color: #fff;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.4);
+  }
+  .scene-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px;
+  }
+  .scene-btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    border: 3px solid #ddd;
+    background: #fff;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .scene-btn:hover   { border-color: #FF8C00; }
+  .scene-btn.active  { border-color: #FF8C00; background: #FFF3E0; }
+  .validate-btn {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(76,175,80,0.4);
+    transition: transform 0.2s;
+    margin: 8px;
+  }
+  .validate-btn:hover { transform: scale(1.06); }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🎨 Color by Number</h1>
+  <span class="score-display" id="score-display"></span>
+</header>
+
+<div id="game-area">
+  <!-- Scene Selector -->
+  <div class="scene-selector">
+    <button class="scene-btn active" onclick="loadScene(0,this)">🪔 Diya</button>
+    <button class="scene-btn" onclick="loadScene(1,this)">🌸 Lotus</button>
+    <button class="scene-btn" onclick="loadScene(2,this)">🦚 Peacock</button>
+    <button class="scene-btn" onclick="loadScene(3,this)">🏡 House</button>
+  </div>
+
+  <!-- Color Legend -->
+  <div class="color-legend" id="color-legend"></div>
+
+  <!-- SVG Canvas -->
+  <div class="cbn-wrap">
+    <svg class="cbn-svg" id="cbn-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <!-- Palette -->
+  <div class="color-palette" id="color-palette"></div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div style="text-align:center">
+    <button class="validate-btn" onclick="validateColoring()">✅ Check My Art!</button>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div style="font-size:4rem">🎨🌈</div>
+  <div class="completion-title" id="completion-title">रंग-बिरंगा! Colorful!</div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <div class="completion-stars" id="completion-stars"></div>
+  <button class="play-again-btn" onclick="restartCurrent()">🔄 Color Again</button>
+  <br/><button class="play-again-btn" style="background:linear-gradient(135deg,#2196F3,#0D47A1);margin-top:12px" onclick="goHome()">🏠 Home</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+// Color map: number → {fill, name, hi}
+const COLORS = {
+  1: {fill:'#F44336', name:'Red',    hi:'लाल'},
+  2: {fill:'#2196F3', name:'Blue',   hi:'नीला'},
+  3: {fill:'#4CAF50', name:'Green',  hi:'हरा'},
+  4: {fill:'#FFD700', name:'Yellow', hi:'पीला'},
+  5: {fill:'#FF8C00', name:'Orange', hi:'नारंगी'},
+  6: {fill:'#9C27B0', name:'Purple', hi:'बैंगनी'},
+  7: {fill:'#FF69B4', name:'Pink',   hi:'गुलाबी'},
+};
+
+// Scene definitions: array of SVG path defs with correct color numbers
+const SCENES = [
+  // 0: Diya (oil lamp)
+  {
+    name: 'Diya 🪔',
+    colors: [1,2,3,4,5],
+    regions: [
+      // Base/bowl
+      {id:'r1', num:4, label:'Bowl', path:'<ellipse id="r1" cx="200" cy="290" rx="90" ry="30" class="cbn-region" fill="#E0E0E0"/>'},
+      // Inner bowl
+      {id:'r2', num:5, label:'Inner', path:'<ellipse id="r2" cx="200" cy="285" rx="55" ry="18" class="cbn-region" fill="#E0E0E0"/>'},
+      // Flame outer
+      {id:'r3', num:1, label:'Flame', path:'<ellipse id="r3" cx="200" cy="220" rx="28" ry="50" class="cbn-region" fill="#E0E0E0"/>'},
+      // Flame inner
+      {id:'r4', num:4, label:'Inner Flame', path:'<ellipse id="r4" cx="200" cy="235" rx="14" ry="28" class="cbn-region" fill="#E0E0E0"/>'},
+      // Wick
+      {id:'r5', num:3, label:'Wick', path:'<rect id="r5" x="196" y="262" width="8" height="20" rx="4" class="cbn-region" fill="#E0E0E0"/>'},
+      // Decorations left
+      {id:'r6', num:2, label:'Decor L', path:'<circle id="r6" cx="130" cy="295" r="12" class="cbn-region" fill="#E0E0E0"/>'},
+      // Decorations right
+      {id:'r7', num:2, label:'Decor R', path:'<circle id="r7" cx="270" cy="295" r="12" class="cbn-region" fill="#E0E0E0"/>'},
+    ]
+  },
+  // 1: Lotus
+  {
+    name: 'Lotus 🌸',
+    colors: [1,2,3,4,7],
+    regions: [
+      {id:'p1', num:7, label:'Petal 1', path:'<ellipse id="p1" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(-30 200 200)"/>'},
+      {id:'p2', num:7, label:'Petal 2', path:'<ellipse id="p2" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(0 200 200)"/>'},
+      {id:'p3', num:7, label:'Petal 3', path:'<ellipse id="p3" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(30 200 200)"/>'},
+      {id:'p4', num:1, label:'Petal 4', path:'<ellipse id="p4" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(60 200 200)"/>'},
+      {id:'p5', num:1, label:'Petal 5', path:'<ellipse id="p5" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(90 200 200)"/>'},
+      {id:'p6', num:1, label:'Petal 6', path:'<ellipse id="p6" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(120 200 200)"/>'},
+      {id:'pc', num:4, label:'Center',  path:'<circle id="pc" cx="200" cy="200" r="35" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'pl', num:3, label:'Leaf',    path:'<ellipse id="pl" cx="200" cy="330" rx="60" ry="25" class="cbn-region" fill="#E0E0E0"/>'},
+    ]
+  },
+  // 2: Peacock (simplified)
+  {
+    name: 'Peacock 🦚',
+    colors: [2,3,4,5,6],
+    regions: [
+      // Body
+      {id:'pb', num:3, label:'Body',  path:'<ellipse id="pb" cx="200" cy="250" rx="60" ry="80" class="cbn-region" fill="#E0E0E0"/>'},
+      // Head
+      {id:'ph', num:2, label:'Head',  path:'<circle id="ph" cx="200" cy="150" r="35" class="cbn-region" fill="#E0E0E0"/>'},
+      // Neck
+      {id:'pn', num:3, label:'Neck',  path:'<rect id="pn" x="186" y="183" width="28" height="40" rx="10" class="cbn-region" fill="#E0E0E0"/>'},
+      // Tail feather 1
+      {id:'pt1', num:6, label:'Tail 1', path:'<ellipse id="pt1" cx="140" cy="200" rx="22" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(-20 140 200)"/>'},
+      // Tail feather 2
+      {id:'pt2', num:5, label:'Tail 2', path:'<ellipse id="pt2" cx="260" cy="200" rx="22" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(20 260 200)"/>'},
+      // Eye
+      {id:'pe', num:4, label:'Eye',   path:'<circle id="pe" cx="212" cy="145" r="8" class="cbn-region" fill="#E0E0E0"/>'},
+      // Crown
+      {id:'pcr', num:4, label:'Crown', path:'<circle id="pcr" cx="200" cy="118" r="10" class="cbn-region" fill="#E0E0E0"/>'},
+    ]
+  },
+  // 3: House
+  {
+    name: 'House 🏡',
+    colors: [1,2,3,4,5],
+    regions: [
+      // Roof
+      {id:'hr', num:1, label:'Roof',    path:'<polygon id="hr" points="200,60 320,180 80,180" class="cbn-region" fill="#E0E0E0"/>'},
+      // Wall
+      {id:'hw', num:4, label:'Wall',    path:'<rect id="hw" x="100" y="180" width="200" height="160" class="cbn-region" fill="#E0E0E0"/>'},
+      // Door
+      {id:'hd', num:5, label:'Door',    path:'<rect id="hd" x="170" y="260" width="60" height="80" rx="8" class="cbn-region" fill="#E0E0E0"/>'},
+      // Window L
+      {id:'hwl', num:2, label:'Window', path:'<rect id="hwl" x="115" y="210" width="50" height="45" rx="6" class="cbn-region" fill="#E0E0E0"/>'},
+      // Window R
+      {id:'hwr', num:2, label:'Window', path:'<rect id="hwr" x="235" y="210" width="50" height="45" rx="6" class="cbn-region" fill="#E0E0E0"/>'},
+      // Ground
+      {id:'hg', num:3, label:'Grass',   path:'<ellipse id="hg" cx="200" cy="345" rx="140" ry="18" class="cbn-region" fill="#E0E0E0"/>'},
+    ]
+  },
+];
+
+let currentScene = 0;
+let selectedColor = 1;
+let painted = {};  // regionId → colorNum
+
+function loadScene(idx, btnEl) {
+  currentScene = idx;
+  painted = {};
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
+  if (btnEl) btnEl.classList.add('active');
+
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+
+  const scene = SCENES[idx];
+  renderLegend(scene.colors);
+  renderPalette(scene.colors);
+  renderSVG(scene);
+  // Select first color by default
+  selectedColor = scene.colors[0];
+  document.querySelectorAll('.palette-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.num) === selectedColor);
+  });
+}
+
+function renderLegend(colorNums) {
+  const leg = document.getElementById('color-legend');
+  leg.innerHTML = colorNums.map(n => {
+    const c = COLORS[n];
+    return `<div class="legend-item">
+      <div class="legend-swatch" style="background:${c.fill}">${n}</div>
+      <span>${n} = ${c.hi} ${c.name}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderPalette(colorNums) {
+  const pal = document.getElementById('color-palette');
+  pal.innerHTML = colorNums.map(n => {
+    const c = COLORS[n];
+    return `<button class="palette-btn" data-num="${n}" style="background:${c.fill}"
+              onclick="selectColor(${n}, this)">
+              <span class="palette-num">${n}</span>
+              <span style="font-size:0.6rem">${c.name}</span>
+            </button>`;
+  }).join('');
+}
+
+function selectColor(num, btn) {
+  selectedColor = num;
+  document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderSVG(scene) {
+  const svg = document.getElementById('cbn-svg');
+  svg.innerHTML = scene.regions.map(r => r.path).join('\n');
+
+  // Attach click handlers
+  scene.regions.forEach(r => {
+    const el = document.getElementById(r.id);
+    if (el) {
+      el.addEventListener('click', () => paintRegion(r.id, r.num));
+      // Add number label
+      const bbox = el.getBBox ? el.getBBox() : null;
+    }
+  });
+}
+
+function paintRegion(regionId, correctNum) {
+  const el = document.getElementById(regionId);
+  if (!el) return;
+  const color = COLORS[selectedColor];
+  el.setAttribute('fill', color.fill);
+  painted[regionId] = selectedColor;
+}
+
+function validateColoring() {
+  const scene = SCENES[currentScene];
+  let wrong = 0, correct = 0, total = scene.regions.length;
+
+  scene.regions.forEach(r => {
+    const el = document.getElementById(r.id);
+    if (painted[r.id] === r.num) {
+      correct++;
+      if (el) el.classList.add('correct-fill');
+    } else {
+      wrong++;
+      if (el) el.setAttribute('fill', '#E0E0E0');
+    }
+  });
+
+  if (wrong === 0) {
+    launchConfetti();
+    setTimeout(() => {
+      const stars = calcStars(0);
+      saveBestScore('color-by-number', stars);
+      const best = getBestScore('color-by-number');
+      document.getElementById('game-area').classList.add('hidden');
+      const cs = document.getElementById('completion-screen');
+      cs.classList.add('show');
+      document.getElementById('completion-title').textContent = '🎨 वाह! Beautiful!';
+      document.getElementById('completion-score').textContent = `All ${total} regions colored correctly!`;
+      document.getElementById('completion-best').textContent = `Best: ${starsHTML(best)}`;
+      document.getElementById('completion-stars').textContent = starsHTML(stars);
+    }, 600);
+  } else {
+    const banner = document.getElementById('feedback-banner');
+    banner.textContent = `❌ ${wrong} region${wrong > 1 ? 's' : ''} need fixing. फिर से कोशिश करो!`;
+    banner.classList.remove('show', 'correct-fb', 'wrong-fb');
+    void banner.offsetWidth;
+    banner.classList.add('show', 'wrong-fb');
+  }
+}
+
+function restartCurrent() {
+  loadScene(currentScene, document.querySelectorAll('.scene-btn')[currentScene]);
+}
+
+document.addEventListener('DOMContentLoaded', () => loadScene(0, document.querySelector('.scene-btn.active')));
+</script>
+</body>
+</html>

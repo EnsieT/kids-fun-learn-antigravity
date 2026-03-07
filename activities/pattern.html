@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pattern Game 📐 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>📐 Pattern Game</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text">आगे क्या आएगा? What comes next? 👇</p>
+  </div>
+
+  <div class="pattern-display" id="pattern-display"></div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="choices-grid" id="choices-grid"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+// Pattern templates: function returns {display, answer, choices}
+const ELEMENTS = {
+  fruits:   ['🥭','🍌','🥥','🍐','🍅'],
+  animals:  ['🐘','🦚','🐄','🦜','🐯'],
+  shapes:   ['🔴','🟦','🟢','🟡','🟣'],
+  mixed:    ['⭐','🌙','🌸','💧','🔥'],
+};
+
+function makeAB(a, b, len=5)  { return Array.from({length:len}, (_,i)=>i%2===0?a:b); }
+function makeABC(a,b,c,len=6) { return Array.from({length:len}, (_,i)=>[a,b,c][i%3]); }
+function makeAABB(a,b,len=6)  { return Array.from({length:len}, (_,i)=>Math.floor(i/2)%2===0?a:b); }
+function makeABB(a,b,len=6)   { return Array.from({length:len}, (_,i)=>[a,b,b][i%3]); }
+
+function generatePatterns() {
+  const patterns = [];
+  const groups = Object.values(ELEMENTS);
+
+  groups.forEach(g => {
+    const [a,b,c,d] = shuffle(g);
+    // AB pattern (6 shown → answer = item at index 6)
+    const ab = makeAB(a,b,7);
+    const answer_ab = ab[6];
+    const seq_ab    = ab.slice(0,6);
+    patterns.push({seq:seq_ab, answer:answer_ab, pool:g});
+
+    // ABC pattern (6 shown → answer = item at index 6)
+    const abc = makeABC(a,b,c,7);
+    const answer_abc = abc[6];
+    const seq_abc    = abc.slice(0,6);
+    patterns.push({seq:seq_abc, answer:answer_abc, pool:g});
+
+    // AABB pattern
+    const aabb = makeAABB(a,b,7);
+    patterns.push({seq:aabb.slice(0,6), answer:aabb[6], pool:g});
+
+    // ABB pattern
+    const abb = makeABB(a,b,7);
+    patterns.push({seq:abb.slice(0,6), answer:abb[6], pool:g});
+  });
+  return shuffle(patterns);
+}
+
+let allPatterns = [];
+const TOTAL_ROUNDS = 10;
+let round = 0, mistakes = 0, answered = false;
+
+function initGame() {
+  round = 0; mistakes = 0; answered = false;
+  allPatterns = generatePatterns();
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('pattern', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  updateProgress(round, TOTAL_ROUNDS);
+
+  const p = allPatterns[round % allPatterns.length];
+  document.getElementById('pattern-display').textContent =
+    p.seq.join(' ') + '  ❓';
+
+  // 4 choices: correct + 3 wrong from pool or mixed
+  const allEmojis = Object.values(ELEMENTS).flat();
+  const wrongPool = allEmojis.filter(e => e !== p.answer);
+  const choices = shuffle([p.answer, ...shuffle(wrongPool).slice(0,3)]);
+
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  choices.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.style.fontSize = '2.5rem';
+    btn.textContent = emoji;
+    btn.onclick = () => handleChoice(btn, emoji, p.answer);
+    grid.appendChild(btn);
+  });
+}
+
+function handleChoice(btn, emoji, answer) {
+  if (answered) return;
+  if (emoji === answer) {
+    answered = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    round++;
+    setTimeout(() => { btn.classList.remove('correct'); nextRound(); }, 1500);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => btn.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

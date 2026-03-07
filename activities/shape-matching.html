@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Shape Matching 🔷 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .shapes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+  }
+  .shapes-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+  }
+  .shape-card {
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 4px solid transparent;
+    transition: transform 0.15s, border-color 0.2s;
+    font-size: 2.8rem;
+    gap: 4px;
+    position: relative;
+  }
+  .shape-card:hover { transform: scale(1.08); }
+  .shape-card.selected { border-color: #2196F3; background: #E3F2FD; }
+  .shape-card.matched  { border-color: #4CAF50; background: #E8F5E9; opacity: 0.65; cursor: default; transform: none; }
+  .shape-card.wrong    { border-color: #F44336; background: #FFEBEE; animation: shake 0.5s; }
+  .shape-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #555;
+    text-align: center;
+    line-height: 1.2;
+  }
+  .row-label {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: -4px;
+  }
+  .instruction {
+    text-align: center;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #555;
+  }
+  .shape-svg { width: 52px; height: 52px; }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔷 Shape Matching</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/8</span>
+</header>
+
+<div id="game-area">
+  <p class="instruction">पहले एक आकार चुनो, फिर उसकी परछाई से मिलाओ!<br/>
+    Tap a shape, then tap its matching outline!</p>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="shapes-container">
+    <div class="row-label">Shapes आकार</div>
+    <div class="shapes-row" id="shapes-row"></div>
+    <div class="row-label">Outlines परछाई</div>
+    <div class="shapes-row" id="outlines-row"></div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+// SVG shapes (filled) and their outline versions
+const SHAPES = [
+  {
+    id:'circle',   label:'Circle\nगोला',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#FF69B4"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#FF69B4" stroke-width="4"/></svg>`
+  },
+  {
+    id:'square',   label:'Square\nवर्ग',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><rect x="6" y="6" width="48" height="48" rx="4" fill="#2196F3"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><rect x="6" y="6" width="48" height="48" rx="4" fill="none" stroke="#2196F3" stroke-width="4"/></svg>`
+  },
+  {
+    id:'triangle', label:'Triangle\nत्रिभुज',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 57,56 3,56" fill="#4CAF50"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 57,56 3,56" fill="none" stroke="#4CAF50" stroke-width="4"/></svg>`
+  },
+  {
+    id:'star',     label:'Star\nतारा',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 36,22 56,22 40,34 46,54 30,42 14,54 20,34 4,22 24,22" fill="#FFD700"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 36,22 56,22 40,34 46,54 30,42 14,54 20,34 4,22 24,22" fill="none" stroke="#FFD700" stroke-width="3"/></svg>`
+  },
+  {
+    id:'diamond',  label:'Diamond\nहीरा',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 56,30 30,56 4,30" fill="#9C27B0"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 56,30 30,56 4,30" fill="none" stroke="#9C27B0" stroke-width="4"/></svg>`
+  },
+  {
+    id:'rectangle',label:'Rect\nआयत',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><rect x="4" y="16" width="52" height="28" rx="4" fill="#FF8C00"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><rect x="4" y="16" width="52" height="28" rx="4" fill="none" stroke="#FF8C00" stroke-width="4"/></svg>`
+  },
+  {
+    id:'heart',    label:'Heart\nदिल',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><path d="M30 50 C12 36 4 24 4 16 A12 12 0 0 1 30 12 A12 12 0 0 1 56 16 C56 24 48 36 30 50Z" fill="#F44336"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><path d="M30 50 C12 36 4 24 4 16 A12 12 0 0 1 30 12 A12 12 0 0 1 56 16 C56 24 48 36 30 50Z" fill="none" stroke="#F44336" stroke-width="4"/></svg>`
+  },
+  {
+    id:'oval',     label:'Oval\nअंडाकार',
+    filled: `<svg class="shape-svg" viewBox="0 0 60 60"><ellipse cx="30" cy="30" rx="26" ry="16" fill="#00BCD4"/></svg>`,
+    outline:`<svg class="shape-svg" viewBox="0 0 60 60"><ellipse cx="30" cy="30" rx="26" ry="16" fill="none" stroke="#00BCD4" stroke-width="4"/></svg>`
+  },
+];
+
+const TOTAL_PAIRS = 8;
+let shapes = [];
+let selectedShape = null;
+let matchedCount = 0;
+let mistakes = 0;
+
+function initGame() {
+  mistakes = 0; matchedCount = 0; selectedShape = null;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  updateProgress(0, TOTAL_PAIRS);
+
+  shapes = shuffle(SHAPES).slice(0, TOTAL_PAIRS);
+  const outlines = shuffle([...shapes]);
+
+  renderRow('shapes-row',  shapes,  true);
+  renderRow('outlines-row', outlines, false);
+}
+
+function renderRow(rowId, items, isFilled) {
+  const row = document.getElementById(rowId);
+  row.innerHTML = '';
+  items.forEach(shape => {
+    const card = document.createElement('div');
+    card.className = 'shape-card';
+    card.dataset.id = shape.id;
+    card.dataset.filled = isFilled ? '1' : '0';
+    card.innerHTML = isFilled ? shape.filled : shape.outline;
+    const lbl = document.createElement('div');
+    lbl.className = 'shape-label';
+    lbl.textContent = shape.label;
+    card.appendChild(lbl);
+    card.onclick = () => handleCardClick(card);
+    row.appendChild(card);
+  });
+}
+
+function handleCardClick(card) {
+  if (card.classList.contains('matched')) return;
+  const isFilled = card.dataset.filled === '1';
+
+  if (!selectedShape) {
+    // Must pick from shapes row first
+    if (!isFilled) return;
+    selectedShape = card;
+    card.classList.add('selected');
+    hideFeedback();
+    return;
+  }
+
+  if (isFilled) {
+    // Re-select a shape
+    document.querySelectorAll('.shape-card.selected').forEach(c => c.classList.remove('selected'));
+    selectedShape = card;
+    card.classList.add('selected');
+    return;
+  }
+
+  // Tapped an outline
+  if (card.dataset.id === selectedShape.dataset.id) {
+    // Correct match!
+    card.classList.add('matched');
+    selectedShape.classList.remove('selected');
+    selectedShape.classList.add('matched');
+    showFeedback(true);
+    matchedCount++;
+    updateProgress(matchedCount, TOTAL_PAIRS);
+    selectedShape = null;
+    if (matchedCount >= TOTAL_PAIRS) {
+      setTimeout(() => showCompletion('shape-matching', mistakes, TOTAL_PAIRS), 800);
+    }
+  } else {
+    // Wrong outline
+    mistakes++;
+    card.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => card.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

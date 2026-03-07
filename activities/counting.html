@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Counting Game 🔢 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔢 Counting Game</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">How many do you see?</p>
+    <div class="question-emoji-display" id="emoji-display"></div>
+  </div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="choices-grid" id="choices-grid"></div>
+</div>
+
+<!-- Completion Screen -->
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars">⭐⭐⭐</div>
+  <div class="completion-title" id="completion-title">शानदार! Excellent!</div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const OBJECTS = [
+  {emoji: '🥭', name: 'Mango'},
+  {emoji: '🍌', name: 'Banana'},
+  {emoji: '🥥', name: 'Coconut'},
+  {emoji: '🍎', name: 'Guava'},
+  {emoji: '🌸', name: 'Flower'},
+  {emoji: '⭐', name: 'Star'},
+  {emoji: '🪔', name: 'Diya'},
+  {emoji: '🍬', name: 'Laddoo'},
+  {emoji: '🐘', name: 'Elephant'},
+  {emoji: '🦚', name: 'Peacock'},
+];
+
+const TOTAL_ROUNDS = 10;
+let round = 0;
+let mistakes = 0;
+let answered = false;
+let correctAnswer = 0;
+
+function initGame() {
+  round = 0; mistakes = 0; answered = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('counting', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  updateProgress(round, TOTAL_ROUNDS);
+
+  const obj = OBJECTS[Math.floor(Math.random() * OBJECTS.length)];
+  const count = 1 + Math.floor(Math.random() * 9); // 1–9
+  correctAnswer = count;
+
+  document.getElementById('emoji-display').textContent = obj.emoji.repeat(count);
+  document.getElementById('question-text').textContent =
+    `कितने ${obj.name} हैं? How many ${obj.name}s?`;
+
+  // Generate choices: correct + 3 wrong
+  const wrong = new Set();
+  while (wrong.size < 3) {
+    const n = 1 + Math.floor(Math.random() * 9);
+    if (n !== count) wrong.add(n);
+  }
+  const choices = shuffle([count, ...wrong]);
+
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  choices.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = n;
+    btn.onclick = () => handleChoice(btn, n);
+    grid.appendChild(btn);
+  });
+}
+
+function handleChoice(btn, value) {
+  if (answered) return;
+  if (value === correctAnswer) {
+    answered = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    round++;
+    setTimeout(() => { btn.classList.remove('correct'); nextRound(); }, 1500);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => btn.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>

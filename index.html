@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Kids Fun Learn 🎉</title>
+<link rel="stylesheet" href="css/style.css"/>
+<style>
+  body { padding-bottom: 32px; }
+  .hero-tagline { font-size: 1.1rem; margin-top: 6px; }
+  .section-label {
+    font-size: 1rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 16px;
+    border-radius: 50px;
+    color: #fff;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .label-4 { background: #2196F3; }
+  .label-5 { background: #4CAF50; }
+  .label-56 { background: #9C27B0; }
+  footer {
+    text-align: center;
+    padding: 24px;
+    color: #999;
+    font-size: 0.9rem;
+    margin-top: 32px;
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="site-header">
+  <span class="home-emoji">🎓</span>
+  <h1>Kids Fun Learn</h1>
+  <p class="hero-tagline">मज़ेदार शिक्षा · Fun Education for Ages 4–6</p>
+</header>
+
+<main class="container">
+
+  <!-- Age 4+ -->
+  <section class="age-section">
+    <span class="section-label label-4">🧒 Age 4+</span>
+    <div class="cards-grid">
+
+      <a href="activities/counting.html" class="activity-card card-counting">
+        <span class="card-emoji">🔢</span>
+        <span class="card-title">Counting Game</span>
+        <span class="card-subtitle">गिनती सीखो</span>
+        <span class="card-stars" id="stars-counting"></span>
+      </a>
+
+      <a href="activities/identify-fruits.html" class="activity-card card-fruits">
+        <span class="card-emoji">🥭</span>
+        <span class="card-title">Fruits & Veggies</span>
+        <span class="card-subtitle">फल और सब्ज़ी</span>
+        <span class="card-stars" id="stars-identify-fruits"></span>
+      </a>
+
+      <a href="activities/identify-animals.html" class="activity-card card-animals">
+        <span class="card-emoji">🐘</span>
+        <span class="card-title">Animal Fun</span>
+        <span class="card-subtitle">जानवर पहचानो</span>
+        <span class="card-stars" id="stars-identify-animals"></span>
+      </a>
+
+      <a href="activities/color-by-number.html" class="activity-card card-color">
+        <span class="card-emoji">🎨</span>
+        <span class="card-title">Color by Number</span>
+        <span class="card-subtitle">रंग भरो</span>
+        <span class="card-stars" id="stars-color-by-number"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Age 5+ -->
+  <section class="age-section">
+    <span class="section-label label-5">🧒 Age 5+</span>
+    <div class="cards-grid">
+
+      <a href="activities/shape-matching.html" class="activity-card card-shapes">
+        <span class="card-emoji">🔷</span>
+        <span class="card-title">Shape Matching</span>
+        <span class="card-subtitle">आकार मिलाओ</span>
+        <span class="card-stars" id="stars-shape-matching"></span>
+      </a>
+
+      <a href="activities/odd-one-out.html" class="activity-card card-odd">
+        <span class="card-emoji">🔀</span>
+        <span class="card-title">Odd One Out</span>
+        <span class="card-subtitle">अलग कौन है?</span>
+        <span class="card-stars" id="stars-odd-one-out"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Age 5–6 -->
+  <section class="age-section">
+    <span class="section-label label-56">🧒 Age 5–6</span>
+    <div class="cards-grid">
+
+      <a href="activities/pattern.html" class="activity-card card-pattern">
+        <span class="card-emoji">📐</span>
+        <span class="card-title">Pattern Game</span>
+        <span class="card-subtitle">पैटर्न पूरा करो</span>
+        <span class="card-stars" id="stars-pattern"></span>
+      </a>
+
+      <a href="activities/math.html" class="activity-card card-math">
+        <span class="card-emoji">➕</span>
+        <span class="card-title">Simple Math</span>
+        <span class="card-subtitle">जोड़ और घटाव</span>
+        <span class="card-stars" id="stars-math"></span>
+      </a>
+
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <p>Made with ❤️ for little learners · कोशिश करते रहो! Keep trying!</p>
+</footer>
+
+<script src="js/common.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', loadHomeStars);
+</script>
+</body>
+</html>

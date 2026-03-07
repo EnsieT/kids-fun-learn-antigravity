@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Simple Math ➕ · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>➕ Simple Math</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">जवाब क्या है? What is the answer?</p>
+  </div>
+
+  <div class="math-equation" id="math-equation"></div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="choices-grid" id="choices-grid"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const MATH_OBJECTS = ['🥭','🍌','🥥','🍐','🍎','🐘','🦚','🌸','⭐','🪔'];
+
+const TOTAL_ROUNDS = 10;
+let round = 0, mistakes = 0, answered = false, correctAnswer = 0;
+
+function initGame() {
+  round = 0; mistakes = 0; answered = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('math', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  updateProgress(round, TOTAL_ROUNDS);
+
+  const emoji = MATH_OBJECTS[Math.floor(Math.random() * MATH_OBJECTS.length)];
+  const isAdd = Math.random() > 0.4; // 60% addition, 40% subtraction
+
+  let a, b;
+  if (isAdd) {
+    a = 1 + Math.floor(Math.random() * 5);
+    b = 1 + Math.floor(Math.random() * 5);
+    // Keep total ≤ 10
+    if (a + b > 10) b = 10 - a;
+    correctAnswer = a + b;
+  } else {
+    a = 2 + Math.floor(Math.random() * 8);
+    b = 1 + Math.floor(Math.random() * (a - 1));
+    correctAnswer = a - b;
+  }
+
+  const op = isAdd ? '+' : '−';
+  const eq = document.getElementById('math-equation');
+  eq.innerHTML = `
+    <div class="math-group">${emoji.repeat(a)}</div>
+    <div class="math-op">${op}</div>
+    <div class="math-group">${isAdd ? emoji.repeat(b) : '<s style="opacity:.45">' + emoji.repeat(b) + '</s>'}</div>
+    <div class="math-eq">=</div>
+    <div class="math-q">❓</div>
+  `;
+
+  document.getElementById('question-text').textContent =
+    `${a} ${op} ${b} = ?`;
+
+  // Generate choices
+  const wrong = new Set();
+  while (wrong.size < 3) {
+    let n = correctAnswer + (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+    n = Math.max(0, Math.min(10, n));
+    if (n !== correctAnswer) wrong.add(n);
+  }
+  const choices = shuffle([correctAnswer, ...wrong]);
+
+  const grid = document.getElementById('choices-grid');
+  grid.innerHTML = '';
+  choices.forEach(n => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = n;
+    btn.onclick = () => handleChoice(btn, n);
+    grid.appendChild(btn);
+  });
+}
+
+function handleChoice(btn, value) {
+  if (answered) return;
+  if (value === correctAnswer) {
+    answered = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    round++;
+    setTimeout(() => { btn.classList.remove('correct'); nextRound(); }, 1500);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    showFeedback(false);
+    setTimeout(() => btn.classList.remove('wrong'), 600);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>
