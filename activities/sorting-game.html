@@ -375,7 +375,6 @@ function handleBasket(side) {
     const basketEl = document.getElementById('basket-' + side);
     basketEl.classList.add('wrong-flash');
     showFeedback(false);
-    speakHindi('फिर से कोशिश करो!');
     setTimeout(() => {
       basketEl.classList.remove('wrong-flash');
       el.className = 'sort-item-card bounce-in';

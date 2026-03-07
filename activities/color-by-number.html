@@ -316,7 +316,7 @@ function selectColor(num, btn) {
   document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const c = COLORS[num];
-  speakHindi(c.hi);
+  if (c) speakHindi(c.hi);
 }
 
 function renderSVG(scene) {

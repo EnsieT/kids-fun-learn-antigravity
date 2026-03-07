@@ -6,11 +6,13 @@
 /* ===== Speech (Web Speech API) ===== */
 function speak(text, lang) {
   if (!window.speechSynthesis) return;
+  // Cancel any ongoing speech before queuing the new utterance
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang  = lang || 'hi-IN';
   utter.rate  = 0.85;
   utter.pitch = 1.1;
+  // Small delay ensures the cancel() has cleared the queue before speaking
   setTimeout(() => window.speechSynthesis.speak(utter), 150);
 }
 function speakHindi(text)   { speak(text, 'hi-IN'); }

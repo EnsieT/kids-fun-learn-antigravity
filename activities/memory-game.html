@@ -296,10 +296,16 @@ function handleCardClick(idx) {
   }
 }
 
+function calcMemoryStars(movesCount, pairs) {
+  const maxMoves = pairs * 3;
+  if (movesCount <= pairs)    return 3;
+  if (movesCount <= maxMoves) return 2;
+  return 1;
+}
+
 function finishGame() {
   const cfg = DIFFICULTY[currentDifficulty];
-  const maxMoves = cfg.pairs * 3;
-  const stars = moves <= cfg.pairs ? 3 : moves <= maxMoves ? 2 : 1;
+  const stars = calcMemoryStars(moves, cfg.pairs);
   saveBestScore('memory-game', stars);
   const best = getBestScore('memory-game');
 
@@ -308,16 +314,19 @@ function finishGame() {
   cs.classList.add('show');
 
   document.getElementById('completion-stars').textContent = starsHTML(stars);
-  const msg = stars === 3 ? '🎊 शानदार! Excellent!' : stars === 2 ? '👏 बहुत अच्छा! Very Good!' : '💪 अच्छा प्रयास! Good Try!';
+  let msg;
+  if (stars === 3)      msg = '🎊 शानदार! Excellent!';
+  else if (stars === 2) msg = '👏 बहुत अच्छा! Very Good!';
+  else                  msg = '💪 अच्छा प्रयास! Good Try!';
   document.getElementById('completion-title').textContent = msg;
   document.getElementById('completion-score').textContent =
     `Moves: ${moves} | Time: ${document.getElementById('timer-display').textContent}`;
   document.getElementById('completion-best').textContent = 'Best: ' + starsHTML(best);
   launchConfetti();
 
-  if (stars === 3) speakHindi('बहुत अच्छा! तुमने तीन सितारे कमाए!');
+  if (stars === 3)      speakHindi('बहुत अच्छा! तुमने तीन सितारे कमाए!');
   else if (stars === 2) speakHindi('बहुत अच्छा! तुमने दो सितारे कमाए!');
-  else speakHindi('अच्छा प्रयास! एक सितारा!');
+  else                  speakHindi('अच्छा प्रयास! एक सितारा!');
 }
 
 document.addEventListener('DOMContentLoaded', restartGame);

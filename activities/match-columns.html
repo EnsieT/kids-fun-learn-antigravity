@@ -182,6 +182,7 @@ let matchedPairs = 0;
 let totalPairs = 0;
 let currentPairs = [];
 let currentPrompt = 'मिलाओ!';
+const PROMPT_SELECT_LEFT = 'पहले बाईं तरफ से चुनो!';
 
 function hearAgain() { speakHindi(currentPrompt); }
 
@@ -260,7 +261,7 @@ function handleLeftTap(el) {
 
 function handleRightTap(el) {
   if (!selectedLeft) {
-    speakHindi('पहले बाईं तरफ से चुनो!');
+    speakHindi(PROMPT_SELECT_LEFT);
     return;
   }
   if (el.classList.contains('matched')) return;
