@@ -75,9 +75,14 @@
   <span class="score-display" id="score-display">0/8</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
-  <p class="instruction">पहले एक आकार चुनो, फिर उसकी परछाई से मिलाओ!<br/>
-    Tap a shape, then tap its matching outline!</p>
+  <p class="instruction" id="instruction-text">Tap a shape, then tap its matching outline!</p>
   <div style="text-align:center">
     <button class="hear-btn" onclick="hearAgain()" aria-label="आवाज़ सुनो">🔊</button>
   </div>
@@ -105,42 +110,42 @@
 // SVG shapes (filled) and their outline versions
 const SHAPES = [
   {
-    id:'circle',   label:'Circle\nगोला',
+    id:'circle',   en:'Circle',   hi:'गोला',    gu:'વર્તુળ',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#FF69B4"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="none" stroke="#FF69B4" stroke-width="4"/></svg>`
   },
   {
-    id:'square',   label:'Square\nवर्ग',
+    id:'square',   en:'Square',   hi:'वर्ग',    gu:'ચોરસ',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><rect x="6" y="6" width="48" height="48" rx="4" fill="#2196F3"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><rect x="6" y="6" width="48" height="48" rx="4" fill="none" stroke="#2196F3" stroke-width="4"/></svg>`
   },
   {
-    id:'triangle', label:'Triangle\nत्रिभुज',
+    id:'triangle', en:'Triangle', hi:'त्रिभुज', gu:'ત્રિકોણ',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 57,56 3,56" fill="#4CAF50"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 57,56 3,56" fill="none" stroke="#4CAF50" stroke-width="4"/></svg>`
   },
   {
-    id:'star',     label:'Star\nतारा',
+    id:'star',     en:'Star',     hi:'तारा',    gu:'તારો',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 36,22 56,22 40,34 46,54 30,42 14,54 20,34 4,22 24,22" fill="#FFD700"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 36,22 56,22 40,34 46,54 30,42 14,54 20,34 4,22 24,22" fill="none" stroke="#FFD700" stroke-width="3"/></svg>`
   },
   {
-    id:'diamond',  label:'Diamond\nहीरा',
+    id:'diamond',  en:'Diamond',  hi:'हीरा',    gu:'હીરો',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 56,30 30,56 4,30" fill="#9C27B0"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><polygon points="30,4 56,30 30,56 4,30" fill="none" stroke="#9C27B0" stroke-width="4"/></svg>`
   },
   {
-    id:'rectangle',label:'Rect\nआयत',
+    id:'rectangle',en:'Rectangle',hi:'आयत',     gu:'લંબચોરસ',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><rect x="4" y="16" width="52" height="28" rx="4" fill="#FF8C00"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><rect x="4" y="16" width="52" height="28" rx="4" fill="none" stroke="#FF8C00" stroke-width="4"/></svg>`
   },
   {
-    id:'heart',    label:'Heart\nदिल',
+    id:'heart',    en:'Heart',    hi:'दिल',     gu:'હૃદય',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><path d="M30 50 C12 36 4 24 4 16 A12 12 0 0 1 30 12 A12 12 0 0 1 56 16 C56 24 48 36 30 50Z" fill="#F44336"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><path d="M30 50 C12 36 4 24 4 16 A12 12 0 0 1 30 12 A12 12 0 0 1 56 16 C56 24 48 36 30 50Z" fill="none" stroke="#F44336" stroke-width="4"/></svg>`
   },
   {
-    id:'oval',     label:'Oval\nअंडाकार',
+    id:'oval',     en:'Oval',     hi:'अंडाकार', gu:'અંડાકાર',
     filled: `<svg class="shape-svg" viewBox="0 0 60 60"><ellipse cx="30" cy="30" rx="26" ry="16" fill="#00BCD4"/></svg>`,
     outline:`<svg class="shape-svg" viewBox="0 0 60 60"><ellipse cx="30" cy="30" rx="26" ry="16" fill="none" stroke="#00BCD4" stroke-width="4"/></svg>`
   },
@@ -151,17 +156,21 @@ let shapes = [];
 let selectedShape = null;
 let matchedCount = 0;
 let mistakes = 0;
-const currentPrompt = 'आकार मिलाओ!';
+const currentPrompt = {en: 'Match the shapes!', hi: 'आकार मिलाओ!', gu: 'આકાર મેળવો!'};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   mistakes = 0; matchedCount = 0; selectedShape = null;
   document.getElementById('completion-screen').classList.remove('show');
   document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('instruction-text').textContent =
+    t({en: 'Tap a shape, then tap its matching outline!', hi: 'पहले एक आकार चुनो, फिर उसकी परछाई से मिलाओ!', gu: 'પહેલા એક આકાર ટચ કરો, પછી તેની આઉટલાઇન સાથે મેળવો!'});
   hideFeedback();
   updateProgress(0, TOTAL_PAIRS);
-  speakHindi(currentPrompt);
+  speak(currentPrompt);
 
   shapes = shuffle(SHAPES).slice(0, TOTAL_PAIRS);
   const outlines = shuffle([...shapes]);
@@ -181,7 +190,7 @@ function renderRow(rowId, items, isFilled) {
     card.innerHTML = isFilled ? shape.filled : shape.outline;
     const lbl = document.createElement('div');
     lbl.className = 'shape-label';
-    lbl.textContent = shape.label;
+    lbl.textContent = t(shape);
     card.appendChild(lbl);
     card.onclick = () => handleCardClick(card);
     row.appendChild(card);
@@ -231,7 +240,7 @@ function handleCardClick(card) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

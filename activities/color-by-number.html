@@ -126,6 +126,12 @@
   <span class="score-display" id="score-display"></span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <!-- Scene Selector -->
   <div class="scene-selector">
@@ -168,15 +174,15 @@
 
 <script src="../js/common.js"></script>
 <script>
-// Color map: number → {fill, name, hi}
+// Color map: number → {fill, name, hi, gu}
 const COLORS = {
-  1: {fill:'#F44336', name:'Red',    hi:'लाल'},
-  2: {fill:'#2196F3', name:'Blue',   hi:'नीला'},
-  3: {fill:'#4CAF50', name:'Green',  hi:'हरा'},
-  4: {fill:'#FFD700', name:'Yellow', hi:'पीला'},
-  5: {fill:'#FF8C00', name:'Orange', hi:'नारंगी'},
-  6: {fill:'#9C27B0', name:'Purple', hi:'बैंगनी'},
-  7: {fill:'#FF69B4', name:'Pink',   hi:'गुलाबी'},
+  1: {fill:'#F44336', name:'Red',    hi:'लाल',    gu:'લાલ'},
+  2: {fill:'#2196F3', name:'Blue',   hi:'नीला',   gu:'વાદળી'},
+  3: {fill:'#4CAF50', name:'Green',  hi:'हरा',    gu:'લીલો'},
+  4: {fill:'#FFD700', name:'Yellow', hi:'पीला',   gu:'પીળો'},
+  5: {fill:'#FF8C00', name:'Orange', hi:'नारंगी', gu:'નારંગી'},
+  6: {fill:'#9C27B0', name:'Purple', hi:'बैंगनी', gu:'જાંબલી'},
+  7: {fill:'#FF69B4', name:'Pink',   hi:'गुलाबी', gu:'ગુલાબી'},
 };
 
 // Scene definitions: array of SVG path defs with correct color numbers
@@ -262,9 +268,11 @@ const SCENES = [
 let currentScene = 0;
 let selectedColor = 1;
 let painted = {};  // regionId → colorNum
-const currentPrompt = 'रंग भरो!';
+const currentPrompt = {en: 'Fill the colors!', hi: 'रंग भरो!', gu: 'રંગ ભરો!'};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { loadScene(currentScene, document.querySelectorAll('.scene-btn')[currentScene]); }
 
 function loadScene(idx, btnEl) {
   currentScene = idx;
@@ -285,7 +293,7 @@ function loadScene(idx, btnEl) {
   document.querySelectorAll('.palette-btn').forEach(b => {
     b.classList.toggle('active', parseInt(b.dataset.num) === selectedColor);
   });
-  speakHindi(currentPrompt);
+  speak(currentPrompt);
 }
 
 function renderLegend(colorNums) {
@@ -294,7 +302,7 @@ function renderLegend(colorNums) {
     const c = COLORS[n];
     return `<div class="legend-item">
       <div class="legend-swatch" style="background:${c.fill}">${n}</div>
-      <span>${n} = ${c.hi} ${c.name}</span>
+      <span>${n} = ${t({en:c.name, hi:c.hi, gu:c.gu})}</span>
     </div>`;
   }).join('');
 }
@@ -306,7 +314,7 @@ function renderPalette(colorNums) {
     return `<button class="palette-btn" data-num="${n}" style="background:${c.fill}"
               onclick="selectColor(${n}, this)">
               <span class="palette-num">${n}</span>
-              <span style="font-size:0.6rem">${c.name}</span>
+              <span style="font-size:0.6rem">${t({en:c.name, hi:c.hi, gu:c.gu})}</span>
             </button>`;
   }).join('');
 }
@@ -316,7 +324,7 @@ function selectColor(num, btn) {
   document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   const c = COLORS[num];
-  if (c) speakHindi(c.hi);
+  if (c) speak({en: c.name, hi: c.hi, gu: c.gu});
 }
 
 function renderSVG(scene) {
@@ -359,7 +367,7 @@ function validateColoring() {
 
   if (wrong === 0) {
     launchConfetti();
-    speakHindi('शाबाश! वाह! बहुत सुंदर रंग भरे!');
+    speak({en: 'Well done! Beautiful coloring!', hi: 'शाबाश! वाह! बहुत सुंदर रंग भरे!', gu: 'શાબાશ! વાહ! ખૂબ સુંદર રંગ ભર્યા!'});
     setTimeout(() => {
       const stars = calcStars(0);
       saveBestScore('color-by-number', stars);
@@ -385,7 +393,7 @@ function restartCurrent() {
   loadScene(currentScene, document.querySelectorAll('.scene-btn')[currentScene]);
 }
 
-document.addEventListener('DOMContentLoaded', () => loadScene(0, document.querySelector('.scene-btn.active')));
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); loadScene(0, document.querySelector('.scene-btn.active')); });
 </script>
 </body>
 </html>

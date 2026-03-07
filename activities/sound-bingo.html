@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎵 Sound Bingo</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    @keyframes bounce-card {
+      0%,100% { transform: scale(1); }
+      30%     { transform: scale(1.25); }
+      60%     { transform: scale(0.95); }
+    }
+    @keyframes shake-card {
+      0%,100% { transform: translateX(0); }
+      20%     { transform: translateX(-8px); }
+      40%     { transform: translateX(8px); }
+      60%     { transform: translateX(-6px); }
+      80%     { transform: translateX(6px); }
+    }
+    .card-bounce { animation: bounce-card .5s ease; }
+    .card-shake  { animation: shake-card .5s ease; }
+
+    .animal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .animal-card {
+      background: #fff;
+      border: 4px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 16px 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: transform .15s, border-color .15s, background .15s;
+      user-select: none;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .animal-card:hover  { transform: scale(1.06); box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+    .animal-card:active { transform: scale(0.95); }
+    .animal-card .card-emoji { font-size: 3rem; line-height: 1; }
+    .animal-card .card-name  { font-size: .82rem; font-weight: 800; color: #444; }
+    .animal-card.correct-card { border-color: #4CAF50; background: #E8F5E9; }
+    .animal-card.wrong-card   { border-color: #F44336; background: #FFEBEE; }
+
+    .sound-display {
+      text-align: center;
+      padding: 16px;
+      background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+      border-radius: 20px;
+      margin: 12px 16px;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+    .sound-icon { font-size: 3.5rem; animation: pulse 1.5s ease-in-out infinite; }
+    .sound-prompt { font-size: 1.1rem; font-weight: 800; color: #1565C0; margin-top: 6px; }
+    .hear-again-btn {
+      background: linear-gradient(135deg, #2196F3, #1565C0);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 28px;
+      font-size: 1.2rem;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0 4px 12px rgba(33,150,243,.4);
+      transition: transform .2s;
+      font-family: inherit;
+    }
+    .hear-again-btn:hover { transform: scale(1.07); }
+
+    #score-display {
+      display: block;
+      text-align: center;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #555;
+      margin: 4px 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <header class="activity-header">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <h1>🎵 Sound Bingo</h1>
+  </header>
+
+  <div id="langSelector" class="language-selector">
+    <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+    <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+    <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+  </div>
+
+  <div class="progress-bar"><div id="progress-fill"></div></div>
+  <span id="score-display"></span>
+
+  <div id="game-area">
+    <div class="sound-display" id="sound-display">
+      <div class="sound-icon" id="sound-icon">🎵</div>
+      <div class="sound-prompt" id="sound-prompt"></div>
+      <button class="hear-again-btn" id="hear-again-btn" onclick="hearAgain()">🔊 Hear Again</button>
+    </div>
+    <div class="animal-grid" id="animal-grid"></div>
+  </div>
+
+  <div id="completion-screen" class="completion-screen hidden">
+    <div class="completion-content">
+      <div id="completion-stars" class="completion-stars"></div>
+      <div id="completion-title" class="completion-title"></div>
+      <div id="completion-score"></div>
+      <div id="completion-best"></div>
+      <div class="completion-buttons">
+        <button onclick="restartGame()" class="btn-primary">🔄 Play Again</button>
+        <button onclick="goHome()" class="btn-secondary">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="feedback-banner"></div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    const ANIMALS = [
+      { key:'cow',      emoji:'🐄', en:'Cow',      hi:'गाय',      gu:'ગાય',
+        sound:{ en:'Moo Moo',          hi:'मू मू',        gu:'મૂ મૂ' } },
+      { key:'dog',      emoji:'🐕', en:'Dog',      hi:'कुत्ता',   gu:'કૂતરો',
+        sound:{ en:'Woof Woof',        hi:'भौं भौं',       gu:'ભૌ ભૌ' } },
+      { key:'cat',      emoji:'🐈', en:'Cat',      hi:'बिल्ली',   gu:'બિલાડી',
+        sound:{ en:'Meow Meow',        hi:'म्याऊं म्याऊं', gu:'મ્યાઉ મ્યાઉ' } },
+      { key:'bird',     emoji:'🐦', en:'Bird',     hi:'पक्षी',    gu:'પક્ષી',
+        sound:{ en:'Tweet Tweet',      hi:'चीं चीं',        gu:'ચી ચી' } },
+      { key:'frog',     emoji:'🐸', en:'Frog',     hi:'मेंढक',    gu:'દેડકો',
+        sound:{ en:'Ribbit Ribbit',    hi:'टर्र टर्र',      gu:'ટ્રર ટ્રર' } },
+      { key:'lion',     emoji:'🦁', en:'Lion',     hi:'शेर',      gu:'સિંહ',
+        sound:{ en:'Roar',             hi:'दहाड़',           gu:'ગર્જના' } },
+      { key:'elephant', emoji:'🐘', en:'Elephant', hi:'हाथी',     gu:'હાથી',
+        sound:{ en:'Trumpet',          hi:'चिंघाड़',         gu:'ત્રાડ' } },
+      { key:'monkey',   emoji:'🐒', en:'Monkey',   hi:'बंदर',     gu:'વાંદરો',
+        sound:{ en:'Hoo Hoo',          hi:'हू हू',           gu:'હૂ હૂ' } },
+      { key:'car',      emoji:'🚗', en:'Car',      hi:'कार',      gu:'કાર',
+        sound:{ en:'Vroom Vroom',      hi:'व्रूम व्रूम',    gu:'વ્રૂમ વ્રૂમ' } },
+      { key:'train',    emoji:'🚂', en:'Train',    hi:'रेलगाड़ी', gu:'ટ્રેન',
+        sound:{ en:'Chuk Chuk',        hi:'छुक छुक',         gu:'છુક છુક' } },
+      { key:'bell',     emoji:'🔔', en:'Bell',     hi:'घंटी',     gu:'ઘંટ',
+        sound:{ en:'Ding Ding',        hi:'टिंग टिंग',       gu:'ટિંગ ટિંગ' } },
+      { key:'horn',     emoji:'🎺', en:'Horn',     hi:'बिगुल',    gu:'બ્યૂગલ',
+        sound:{ en:'Pom Pom',          hi:'पों पों',         gu:'પૉં પૉં' } },
+    ];
+
+    const TOTAL_ROUNDS = 10;
+    const MAX_RETRIES = 2;
+    const PROMPT = { en:'Who makes this sound?', hi:'यह आवाज़ किसकी है?', gu:'આ અવાજ કોનો છે?' };
+
+    let round = 0;
+    let mistakes = 0;
+    let correctAnimal = null;
+    let gridAnimals = [];
+    let retries = 0;
+    let locked = false;
+
+    function getLang() {
+      return getCurrentLanguage();
+    }
+
+    function getSoundQuestion(animal) {
+      const lang = getLang();
+      const s = animal.sound[lang];
+      if (lang === 'en') return 'Who says ' + s + '?';
+      if (lang === 'hi') return s + ' — यह कौन बोलता है?';
+      return s + ' — આ કોણ બોલે છે?';
+    }
+
+    function speakQuestion() {
+      if (!correctAnimal) return;
+      speak({ en: getSoundQuestion(correctAnimal), hi: getSoundQuestion(correctAnimal), gu: getSoundQuestion(correctAnimal) });
+    }
+
+    function hearAgain() {
+      speakQuestion();
+    }
+
+    function startRound() {
+      if (round >= TOTAL_ROUNDS) {
+        endGame();
+        return;
+      }
+
+      locked = false;
+      retries = 0;
+
+      const shuffled = shuffle([...ANIMALS]);
+      correctAnimal = shuffled[0];
+      const others = shuffled.slice(1, 6);
+      gridAnimals = shuffle([correctAnimal, ...others]);
+
+      updateProgress(round, TOTAL_ROUNDS);
+      renderScoreDisplay();
+      renderPrompt();
+      renderGrid();
+
+      setTimeout(() => speakQuestion(), 400);
+    }
+
+    function renderScoreDisplay() {
+      const el = document.getElementById('score-display');
+      if (el) el.textContent = t({ en: `Round ${round + 1} of ${TOTAL_ROUNDS}`, hi: `राउंड ${round + 1} / ${TOTAL_ROUNDS}`, gu: `રાઉન્ડ ${round + 1} / ${TOTAL_ROUNDS}` });
+    }
+
+    function renderPrompt() {
+      const lang = getLang();
+      document.getElementById('sound-prompt').textContent = PROMPT[lang];
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('animal-grid');
+      grid.innerHTML = '';
+      const lang = getLang();
+      gridAnimals.forEach(animal => {
+        const card = document.createElement('div');
+        card.className = 'animal-card';
+        card.dataset.key = animal.key;
+        card.innerHTML = `<span class="card-emoji">${animal.emoji}</span><span class="card-name">${animal[lang]}</span>`;
+        card.addEventListener('click', () => onCardClick(card, animal));
+        grid.appendChild(card);
+      });
+    }
+
+    function onCardClick(cardEl, animal) {
+      if (locked) return;
+
+      if (animal.key === correctAnimal.key) {
+        locked = true;
+        cardEl.classList.add('correct-card', 'card-bounce');
+        launchConfetti();
+        const lang = getLang();
+        speak({
+          en: animal.en + '! Correct!',
+          hi: animal.hi + '! सही है!',
+          gu: animal.gu + '! સાચું!'
+        });
+        showFeedback(true);
+        setTimeout(() => {
+          hideFeedback();
+          round++;
+          startRound();
+        }, 1200);
+      } else {
+        retries++;
+        cardEl.classList.add('wrong-card', 'card-shake');
+        cardEl.addEventListener('animationend', () => cardEl.classList.remove('card-shake'), { once: true });
+        speak({ en: 'Listen again!', hi: 'फिर से सुनो!', gu: 'ફરીથી સાંભળો!' });
+        showFeedback(false);
+        setTimeout(() => hideFeedback(), 800);
+
+        if (retries >= MAX_RETRIES) {
+          locked = true;
+          mistakes++;
+          setTimeout(() => {
+            round++;
+            startRound();
+          }, 1000);
+        } else {
+          setTimeout(() => speakQuestion(), 900);
+        }
+      }
+    }
+
+    function endGame() {
+      saveBestScore('sound-bingo', mistakes, TOTAL_ROUNDS);
+      showCompletion('sound-bingo', mistakes, TOTAL_ROUNDS);
+    }
+
+    function restartGame() {
+      round = 0;
+      mistakes = 0;
+      retries = 0;
+      locked = false;
+      document.getElementById('completion-screen').classList.add('hidden');
+      document.getElementById('game-area').style.display = '';
+      startRound();
+    }
+
+    function onLanguageChange() {
+      renderPrompt();
+      renderScoreDisplay();
+      renderGrid();
+      setTimeout(() => speakQuestion(), 300);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLanguageSelector();
+      startRound();
+    });
+  </script>
+</body>
+</html>

@@ -16,6 +16,12 @@
   <span class="score-display" id="score-display">0/10</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
     <p class="question-text" id="question-text">How many do you see?</p>
@@ -34,22 +40,22 @@
   <div class="completion-title" id="completion-title">शानदार! Excellent!</div>
   <div class="completion-score" id="completion-score"></div>
   <div class="completion-best"  id="completion-best"></div>
-  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+  <button class="play-again-btn" onclick="initGame()" id="play-again-btn">🔄 Play Again</button>
 </div>
 
 <script src="../js/common.js"></script>
 <script>
 const OBJECTS = [
-  {emoji: '🥭', name: 'Mango',    hi: 'आम'},
-  {emoji: '🍌', name: 'Banana',   hi: 'केला'},
-  {emoji: '🥥', name: 'Coconut',  hi: 'नारियल'},
-  {emoji: '🍎', name: 'Apple',    hi: 'सेब'},
-  {emoji: '🌸', name: 'Flower',   hi: 'फूल'},
-  {emoji: '⭐', name: 'Star',     hi: 'तारा'},
-  {emoji: '🪔', name: 'Diya',     hi: 'दिया'},
-  {emoji: '🍬', name: 'Candy',    hi: 'टॉफ़ी'},
-  {emoji: '🐘', name: 'Elephant', hi: 'हाथी'},
-  {emoji: '🦚', name: 'Peacock',  hi: 'मोर'},
+  {emoji: '🥭', name: 'Mango',    hi: 'आम',    gu: 'કેરી'},
+  {emoji: '🍌', name: 'Banana',   hi: 'केला',  gu: 'કેળું'},
+  {emoji: '🥥', name: 'Coconut',  hi: 'नारियल',gu: 'નાળિયેર'},
+  {emoji: '🍎', name: 'Apple',    hi: 'सेब',   gu: 'સફરજન'},
+  {emoji: '🌸', name: 'Flower',   hi: 'फूल',   gu: 'ફૂલ'},
+  {emoji: '⭐', name: 'Star',     hi: 'तारा',  gu: 'તારો'},
+  {emoji: '🪔', name: 'Diya',     hi: 'दिया',  gu: 'દીવો'},
+  {emoji: '🍬', name: 'Candy',    hi: 'टॉफ़ी', gu: 'ટૉફી'},
+  {emoji: '🐘', name: 'Elephant', hi: 'हाथी',  gu: 'હાથી'},
+  {emoji: '🦚', name: 'Peacock',  hi: 'मोर',   gu: 'મોર'},
 ];
 
 const TOTAL_ROUNDS = 10;
@@ -57,14 +63,18 @@ let round = 0;
 let mistakes = 0;
 let answered = false;
 let correctAnswer = 0;
-let currentPrompt = '';
+let currentPrompt = {};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   round = 0; mistakes = 0; answered = false;
   document.getElementById('completion-screen').classList.remove('show');
   document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('play-again-btn').textContent =
+    t({en: '🔄 Play Again', hi: '🔄 फिर से खेलो', gu: '🔄 ફરી રમો'});
   hideFeedback();
   nextRound();
 }
@@ -81,10 +91,10 @@ function nextRound() {
 
   document.getElementById('emoji-display').textContent = obj.emoji.repeat(count);
   document.getElementById('question-text').textContent =
-    `कितने ${obj.name} हैं? How many ${obj.name}s?`;
+    t({en: `How many ${obj.name}s?`, hi: `कितने ${obj.hi} हैं?`, gu: `કેટલા ${obj.gu} છે?`});
 
-  currentPrompt = 'कितने ' + obj.hi + ' हैं? गिनो!';
-  speakHindi(currentPrompt);
+  currentPrompt = {en: `How many ${obj.name}s? Count them!`, hi: 'कितने ' + obj.hi + ' हैं? गिनो!', gu: 'કેટલા ' + obj.gu + ' છે? ગણો!'};
+  speak(currentPrompt);
 
   // Generate choices: correct + 3 wrong
   const wrong = new Set();
@@ -121,7 +131,7 @@ function handleChoice(btn, value) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

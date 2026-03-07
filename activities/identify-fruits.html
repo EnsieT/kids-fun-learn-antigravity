@@ -16,6 +16,12 @@
   <span class="score-display" id="score-display">0/10</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
     <p class="question-text" id="question-text">Tap the correct one!</p>
@@ -38,25 +44,27 @@
 <script src="../js/common.js"></script>
 <script>
 const ITEMS = [
-  {emoji:'🥭', en:'Mango',        hi:'आम'},
-  {emoji:'🍌', en:'Banana',       hi:'केला'},
-  {emoji:'🥥', en:'Coconut',      hi:'नारियल'},
-  {emoji:'🍐', en:'Guava',        hi:'अमरूद'},
-  {emoji:'🍅', en:'Tomato',       hi:'टमाटर'},
-  {emoji:'🥔', en:'Potato',       hi:'आलू'},
-  {emoji:'🍆', en:'Brinjal',      hi:'बैंगन'},
-  {emoji:'🌽', en:'Corn',         hi:'मकई'},
-  {emoji:'🫛', en:'Peas',         hi:'मटर'},
-  {emoji:'🥒', en:'Cucumber',     hi:'खीरा'},
-  {emoji:'🧅', en:'Onion',        hi:'प्याज'},
-  {emoji:'🫑', en:'Bell Pepper',  hi:'शिमला मिर्च'},
+  {emoji:'🥭', en:'Mango',        hi:'आम',           gu:'કેરી'},
+  {emoji:'🍌', en:'Banana',       hi:'केला',          gu:'કેળું'},
+  {emoji:'🥥', en:'Coconut',      hi:'नारियल',        gu:'નાળિયેર'},
+  {emoji:'🍐', en:'Guava',        hi:'अमरूद',         gu:'જામફળ'},
+  {emoji:'🍅', en:'Tomato',       hi:'टमाटर',         gu:'ટામેટું'},
+  {emoji:'🥔', en:'Potato',       hi:'आलू',           gu:'બટાટા'},
+  {emoji:'🍆', en:'Brinjal',      hi:'बैंगन',         gu:'રીંગણ'},
+  {emoji:'🌽', en:'Corn',         hi:'मकई',           gu:'મકાઈ'},
+  {emoji:'🫛', en:'Peas',         hi:'मटर',           gu:'વટાણા'},
+  {emoji:'🥒', en:'Cucumber',     hi:'खीरा',          gu:'કાકડી'},
+  {emoji:'🧅', en:'Onion',        hi:'प्याज',         gu:'ડુંગળી'},
+  {emoji:'🫑', en:'Bell Pepper',  hi:'शिमला मिर्च',   gu:'સિમ્લા મરચું'},
 ];
 
 const TOTAL_ROUNDS = 10;
 let round = 0, mistakes = 0, answered = false, correctItem = null;
-let currentPrompt = '';
+let currentPrompt = {};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   round = 0; mistakes = 0; answered = false;
@@ -75,10 +83,10 @@ function nextRound() {
   const pool = shuffle(ITEMS).slice(0, 6);
   correctItem = pool[Math.floor(Math.random() * pool.length)];
   document.getElementById('question-text').innerHTML =
-    `Tap the <strong>${correctItem.hi} (${correctItem.en})</strong>! 👆`;
+    `${t({en:'Tap the', hi:'छुओ', gu:'ટચ કરો'})} <strong>${t(correctItem)}</strong>! 👆`;
 
-  currentPrompt = correctItem.hi + ' को छुओ!';
-  speakHindi(currentPrompt);
+  currentPrompt = {en: `Tap the ${correctItem.en}!`, hi: correctItem.hi + ' को छुओ!', gu: correctItem.gu + ' ને ટચ કરો!'};
+  speak(currentPrompt);
 
   const grid = document.getElementById('emoji-grid');
   grid.innerHTML = '';
@@ -86,7 +94,7 @@ function nextRound() {
     const div = document.createElement('div');
     div.className = 'emoji-item';
     div.innerHTML = `<span class="item-emoji">${item.emoji}</span>
-                     <span class="item-label">${item.hi}<br/>${item.en}</span>`;
+                     <span class="item-label">${t(item)}</span>`;
     div.onclick = () => handleTap(div, item);
     grid.appendChild(div);
   });
@@ -108,7 +116,7 @@ function handleTap(el, item) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

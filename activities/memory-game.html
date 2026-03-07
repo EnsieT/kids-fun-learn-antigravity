@@ -122,6 +122,12 @@
   <span class="score-display" id="score-display">0/0</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
     <p class="question-text">जोड़ी ढूंढो! Find the pairs!</p>
@@ -158,18 +164,18 @@
 <script src="../js/common.js"></script>
 <script>
 const EMOJI_DATA = [
-  {emoji:'🥭', hi:'आम'},
-  {emoji:'🥥', hi:'नारियल'},
-  {emoji:'🪔', hi:'दिया'},
-  {emoji:'🦚', hi:'मोर'},
-  {emoji:'🐘', hi:'हाथी'},
-  {emoji:'🌺', hi:'फूल'},
-  {emoji:'🏏', hi:'क्रिकेट'},
-  {emoji:'🪷', hi:'कमल'},
-  {emoji:'🐯', hi:'बाघ'},
-  {emoji:'🌸', hi:'चेरी फूल'},
-  {emoji:'🎊', hi:'पटाखा'},
-  {emoji:'🦜', hi:'तोता'},
+  {emoji:'🥭', hi:'आम',         gu:'કેરી'},
+  {emoji:'🥥', hi:'नारियल',     gu:'નાળિયેર'},
+  {emoji:'🪔', hi:'दिया',       gu:'દીવો'},
+  {emoji:'🦚', hi:'मोर',        gu:'મોર'},
+  {emoji:'🐘', hi:'हाथी',       gu:'હાથી'},
+  {emoji:'🌺', hi:'फूल',        gu:'ફૂલ'},
+  {emoji:'🏏', hi:'क्रिकेट',    gu:'ક્રિકેટ'},
+  {emoji:'🪷', hi:'कमल',        gu:'કમળ'},
+  {emoji:'🐯', hi:'बाघ',        gu:'વાઘ'},
+  {emoji:'🌸', hi:'चेरी फूल',   gu:'ચેરી ફૂલ'},
+  {emoji:'🎊', hi:'पटाखा',      gu:'ફટાકડો'},
+  {emoji:'🦜', hi:'तोता',       gu:'પોપટ'},
 ];
 
 const DIFFICULTY = {
@@ -186,9 +192,11 @@ let moves = 0;
 let canFlip = true;
 let timerInterval = null;
 let timerSeconds = 0;
-const currentPrompt = 'जोड़ी ढूंढो!';
+const currentPrompt = {en: 'Find the pairs!', hi: 'जोड़ी ढूंढो!', gu: 'જોડી શોધો!'};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { restartGame(); }
 
 function setDifficulty(level, btn) {
   currentDifficulty = level;
@@ -242,7 +250,7 @@ function restartGame() {
       m + ':' + String(s).padStart(2,'0');
   }, 1000);
 
-  speakHindi(currentPrompt);
+  speak(currentPrompt);
 }
 
 function handleCardClick(idx) {
@@ -252,7 +260,7 @@ function handleCardClick(idx) {
   if (!el || el.classList.contains('flipped') || el.classList.contains('matched')) return;
 
   el.classList.add('flipped');
-  speakHindi(card.hi);
+  speak({en: card.emoji, hi: card.hi, gu: card.gu});
   flipped.push(idx);
 
   if (flipped.length === 2) {
@@ -270,7 +278,7 @@ function handleCardClick(idx) {
         document.querySelectorAll(`.mem-card[data-idx="${a}"], .mem-card[data-idx="${b}"]`)
           .forEach(e => e.classList.add('matched'));
         showFeedback(true);
-        speakHindi('जोड़ी मिल गई!');
+        speak({en: 'Pair found!', hi: 'जोड़ी मिल गई!', gu: 'જોડી મળી ગઈ!'});
         flipped = [];
         canFlip = true;
         if (matched >= cfg.pairs) {
@@ -324,12 +332,12 @@ function finishGame() {
   document.getElementById('completion-best').textContent = 'Best: ' + starsHTML(best);
   launchConfetti();
 
-  if (stars === 3)      speakHindi('बहुत अच्छा! तुमने तीन सितारे कमाए!');
-  else if (stars === 2) speakHindi('बहुत अच्छा! तुमने दो सितारे कमाए!');
-  else                  speakHindi('अच्छा प्रयास! एक सितारा!');
+  if (stars === 3)      speak({en: 'Excellent! You earned 3 stars!', hi: 'बहुत अच्छा! तुमने तीन सितारे कमाए!', gu: 'ખૂબ સરસ! તમે ત્રણ સ્ટાર મેળવ્યા!'});
+  else if (stars === 2) speak({en: 'Great job! You earned 2 stars!', hi: 'बहुत अच्छा! तुमने दो सितारे कमाए!', gu: 'બહુ સારું! તમે બે સ્ટાર મેળવ્યા!'});
+  else                  speak({en: 'Good try! You earned 1 star!', hi: 'अच्छा प्रयास! एक सितारा!', gu: 'સારો પ્રયત્ન! એક સ્ટાર!'});
 }
 
-document.addEventListener('DOMContentLoaded', restartGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); restartGame(); });
 </script>
 </body>
 </html>

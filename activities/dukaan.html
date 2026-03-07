@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Little Dukaan 🏪 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  #game-area { padding: 0 0 24px; }
+
+  .shopkeeper-area {
+    background: linear-gradient(135deg, #FFF8E1, #FFECB3);
+    border-radius: 20px;
+    margin: 12px 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 4px 16px rgba(255,152,0,.2);
+    border: 3px solid #FFB300;
+  }
+  .shopkeeper-emoji { font-size: 3.5rem; flex-shrink: 0; transition: transform .3s; }
+  .shopkeeper-emoji.happy { animation: bounce .6s ease; }
+  .order-bubble {
+    background: #fff;
+    border-radius: 16px;
+    padding: 12px 16px;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    font-weight: 700;
+    color: #444;
+    line-height: 1.5;
+  }
+  .order-bubble .order-title {
+    font-size: .85rem;
+    color: #FF8C00;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .round-info {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #888;
+    margin: 4px 0;
+  }
+
+  /* Shelf */
+  .shelf-label {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 900;
+    color: #FF8C00;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 8px 0 4px;
+  }
+  .shelf-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    padding: 8px 16px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .shelf-item {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    border: 3px solid #e0e0e0;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+    min-width: 76px;
+    min-height: 76px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    user-select: none;
+  }
+  .shelf-item:hover  { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,.18); }
+  .shelf-item:active { transform: scale(0.93); }
+  .shelf-item .s-emoji { font-size: 2.4rem; line-height: 1; }
+  .shelf-item .s-name  { font-size: .78rem; font-weight: 800; color: #555; }
+
+  /* Basket */
+  .basket-section {
+    margin: 12px 16px;
+    background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
+    border-radius: 20px;
+    padding: 14px 16px;
+    border: 3px solid #66BB6A;
+  }
+  .basket-header {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: #2E7D32;
+    margin-bottom: 10px;
+  }
+  .basket-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 56px;
+    align-items: center;
+  }
+  .basket-chip {
+    background: #fff;
+    border-radius: 50px;
+    padding: 6px 14px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: 2px solid #A5D6A7;
+    transition: transform .15s;
+  }
+  .basket-chip:hover  { transform: scale(1.07); }
+  .basket-chip:active { transform: scale(0.95); }
+  .basket-count {
+    background: #FF8C00;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: .85rem;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .basket-empty {
+    color: #999;
+    font-style: italic;
+    font-size: .95rem;
+  }
+
+  /* Buttons row */
+  .action-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .check-btn {
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 32px;
+    font-size: 1.3rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(76,175,80,.4);
+    transition: transform .2s, box-shadow .2s;
+    min-height: 54px;
+  }
+  .check-btn:hover  { transform: scale(1.06); box-shadow: 0 8px 24px rgba(76,175,80,.5); }
+  .check-btn:active { transform: scale(0.97); }
+  .clear-btn {
+    background: linear-gradient(135deg, #e53935, #b71c1c);
+    color: #fff;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 24px;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(229,57,53,.35);
+    transition: transform .2s;
+    min-height: 54px;
+  }
+  .clear-btn:hover  { transform: scale(1.05); }
+  .clear-btn:active { transform: scale(0.97); }
+
+  .hint-text {
+    text-align: center;
+    color: #e53935;
+    font-weight: 700;
+    font-size: 1rem;
+    min-height: 28px;
+    margin: 4px 16px;
+  }
+
+  @keyframes shopkeeper-bounce {
+    0%,100% { transform: scale(1) rotate(0deg); }
+    25%      { transform: scale(1.2) rotate(-8deg); }
+    75%      { transform: scale(1.2) rotate(8deg); }
+  }
+  .shopkeeper-emoji.correct-anim { animation: shopkeeper-bounce .6s ease; }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1 id="page-title">🏪 Little Dukaan</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/5</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <p class="round-info" id="round-info"></p>
+
+  <div class="shopkeeper-area">
+    <div class="shopkeeper-emoji" id="shopkeeper-emoji">👨‍💼</div>
+    <div class="order-bubble">
+      <div class="order-title" id="order-title">Order</div>
+      <div id="order-text">Loading…</div>
+    </div>
+    <button class="hear-btn" onclick="hearOrder()" aria-label="Hear order">🔊</button>
+  </div>
+
+  <div id="feedback-banner" class="feedback-banner"></div>
+  <div class="hint-text" id="hint-text"></div>
+
+  <div class="shelf-label" id="shelf-label">🛒 Items</div>
+  <div class="shelf-grid" id="shelf-grid"></div>
+
+  <div class="basket-section">
+    <div class="basket-header" id="basket-header">🧺 Your Basket (tap chip to remove)</div>
+    <div class="basket-items" id="basket-items">
+      <span class="basket-empty" id="basket-empty-msg">Empty</span>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="clear-btn" id="clear-btn" onclick="clearBasket()">🗑️ <span id="clear-label">Clear</span></button>
+    <button class="check-btn" id="check-btn" onclick="checkOrder()">✅ <span id="check-label">Check Order!</span></button>
+  </div>
+</div>
+
+<!-- Completion Screen -->
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars">⭐⭐⭐</div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()" id="play-again-btn">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const ITEMS = [
+  { key:'mango',   emoji:'🥭', en:'Mango',   hi:'आम',      gu:'કેરી'    },
+  { key:'banana',  emoji:'🍌', en:'Banana',  hi:'केला',    gu:'કેળું'   },
+  { key:'apple',   emoji:'🍎', en:'Apple',   hi:'सेब',     gu:'સફરજન'   },
+  { key:'coconut', emoji:'🥥', en:'Coconut', hi:'नारियल',  gu:'નાળિયેર' },
+  { key:'tomato',  emoji:'🍅', en:'Tomato',  hi:'टमाटर',   gu:'ટામેટું' },
+  { key:'carrot',  emoji:'🥕', en:'Carrot',  hi:'गाजर',    gu:'ગાજર'    },
+  { key:'potato',  emoji:'🥔', en:'Potato',  hi:'आलू',     gu:'બટાટા'   },
+  { key:'lemon',   emoji:'🍋', en:'Lemon',   hi:'नींबू',   gu:'લીંબુ'   },
+];
+
+const ORDERS = [
+  {
+    items: {mango:2},
+    en: 'Give me 2 mangoes!',
+    hi: 'मुझे 2 आम दो!',
+    gu: 'મને 2 કેરી આપો!'
+  },
+  {
+    items: {banana:3, apple:1},
+    en: 'Give me 3 bananas and 1 apple!',
+    hi: 'मुझे 3 केले और 1 सेब दो!',
+    gu: 'મને 3 કેળા અને 1 સફરજન આપો!'
+  },
+  {
+    items: {coconut:1, tomato:2},
+    en: 'Give me 1 coconut and 2 tomatoes!',
+    hi: 'मुझे 1 नारियल और 2 टमाटर दो!',
+    gu: 'મને 1 નાળિયેર અને 2 ટામેટા આપો!'
+  },
+  {
+    items: {carrot:3, lemon:2},
+    en: 'Give me 3 carrots and 2 lemons!',
+    hi: 'मुझे 3 गाजर और 2 नींबू दो!',
+    gu: 'મને 3 ગાજર અને 2 લીંબુ આપો!'
+  },
+  {
+    items: {mango:2, banana:1, potato:2},
+    en: 'Give me 2 mangoes, 1 banana, and 2 potatoes!',
+    hi: 'मुझे 2 आम, 1 केला और 2 आलू दो!',
+    gu: 'મને 2 કેરી, 1 કેળું અને 2 બટાટા આપો!'
+  },
+];
+
+const TOTAL_ROUNDS = 5;
+let round = 0;
+let mistakes = 0;
+let basket = {};  // key -> count
+let currentOrder = null;
+let orderSpoken = false;
+
+function itemByKey(k) { return ITEMS.find(i => i.key === k); }
+
+function hearOrder() {
+  if (currentOrder) speak(currentOrder);
+}
+
+function onLanguageChange() { renderRound(); }
+
+function initGame() {
+  round = 0; mistakes = 0; basket = {};
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  document.getElementById('hint-text').textContent = '';
+  document.getElementById('shopkeeper-emoji').textContent = '👨‍💼';
+  updateProgress(0, TOTAL_ROUNDS);
+  nextRound();
+}
+
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) {
+    showCompletion('dukaan', mistakes, TOTAL_ROUNDS);
+    return;
+  }
+  basket = {};
+  hideFeedback();
+  document.getElementById('hint-text').textContent = '';
+  document.getElementById('shopkeeper-emoji').textContent = '👨‍💼';
+  currentOrder = ORDERS[round];
+  renderRound();
+  updateProgress(round, TOTAL_ROUNDS);
+}
+
+function renderRound() {
+  const lang = getCurrentLanguage();
+  document.getElementById('page-title').textContent = t({en:'🏪 Little Dukaan', hi:'🏪 लिट्टल दुकान', gu:'🏪 નાની દુકાન'});
+  document.getElementById('round-info').textContent = t({en:`Round ${round+1} of ${TOTAL_ROUNDS}`, hi:`राउंड ${round+1} / ${TOTAL_ROUNDS}`, gu:`રાઉન્ડ ${round+1} / ${TOTAL_ROUNDS}`});
+  document.getElementById('order-title').textContent = t({en:'Order', hi:'ऑर्डर', gu:'ઓર્ડર'});
+  document.getElementById('order-text').textContent = currentOrder ? t(currentOrder) : '';
+  document.getElementById('shelf-label').textContent = t({en:'🛒 Pick items from the shelf', hi:'🛒 शेल्फ से सामान चुनो', gu:'🛒 શેલ્ફ માંથી વસ્તુ ઉઠાવો'});
+  document.getElementById('basket-header').textContent = t({en:'🧺 Your Basket (tap chip to remove)', hi:'🧺 तुम्हारी टोकरी (हटाने के लिए दबाओ)', gu:'🧺 તારી ટોપલી (દૂર કરવા ટૅપ કરો)'});
+  document.getElementById('clear-label').textContent = t({en:'Clear', hi:'हटाओ', gu:'હટાવો'});
+  document.getElementById('check-label').textContent = t({en:'Check Order!', hi:'ऑर्डर जांचो!', gu:'ઓર્ડર તપાસો!'});
+  document.getElementById('play-again-btn').textContent = t({en:'🔄 Play Again', hi:'🔄 फिर से खेलो', gu:'🔄 ફરી રમો'});
+
+  renderShelf();
+  renderBasket();
+
+  speak(t({en:'Fill the order!', hi:'ऑर्डर पूरा करो!', gu:'ઓર્ડર પૂરો કરો!'}));
+  setTimeout(() => hearOrder(), 1200);
+}
+
+function renderShelf() {
+  const grid = document.getElementById('shelf-grid');
+  grid.innerHTML = '';
+  ITEMS.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'shelf-item';
+    btn.setAttribute('aria-label', item.en);
+    btn.innerHTML = `<span class="s-emoji">${item.emoji}</span><span class="s-name">${t(item)}</span>`;
+    btn.onclick = () => addToBasket(item);
+    grid.appendChild(btn);
+  });
+}
+
+function renderBasket() {
+  const container = document.getElementById('basket-items');
+  const emptyMsg = document.getElementById('basket-empty-msg');
+  container.innerHTML = '';
+
+  const keys = Object.keys(basket).filter(k => basket[k] > 0);
+  if (keys.length === 0) {
+    const span = document.createElement('span');
+    span.className = 'basket-empty';
+    span.id = 'basket-empty-msg';
+    span.textContent = t({en:'Empty', hi:'खाली', gu:'ખાલી'});
+    container.appendChild(span);
+    return;
+  }
+
+  keys.forEach(k => {
+    const item = itemByKey(k);
+    if (!item) return;
+    const chip = document.createElement('button');
+    chip.className = 'basket-chip';
+    chip.setAttribute('aria-label', `Remove ${item.en}`);
+    chip.innerHTML = `${item.emoji} <span>${t(item)}</span> <span class="basket-count">${basket[k]}</span>`;
+    chip.onclick = () => removeFromBasket(k);
+    container.appendChild(chip);
+  });
+}
+
+function addToBasket(item) {
+  basket[item.key] = (basket[item.key] || 0) + 1;
+  speak({en: item.en, hi: item.hi, gu: item.gu});
+  renderBasket();
+  document.getElementById('hint-text').textContent = '';
+}
+
+function removeFromBasket(key) {
+  if (!basket[key]) return;
+  basket[key]--;
+  if (basket[key] <= 0) delete basket[key];
+  renderBasket();
+}
+
+function clearBasket() {
+  basket = {};
+  renderBasket();
+  document.getElementById('hint-text').textContent = '';
+  hideFeedback();
+}
+
+function checkOrder() {
+  if (!currentOrder) return;
+  const required = currentOrder.items;
+
+  // Check exact match
+  const reqKeys = Object.keys(required);
+  const basketKeys = Object.keys(basket).filter(k => (basket[k] || 0) > 0);
+
+  let correct = true;
+  // All required items present in correct amounts
+  for (const k of reqKeys) {
+    if ((basket[k] || 0) !== required[k]) { correct = false; break; }
+  }
+  // No extra items
+  if (correct) {
+    for (const k of basketKeys) {
+      if (!required[k]) { correct = false; break; }
+    }
+  }
+
+  if (correct) {
+    const emoji = document.getElementById('shopkeeper-emoji');
+    emoji.textContent = '😊';
+    emoji.classList.add('correct-anim');
+    setTimeout(() => emoji.classList.remove('correct-anim'), 700);
+
+    showFeedback(true);
+    document.getElementById('hint-text').textContent = '';
+    speak({en:'Perfect order! Well done!', hi:'परफेक्ट ऑर्डर! शाबाश!', gu:'પરફેક્ટ ઓર્ડર! શાબાશ!'});
+    round++;
+    setTimeout(() => {
+      hideFeedback();
+      nextRound();
+    }, 2000);
+  } else {
+    mistakes++;
+    document.getElementById('shopkeeper-emoji').textContent = '😟';
+    showFeedback(false);
+
+    // Build hint
+    const missingParts = [];
+    for (const k of reqKeys) {
+      const have = basket[k] || 0;
+      const need = required[k];
+      if (have < need) {
+        const item = itemByKey(k);
+        missingParts.push(`${item ? item.emoji : k} ×${need - have}`);
+      } else if (have > need) {
+        const item = itemByKey(k);
+        missingParts.push(`${item ? item.emoji : k} -${have - need}`);
+      }
+    }
+    const hintMsg = missingParts.length > 0
+      ? t({en:`Hint: ${missingParts.join(' ')}`, hi:`संकेत: ${missingParts.join(' ')}`, gu:`સંકેત: ${missingParts.join(' ')}`})
+      : t({en:'Remove extra items!', hi:'अतिरिक्त सामान हटाओ!', gu:'વધારાની વસ્તુ દૂર કરો!'});
+    document.getElementById('hint-text').textContent = hintMsg;
+
+    speak({en:'Not quite! Check again!', hi:'नहीं! फिर से जांचो!', gu:'નહીં! ફરી તપાસો!'});
+    setTimeout(() => {
+      document.getElementById('shopkeeper-emoji').textContent = '👨‍💼';
+      hideFeedback();
+    }, 1800);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initLanguageSelector();
+  initGame();
+});
+</script>
+</body>
+</html>

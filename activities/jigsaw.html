@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jigsaw Puzzle 🧩 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+#game-section { display:flex; flex-direction:column; align-items:center; gap:.7rem; padding:.8rem; }
+#diff-btns { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+.diff-btn {
+  padding:.45rem .9rem; border-radius:20px; border:2px solid #7B1FA2;
+  background:#F3E5F5; font-size:.95rem; cursor:pointer;
+  min-height:44px; touch-action:manipulation; transition:all .2s;
+}
+.diff-btn.active { background:#7B1FA2; color:#fff; }
+
+/* Scene selector */
+#scene-btns { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
+.scene-btn {
+  padding:.4rem .8rem; border-radius:16px; border:2px solid #0288D1;
+  background:#E1F5FE; font-size:.9rem; cursor:pointer;
+  min-height:44px; touch-action:manipulation; transition:all .2s;
+}
+.scene-btn.active { background:#0288D1; color:#fff; }
+
+/* Reference image */
+#reference-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:.3rem;
+}
+#reference-label { font-size:.8em; color:#888; }
+#reference-grid {
+  display:grid; gap:2px; background:#fff;
+  border:2px solid #aaa; border-radius:6px; padding:3px;
+}
+.ref-cell { display:flex; align-items:center; justify-content:center;
+  background:#fafafa; border-radius:3px; }
+
+/* Puzzle board */
+#puzzle-board {
+  display:grid; gap:5px;
+  background:rgba(0,0,0,.07);
+  padding:8px; border-radius:12px;
+  border:2px dashed #9C27B0;
+}
+.puzzle-slot {
+  display:flex; align-items:center; justify-content:center;
+  border-radius:8px; cursor:pointer;
+  border:2px dashed #CE93D8;
+  background:rgba(243,229,245,.6);
+  transition:background .2s, border-color .2s, transform .15s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.puzzle-slot.empty { color:#CE93D8; font-size:1.5em; }
+.puzzle-slot.empty:hover { background:rgba(206,147,216,.25); border-color:#9C27B0; }
+.puzzle-slot.filled { background:#fff; border:2px solid #7B1FA2; cursor:default; }
+.puzzle-slot.correct-flash { animation:slot-pop .4s ease; background:#E8F5E9!important; border-color:#4CAF50!important; }
+.puzzle-slot.wrong-shake   { animation:slot-shake .35s ease; }
+@keyframes slot-pop   { 0%{transform:scale(.85)} 60%{transform:scale(1.1)} 100%{transform:scale(1)} }
+@keyframes slot-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+
+/* Pieces tray */
+#tray-label { font-size:.9em; color:#555; font-weight:bold; }
+#pieces-tray {
+  display:flex; flex-wrap:wrap; gap:8px;
+  justify-content:center; padding:.6rem;
+  background:rgba(255,255,255,.7);
+  border-radius:12px; border:2px solid #E1BEE7;
+  min-height:70px; max-width:420px;
+}
+.puzzle-piece {
+  display:flex; align-items:center; justify-content:center;
+  border-radius:8px; cursor:pointer;
+  border:3px solid #AB47BC;
+  background:#fff;
+  transition:transform .15s, box-shadow .15s, border-color .15s;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  box-shadow:0 2px 5px rgba(0,0,0,.12);
+}
+.puzzle-piece:hover  { transform:scale(1.08); box-shadow:0 4px 10px rgba(0,0,0,.2); }
+.puzzle-piece.selected {
+  border-color:#F44336; box-shadow:0 0 0 4px rgba(244,67,54,.3);
+  transform:scale(1.1);
+}
+.puzzle-piece.placed  { opacity:0; pointer-events:none; transform:scale(0); }
+.puzzle-piece.bounce  { animation:piece-bounce .4s ease; }
+@keyframes piece-bounce { 0%{transform:scale(1)} 40%{transform:scale(1.25)} 70%{transform:scale(.9)} 100%{transform:scale(1)} }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🧩 Jigsaw</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/0</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div id="game-section">
+    <p class="question-text" id="prompt-text"></p>
+
+    <div id="diff-btns">
+      <button class="diff-btn active" onclick="setDifficulty('easy')">🌱 Easy 2×2</button>
+      <button class="diff-btn"        onclick="setDifficulty('medium')">🌿 Medium 2×3</button>
+      <button class="diff-btn"        onclick="setDifficulty('hard')">🌳 Hard 3×3</button>
+    </div>
+
+    <div id="scene-btns"></div>
+
+    <!-- Reference image -->
+    <div id="reference-wrap">
+      <span id="reference-label"></span>
+      <div id="reference-grid"></div>
+    </div>
+
+    <!-- Board -->
+    <div id="puzzle-board"></div>
+
+    <!-- Tray -->
+    <div id="tray-label"></div>
+    <div id="pieces-tray"></div>
+
+    <p id="hint-text" style="font-size:.9em;color:#7B1FA2;min-height:1.5em;text-align:center;"></p>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars">⭐⭐⭐</div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" id="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+/* ── Scene data per difficulty ── */
+const SCENES = {
+  easy: [
+    { name:{en:'Village 🏡',hi:'गाँव 🏡',gu:'ગામ 🏡'},          grid:[['🏠','☀️'],['🌻','🐄']] },
+    { name:{en:'Diwali 🪔',hi:'दिवाली 🪔',gu:'દિવાળી 🪔'},       grid:[['🪔','🎆'],['✨','🌺']] },
+    { name:{en:'Farm 🌾',hi:'खेत 🌾',gu:'ખेત 🌾'},                grid:[['👨‍🌾','🌾'],['🐄','☀️']] },
+    { name:{en:'Beach 🌊',hi:'समुद्र 🌊',gu:'દરિયો 🌊'},           grid:[['🌴','⛵'],['🐠','☀️']] },
+  ],
+  medium: [
+    { name:{en:'Village 🏡',hi:'गाँव 🏡',gu:'ગામ 🏡'},            grid:[['🏠','🌳','☀️'],['🌻','🌿','🐄']] },
+    { name:{en:'Diwali 🪔',hi:'दिवाली 🪔',gu:'દિવાળી 🪔'},         grid:[['🪔','🪔','🎆'],['🌺','✨','🪅']] },
+    { name:{en:'Farm 🌾',hi:'खेत 🌾',gu:'ખेत 🌾'},                 grid:[['👨‍🌾','🚜','🌾'],['🐄','🐔','🌻']] },
+    { name:{en:'Beach 🌊',hi:'समुद्र 🌊',gu:'દरियો 🌊'},            grid:[['🌴','🌊','⛵'],['🐠','🦀','🌺']] },
+  ],
+  hard: [
+    { name:{en:'Village 🏡',hi:'गाँव 🏡',gu:'ગામ 🏡'},            grid:[['🏠','🌳','☀️'],['🌻','🌿','🐦'],['🐄','🌸','🌾']] },
+    { name:{en:'Diwali 🪔',hi:'दिवाली 🪔',gu:'દিવाળী 🪔'},         grid:[['🪔','🪔','🎆'],['🌺','✨','🪅'],['🌙','🎊','🔥']] },
+    { name:{en:'Farm 🌾',hi:'खेत 🌾',gu:'ખेत 🌾'},                 grid:[['👨‍🌾','🚜','🌾'],['🐄','🐔','🌻'],['🌿','☀️','🌈']] },
+    { name:{en:'Beach 🌊',hi:'समुद्र 🌊',gu:'દरियો 🌊'},            grid:[['🌴','🌊','⛵'],['🐠','🦀','🌺'],['🏖️','☀️','🐚']] },
+  ],
+};
+
+const CELL_SIZES = { easy:88, medium:72, hard:64 };
+
+let difficulty   = 'easy';
+let sceneIndex   = 0;
+let pieces       = [];       // [{id, emoji, r, c}]
+let shuffled     = [];       // shuffled copy of pieces
+let placedMap    = {};       // 'r,c' → true
+let selectedPiece = null;
+let mistakes     = 0;
+let totalPieces  = 0;
+
+/* ── Helpers ── */
+function getScene()  { return SCENES[difficulty][sceneIndex]; }
+function rows()      { return getScene().grid.length; }
+function cols()      { return getScene().grid[0].length; }
+function cellSize()  { return CELL_SIZES[difficulty]; }
+
+/* ── Build scene buttons ── */
+function buildSceneBtns() {
+  const wrap = document.getElementById('scene-btns');
+  wrap.innerHTML = '';
+  SCENES[difficulty].forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'scene-btn' + (i === sceneIndex ? ' active' : '');
+    btn.textContent = t(s.name);
+    btn.addEventListener('click', () => { sceneIndex = i; initGame(); });
+    wrap.appendChild(btn);
+  });
+}
+
+/* ── Difficulty ── */
+function setDifficulty(d) {
+  difficulty = d; sceneIndex = 0;
+  document.querySelectorAll('.diff-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['easy','medium','hard'][i] === d);
+  });
+  initGame();
+}
+
+function onLanguageChange() {
+  buildSceneBtns();
+  updateStaticText();
+}
+
+function updateStaticText() {
+  document.getElementById('prompt-text').textContent =
+    t({en:'Complete the picture!', hi:'तस्वीर पूरी करो!', gu:'ચિત્ર પૂરું કરો!'});
+  document.getElementById('reference-label').textContent =
+    t({en:'📋 Reference', hi:'📋 संदर्भ', gu:'📋 સંદર્ભ'});
+  document.getElementById('tray-label').textContent =
+    t({en:'🧩 Tap a piece, then tap its spot ↑', hi:'🧩 टुकड़ा चुनो, फिर जगह चुनो ↑', gu:'🧩 ટુકડો પસંદ કરો, પછી જગ્યા પર ટૅપ કરો ↑'});
+  document.getElementById('play-again-btn').textContent =
+    t({en:'🔄 Play Again', hi:'🔄 फिर से खेलो', gu:'🔄 ફરી રમો'});
+}
+
+/* ── Init ── */
+function initGame() {
+  mistakes = 0; selectedPiece = null; placedMap = {};
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+
+  const scene = getScene();
+  totalPieces = rows() * cols();
+  pieces = [];
+  for (let r = 0; r < rows(); r++)
+    for (let c = 0; c < cols(); c++)
+      pieces.push({id:`${r}-${c}`, emoji: scene.grid[r][c], r, c});
+  shuffled = shuffle(pieces);
+
+  updateStaticText();
+  buildSceneBtns();
+  renderReference();
+  renderBoard();
+  renderTray();
+  updateProgress(0, totalPieces);
+  document.getElementById('score-display').textContent = '0/' + totalPieces;
+  clearHint();
+
+  const p = {en:'Complete the picture!', hi:'तस्वीर पूरी करो!', gu:'ચિત્ર પૂરું કરો!'};
+  setTimeout(() => speak(p), 300);
+}
+
+/* ── Reference image ── */
+function renderReference() {
+  const grid = document.getElementById('reference-grid');
+  const sz   = Math.round(cellSize() * .48);
+  grid.style.gridTemplateColumns = `repeat(${cols()}, ${sz}px)`;
+  grid.innerHTML = '';
+  const scene = getScene();
+  for (let r = 0; r < rows(); r++) {
+    for (let c = 0; c < cols(); c++) {
+      const cell = document.createElement('div');
+      cell.className = 'ref-cell';
+      cell.style.width = cell.style.height = sz + 'px';
+      cell.style.fontSize = Math.floor(sz * .7) + 'px';
+      cell.textContent = scene.grid[r][c];
+      grid.appendChild(cell);
+    }
+  }
+}
+
+/* ── Board ── */
+function renderBoard() {
+  const board = document.getElementById('puzzle-board');
+  const cs    = cellSize();
+  board.style.gridTemplateColumns = `repeat(${cols()}, ${cs}px)`;
+  board.innerHTML = '';
+  for (let r = 0; r < rows(); r++) {
+    for (let c = 0; c < cols(); c++) {
+      const slot = document.createElement('div');
+      slot.className = 'puzzle-slot';
+      slot.style.width = slot.style.height = cs + 'px';
+      slot.style.fontSize = Math.floor(cs * .65) + 'px';
+      slot.dataset.r = r; slot.dataset.c = c;
+      if (placedMap[`${r},${c}`]) {
+        slot.classList.add('filled');
+        slot.textContent = getScene().grid[r][c];
+      } else {
+        slot.classList.add('empty');
+        slot.textContent = '?';
+        slot.addEventListener('click', () => onSlotClick(r, c));
+      }
+      board.appendChild(slot);
+    }
+  }
+}
+
+/* ── Tray ── */
+function renderTray() {
+  const tray = document.getElementById('pieces-tray');
+  const cs   = cellSize();
+  tray.innerHTML = '';
+  shuffled.forEach(piece => {
+    const div = document.createElement('div');
+    div.className = 'puzzle-piece';
+    div.id = 'piece-' + piece.id;
+    div.style.width = div.style.height = cs + 'px';
+    div.style.fontSize = Math.floor(cs * .65) + 'px';
+    div.dataset.id = piece.id;
+    if (placedMap[`${piece.r},${piece.c}`]) div.classList.add('placed');
+    if (selectedPiece && selectedPiece.id === piece.id) div.classList.add('selected');
+    div.textContent = piece.emoji;
+    div.addEventListener('click', () => onPieceClick(piece));
+    tray.appendChild(div);
+  });
+}
+
+/* ── Piece click ── */
+function onPieceClick(piece) {
+  if (placedMap[`${piece.r},${piece.c}`]) return;
+  selectedPiece = piece;
+  setHint({en:'Now tap the correct spot on the board!', hi:'अब सही जगह पर टैप करो!', gu:'હવે સાચી જગ્યા પર ટૅપ કરો!'});
+  speak({en:`Picked ${piece.emoji}! Now find its spot.`, hi:`${piece.emoji} चुना! अब जगह ढूंढो।`, gu:`${piece.emoji} પસંદ કર્યો! હવે જગ્યા શોધો.`});
+  renderTray();
+}
+
+/* ── Slot click ── */
+function onSlotClick(r, c) {
+  if (!selectedPiece) {
+    setHint({en:'Pick a piece from below first!', hi:'पहले नीचे से टुकड़ा चुनो!', gu:'પહેલા નીચેથી ટુકડો પસંદ કરો!'});
+    speak({en:'Pick a piece first!', hi:'पहले टुकड़ा चुनो!', gu:'પહેલા ટુકડો પસંદ કરો!'});
+    return;
+  }
+  if (placedMap[`${r},${c}`]) return;
+
+  if (selectedPiece.r === r && selectedPiece.c === c) {
+    /* ─ Correct ─ */
+    placedMap[`${r},${c}`] = true;
+    const placed = Object.keys(placedMap).length;
+    updateProgress(placed, totalPieces);
+    document.getElementById('score-display').textContent = placed + '/' + totalPieces;
+
+    const slot = document.querySelector(`.puzzle-slot[data-r="${r}"][data-c="${c}"]`);
+    slot.classList.add('correct-flash');
+    setTimeout(() => slot.classList.remove('correct-flash'), 500);
+
+    speak({en:'Correct! Well placed!', hi:'सही! बढ़िया!', gu:'સાચું! ખૂબ સરસ!'});
+    clearHint();
+    selectedPiece = null;
+    renderBoard();
+    renderTray();
+
+    if (placed === totalPieces) {
+      setTimeout(() => showCompletion('jigsaw', mistakes, totalPieces), 600);
+    }
+  } else {
+    /* ─ Wrong ─ */
+    mistakes++;
+    const pieceDom = document.getElementById('piece-' + selectedPiece.id);
+    if (pieceDom) {
+      pieceDom.classList.remove('bounce');
+      void pieceDom.offsetWidth;
+      pieceDom.classList.add('bounce');
+      setTimeout(() => pieceDom.classList.remove('bounce'), 450);
+    }
+    const slot = document.querySelector(`.puzzle-slot[data-r="${r}"][data-c="${c}"]`);
+    if (slot) { slot.classList.add('wrong-shake'); setTimeout(()=>slot.classList.remove('wrong-shake'),400); }
+    speak({en:'Try again! That\'s not the right spot.', hi:'फिर से! यह सही जगह नहीं है।', gu:'ફરી પ્રયત્ન! આ સાચી જગ્યા નથી.'});
+    setHint({en:'Oops! Wrong spot. Try another!', hi:'उफ़! गलत जगह। दूसरी जगह आज़माओ!', gu:'ઓહ! ખોટી જગ્યા. બીજી જગ્યા અજમાવો!'});
+  }
+}
+
+function setHint(obj) { document.getElementById('hint-text').textContent = t(obj); }
+function clearHint()  { document.getElementById('hint-text').textContent = ''; }
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

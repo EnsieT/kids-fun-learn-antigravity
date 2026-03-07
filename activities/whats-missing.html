@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What's Missing?</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .item-card {
+      background: #fff;
+      border: 3px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 12px;
+      text-align: center;
+      transition: transform .3s, opacity .3s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .item-card .item-emoji { font-size: 3rem; line-height: 1; display: block; }
+    .item-card .item-name  { font-size: .78rem; font-weight: 800; color: #555; }
+
+    .item-card.missing {
+      background: #F3E5F5;
+      border: 3px dashed #9C27B0;
+      animation: pulse-missing 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse-missing { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+    .item-card.revealed { border-color: #4CAF50; background: #E8F5E9; }
+    @keyframes zoom-in { 0%{transform:scale(0) rotate(-10deg);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
+    .item-card.zoom-reveal { animation: zoom-in .5s ease forwards; }
+
+    .items-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 160px;
+    }
+
+    .choices-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 12px 16px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .choice-btn {
+      background: #fff;
+      border: 3px solid #ddd;
+      border-radius: 16px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 90px;
+      transition: transform .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .choice-btn:hover { transform: scale(1.1); border-color: #9C27B0; }
+    .choice-btn:active { transform: scale(0.95); }
+    .choice-btn .ch-emoji { font-size: 2.2rem; }
+    .choice-btn .ch-name  { font-size: .75rem; font-weight: 800; color: #555; }
+    .choice-btn.correct-choice { border-color: #4CAF50; background: #E8F5E9; }
+    .choice-btn.wrong-choice   { border-color: #F44336; background: #FFEBEE; }
+
+    .countdown-bar-wrap {
+      padding: 8px 24px;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .countdown-bar {
+      height: 12px;
+      background: #E0E0E0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .countdown-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50, #FFD700);
+      border-radius: 6px;
+      transition: width linear;
+    }
+    .countdown-text {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #FF8C00;
+    }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-8px)}
+      40%{transform:translateX(8px)}
+      60%{transform:translateX(-6px)}
+      80%{transform:translateX(6px)}
+    }
+    .shake { animation: shake .4s ease; }
+
+    #phase-label {
+      text-align: center;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #7B1FA2;
+      padding: 6px 0 0;
+    }
+
+    #round-label {
+      text-align: center;
+      font-size: .85rem;
+      color: #888;
+      padding: 2px 0 8px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <header class="activity-header">
+    <button class="back-btn" onclick="goHome()">🏠</button>
+    <h1>📸 What's Missing?</h1>
+  </header>
+
+  <div id="langSelector" class="language-selector">
+    <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+    <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+    <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+  </div>
+
+  <div class="progress-bar"><div id="progress-fill"></div></div>
+  <span id="score-display"></span>
+
+  <div id="game-area">
+    <div id="phase-label"></div>
+    <div id="round-label"></div>
+    <div id="items-grid" class="items-grid"></div>
+    <div id="countdown-bar-wrap" class="countdown-bar-wrap" style="display:none">
+      <div class="countdown-text" id="countdown-text"></div>
+      <div class="countdown-bar"><div class="countdown-fill" id="countdown-fill"></div></div>
+    </div>
+    <div id="choices-row" class="choices-row" style="display:none"></div>
+  </div>
+
+  <div id="completion-screen" class="completion-screen hidden">
+    <div class="completion-content">
+      <div id="completion-stars" class="completion-stars"></div>
+      <div id="completion-title" class="completion-title"></div>
+      <div id="completion-score"></div>
+      <div id="completion-best"></div>
+      <div class="completion-buttons">
+        <button onclick="restartGame()" class="btn-primary">🔄 Play Again</button>
+        <button onclick="goHome()" class="btn-secondary">🏠 Home</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="feedback-banner"></div>
+
+  <script src="../js/common.js"></script>
+  <script>
+    const ITEMS = [
+      { key:'cow',       emoji:'🐄', en:'Cow',       hi:'गाय',        gu:'ગાય' },
+      { key:'elephant',  emoji:'🐘', en:'Elephant',  hi:'हाथी',       gu:'હાથી' },
+      { key:'peacock',   emoji:'🦚', en:'Peacock',   hi:'मोर',        gu:'મોર' },
+      { key:'tiger',     emoji:'🐯', en:'Tiger',     hi:'बाघ',        gu:'વાઘ' },
+      { key:'butterfly', emoji:'🦋', en:'Butterfly', hi:'तितली',      gu:'પतंगिયું' },
+      { key:'frog',      emoji:'🐸', en:'Frog',      hi:'मेंढक',      gu:'દેડકો' },
+      { key:'mango',     emoji:'🥭', en:'Mango',     hi:'आम',         gu:'કेरी' },
+      { key:'banana',    emoji:'🍌', en:'Banana',    hi:'केला',       gu:'કेળું' },
+      { key:'apple',     emoji:'🍎', en:'Apple',     hi:'सेब',        gu:'સफरजन' },
+      { key:'coconut',   emoji:'🥥', en:'Coconut',   hi:'नारियल',     gu:'નाળियेर' },
+      { key:'diya',      emoji:'🪔', en:'Diya',      hi:'दिया',       gu:'દीवो' },
+      { key:'cricket',   emoji:'🏏', en:'Cricket',   hi:'क्रिकेट',   gu:'ક्रिकेट' },
+      { key:'flower',    emoji:'🌺', en:'Flower',    hi:'फूल',        gu:'ફूल' },
+      { key:'fireworks', emoji:'🎆', en:'Fireworks', hi:'आतिशबाजी',  gu:'ફटाकडा' },
+      { key:'star',      emoji:'⭐', en:'Star',       hi:'तारा',       gu:'તारो' },
+    ];
+
+    let round = 0;
+    let mistakes = 0;
+    let phase = 1;
+    let currentItems = [];
+    let missingItems = [];
+    let missingIndex = 0;
+    let mistakeThisRound = false;
+    const TOTAL_ROUNDS = 10;
+
+    function getDifficulty() {
+      if (round < 3) return 'easy';
+      if (round < 7) return 'medium';
+      return 'hard';
+    }
+    function getItemCount() { return {easy:4, medium:5, hard:6}[getDifficulty()]; }
+    function getMissingCount() { return getDifficulty() === 'hard' ? 2 : 1; }
+    function getMemoryTime() { return {easy:3000, medium:4000, hard:5000}[getDifficulty()]; }
+
+    function onLanguageChange() {
+      renderPhaseLabel();
+      if (phase === 1) {
+        renderItems(false);
+      } else {
+        renderItems(true);
+        renderChoices();
+      }
+    }
+
+    function renderPhaseLabel() {
+      const lang = getCurrentLanguage();
+      const phaseEl = document.getElementById('phase-label');
+      const roundEl = document.getElementById('round-label');
+      if (phase === 1) {
+        phaseEl.textContent = t({en:'Remember! 👀', hi:'याद करो! 👀', gu:'યાદ કરો! 👀'});
+      } else {
+        phaseEl.textContent = t({en:"What's missing? ❓", hi:'क्या गायब है? ❓', gu:'શું ગાયબ છે? ❓'});
+      }
+      roundEl.textContent = t({en:`Round ${round+1} of ${TOTAL_ROUNDS}`, hi:`राउंड ${round+1} / ${TOTAL_ROUNDS}`, gu:`રાઉન્ડ ${round+1} / ${TOTAL_ROUNDS}`});
+    }
+
+    function renderItems(hideNames) {
+      const grid = document.getElementById('items-grid');
+      grid.innerHTML = '';
+      currentItems.forEach((item, idx) => {
+        const isMissingNow = phase === 2 && missingItems.slice(missingIndex).some(m => m.key === item.key);
+        const card = document.createElement('div');
+        card.className = 'item-card' + (isMissingNow ? ' missing' : '');
+        card.id = 'card-' + item.key;
+        const emojiSpan = document.createElement('span');
+        emojiSpan.className = 'item-emoji';
+        emojiSpan.textContent = isMissingNow ? '❓' : item.emoji;
+        card.appendChild(emojiSpan);
+        if (!hideNames || isMissingNow) {
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'item-name';
+          nameSpan.textContent = isMissingNow ? '?' : item[getCurrentLanguage()];
+          card.appendChild(nameSpan);
+        }
+        grid.appendChild(card);
+      });
+    }
+
+    function generateChoices(targetItem) {
+      const distractors = shuffle(
+        ITEMS.filter(i => !currentItems.some(c => c.key === i.key) && i.key !== targetItem.key)
+      ).slice(0, 3);
+      return shuffle([targetItem, ...distractors]);
+    }
+
+    function renderChoices() {
+      const row = document.getElementById('choices-row');
+      row.style.display = 'flex';
+      row.innerHTML = '';
+      const target = missingItems[missingIndex];
+      const choices = generateChoices(target);
+      choices.forEach(item => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.innerHTML = `<span class="ch-emoji">${item.emoji}</span><span class="ch-name">${item[getCurrentLanguage()]}</span>`;
+        btn.addEventListener('click', () => handleChoice(item, btn));
+        row.appendChild(btn);
+      });
+    }
+
+    let answerLocked = false;
+
+    function handleChoice(item, btn) {
+      if (answerLocked) return;
+      const target = missingItems[missingIndex];
+      if (item.key === target.key) {
+        answerLocked = true;
+        btn.classList.add('correct-choice');
+        showFeedback(true);
+        speak({en:'Great memory! 🌟', hi:'शानदार याददाश्त! 🌟', gu:'અદ્ભુત યાદ! 🌟'});
+        launchConfetti();
+
+        const card = document.getElementById('card-' + target.key);
+        if (card) {
+          card.className = 'item-card revealed zoom-reveal';
+          const emojiEl = card.querySelector('.item-emoji');
+          if (emojiEl) emojiEl.textContent = target.emoji;
+          const nameEl = card.querySelector('.item-name');
+          if (!nameEl) {
+            const ns = document.createElement('span');
+            ns.className = 'item-name';
+            ns.textContent = target[getCurrentLanguage()];
+            card.appendChild(ns);
+          } else {
+            nameEl.textContent = target[getCurrentLanguage()];
+          }
+        }
+
+        setTimeout(() => {
+          hideFeedback();
+          if (getDifficulty() === 'hard' && missingIndex === 0 && missingItems.length > 1) {
+            missingIndex = 1;
+            answerLocked = false;
+            renderItems(true);
+            renderChoices();
+            speak({en:"What's missing?", hi:'क्या गायब है?', gu:'શું ગાયબ છે?'});
+          } else {
+            if (!mistakeThisRound) {
+            } else {
+              mistakes++;
+            }
+            advanceRound();
+          }
+        }, 1200);
+      } else {
+        if (!mistakeThisRound) {
+          mistakeThisRound = true;
+        }
+        btn.classList.add('wrong-choice');
+        showFeedback(false);
+        speak({en:'Think again!', hi:'फिर सोचो!', gu:'ફરી વિચારો!'});
+        const row = document.getElementById('choices-row');
+        row.classList.add('shake');
+        row.addEventListener('animationend', () => row.classList.remove('shake'), {once:true});
+        setTimeout(() => {
+          btn.classList.remove('wrong-choice');
+          hideFeedback();
+        }, 800);
+      }
+    }
+
+    function advanceRound() {
+      if (mistakeThisRound) mistakes++;
+      round++;
+      updateProgress(round, TOTAL_ROUNDS);
+      document.getElementById('score-display').textContent =
+        t({en:`Round ${round}/${TOTAL_ROUNDS}`, hi:`राउंड ${round}/${TOTAL_ROUNDS}`, gu:`રાઉન્ડ ${round}/${TOTAL_ROUNDS}`});
+      if (round >= TOTAL_ROUNDS) {
+        endGame();
+      } else {
+        startRound();
+      }
+    }
+
+    function startRound() {
+      phase = 1;
+      mistakeThisRound = false;
+      missingIndex = 0;
+      answerLocked = false;
+
+      const itemCount = getItemCount();
+      const missingCount = getMissingCount();
+      const shuffled = shuffle([...ITEMS]);
+      currentItems = shuffled.slice(0, itemCount);
+      missingItems = shuffle([...currentItems]).slice(0, missingCount);
+
+      document.getElementById('choices-row').style.display = 'none';
+      document.getElementById('choices-row').innerHTML = '';
+      document.getElementById('countdown-bar-wrap').style.display = 'block';
+
+      renderPhaseLabel();
+      renderItems(false);
+
+      setTimeout(() => speak({en:'Remember these!', hi:'इन्हें याद करो!', gu:'આ યાદ કરો!'}), 300);
+      currentItems.forEach((item, i) => {
+        setTimeout(() => speak(item), 800 * i + 800);
+      });
+
+      startCountdown(getMemoryTime(), () => {
+        document.getElementById('countdown-bar-wrap').style.display = 'none';
+        phase = 2;
+        renderPhaseLabel();
+        renderItems(true);
+        speak({en:"What's missing?", hi:'क्या गायब है?', gu:'શું ગાયબ છે?'});
+        renderChoices();
+      });
+    }
+
+    function startCountdown(durationMs, onComplete) {
+      const fill = document.getElementById('countdown-fill');
+      const text = document.getElementById('countdown-text');
+      fill.style.transition = 'none';
+      fill.style.width = '100%';
+      let remaining = Math.ceil(durationMs / 1000);
+      if (text) text.textContent = remaining;
+
+      setTimeout(() => {
+        fill.style.transition = `width ${durationMs}ms linear`;
+        fill.style.width = '0%';
+      }, 100);
+
+      const tick = setInterval(() => {
+        remaining--;
+        if (text) text.textContent = remaining > 0 ? remaining : '';
+        if (remaining <= 0) clearInterval(tick);
+      }, 1000);
+
+      setTimeout(onComplete, durationMs + 200);
+    }
+
+    function endGame() {
+      saveBestScore('whats-missing', mistakes);
+      showCompletion('whats-missing', mistakes, TOTAL_ROUNDS);
+    }
+
+    function restartGame() {
+      round = 0;
+      mistakes = 0;
+      phase = 1;
+      missingIndex = 0;
+      mistakeThisRound = false;
+      currentItems = [];
+      missingItems = [];
+      answerLocked = false;
+
+      const cs = document.getElementById('completion-screen');
+      cs.classList.add('hidden');
+      document.getElementById('game-area').style.display = '';
+
+      updateProgress(0, TOTAL_ROUNDS);
+      document.getElementById('score-display').textContent = '';
+      startRound();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initLanguageSelector();
+      updateProgress(0, TOTAL_ROUNDS);
+      startRound();
+    });
+  </script>
+</body>
+</html>

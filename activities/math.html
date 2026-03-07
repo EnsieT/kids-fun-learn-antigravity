@@ -16,6 +16,12 @@
   <span class="score-display" id="score-display">0/10</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
     <p class="question-text" id="question-text">जवाब क्या है? What is the answer?</p>
@@ -41,12 +47,15 @@
 <script>
 const MATH_OBJECTS = ['🥭','🍌','🥥','🍐','🍎','🐘','🦚','🌸','⭐','🪔'];
 const HINDI_NUMS = ['शून्य','एक','दो','तीन','चार','पाँच','छः','सात','आठ','नौ','दस'];
+const GUJARATI_NUMS = ['શૂન્ય','એક','બે','ત્રણ','ચાર','પાંચ','છ','સાત','આઠ','નવ','દસ'];
 
 const TOTAL_ROUNDS = 10;
 let round = 0, mistakes = 0, answered = false, correctAnswer = 0;
-let currentPrompt = '';
+let currentPrompt = {};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   round = 0; mistakes = 0; answered = false;
@@ -89,14 +98,22 @@ function nextRound() {
   `;
 
   document.getElementById('question-text').textContent =
-    `${a} ${op} ${b} = ?`;
+    t({en: `Solve it! ${a} ${op} ${b} = ?`, hi: `${a} ${op} ${b} = ?`, gu: `${a} ${op} ${b} = ?`});
 
   if (isAdd) {
-    currentPrompt = HINDI_NUMS[a] + ' और ' + HINDI_NUMS[b] + ', कितने हुए?';
+    currentPrompt = {
+      en:  a + ' plus ' + b + ', how many?',
+      hi: HINDI_NUMS[a] + ' और ' + HINDI_NUMS[b] + ', कितने हुए?',
+      gu: GUJARATI_NUMS[a] + ' અને ' + GUJARATI_NUMS[b] + ', કેટલા થયા?'
+    };
   } else {
-    currentPrompt = HINDI_NUMS[a] + ' में से ' + HINDI_NUMS[b] + ' घटाओ, कितने बचे?';
+    currentPrompt = {
+      en:  a + ' minus ' + b + ', how many remain?',
+      hi: HINDI_NUMS[a] + ' में से ' + HINDI_NUMS[b] + ' घटाओ, कितने बचे?',
+      gu: GUJARATI_NUMS[a] + ' માંથી ' + GUJARATI_NUMS[b] + ' બાદ કરો, કેટલા બચ્યા?'
+    };
   }
-  speakHindi(currentPrompt);
+  speak(currentPrompt);
 
   // Generate choices
   const wrong = new Set();
@@ -134,7 +151,7 @@ function handleChoice(btn, value) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

@@ -92,6 +92,12 @@
   <span class="score-display" id="score-display">0/8</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
     <p class="question-text" id="question-text">मिलाओ! Match them!</p>
@@ -130,46 +136,50 @@
 const ROUND_TYPES = [
   {
     titleHi: '🐄 जानवर और आवाज़',
-    titleEn: 'Animals & Sounds',
+    titleEn: '🐄 Animals & Sounds',
+    titleGu: '🐄 પ્રાણી અને અવાજ',
     pairs: [
-      {left:{emoji:'🐄',hi:'गाय',en:'Cow'},     right:{emoji:'🐮',hi:'मू',en:'Moo'}},
-      {left:{emoji:'🐕',hi:'कुत्ता',en:'Dog'},  right:{emoji:'🔔',hi:'भौं भौं',en:'Woof'}},
-      {left:{emoji:'🐈',hi:'बिल्ली',en:'Cat'},  right:{emoji:'🎵',hi:'म्याऊं',en:'Meow'}},
-      {left:{emoji:'🦁',hi:'शेर',en:'Lion'},     right:{emoji:'💥',hi:'दहाड़',en:'Roar'}},
-      {left:{emoji:'🐘',hi:'हाथी',en:'Elephant'},right:{emoji:'📢',hi:'चिंघाड़',en:'Trumpet'}},
+      {left:{emoji:'🐄',hi:'गाय',en:'Cow',gu:'ગાય'},         right:{emoji:'🐮',hi:'मू',en:'Moo',gu:'મૂ'}},
+      {left:{emoji:'🐕',hi:'कुत्ता',en:'Dog',gu:'કૂતરો'},    right:{emoji:'🔔',hi:'भौं भौं',en:'Woof',gu:'ભૌ ભૌ'}},
+      {left:{emoji:'🐈',hi:'बिल्ली',en:'Cat',gu:'બિલાડી'},   right:{emoji:'🎵',hi:'म्याऊं',en:'Meow',gu:'મ્યાઉ'}},
+      {left:{emoji:'🦁',hi:'शेर',en:'Lion',gu:'સિંહ'},        right:{emoji:'💥',hi:'दहाड़',en:'Roar',gu:'ગર્જના'}},
+      {left:{emoji:'🐘',hi:'हाथी',en:'Elephant',gu:'હાથી'},   right:{emoji:'📢',hi:'चिंघाड़',en:'Trumpet',gu:'ત્રાંસો'}},
     ]
   },
   {
     titleHi: '🥭 फल और रंग',
-    titleEn: 'Fruits & Colors',
+    titleEn: '🥭 Fruits & Colors',
+    titleGu: '🥭 ફળ અને રંગ',
     pairs: [
-      {left:{emoji:'🥭',hi:'आम',en:'Mango'},       right:{emoji:'🟡',hi:'पीला',en:'Yellow'}},
-      {left:{emoji:'🍎',hi:'सेब',en:'Apple'},       right:{emoji:'🔴',hi:'लाल',en:'Red'}},
-      {left:{emoji:'🍌',hi:'केला',en:'Banana'},      right:{emoji:'🟡',hi:'पीला',en:'Yellow'}},
-      {left:{emoji:'🍊',hi:'संतरा',en:'Orange'},    right:{emoji:'🟠',hi:'नारंगी',en:'Orange'}},
-      {left:{emoji:'🍇',hi:'अंगूर',en:'Grapes'},    right:{emoji:'🟣',hi:'बैंगनी',en:'Purple'}},
+      {left:{emoji:'🥭',hi:'आम',en:'Mango',gu:'કેરી'},         right:{emoji:'🟡',hi:'पीला',en:'Yellow',gu:'પીળો'}},
+      {left:{emoji:'🍎',hi:'सेब',en:'Apple',gu:'સફરજન'},       right:{emoji:'🔴',hi:'लाल',en:'Red',gu:'લાલ'}},
+      {left:{emoji:'🍌',hi:'केला',en:'Banana',gu:'કેળું'},      right:{emoji:'🟡',hi:'पीला',en:'Yellow',gu:'પીળો'}},
+      {left:{emoji:'🍊',hi:'संतरा',en:'Orange',gu:'નારંગી'},   right:{emoji:'🟠',hi:'नारंगी',en:'Orange',gu:'નારંગી'}},
+      {left:{emoji:'🍇',hi:'अंगूर',en:'Grapes',gu:'દ્રાક્ષ'}, right:{emoji:'🟣',hi:'बैंगनी',en:'Purple',gu:'જાંબલી'}},
     ]
   },
   {
     titleHi: '🔢 संख्या और बिंदु',
-    titleEn: 'Numbers & Dots',
+    titleEn: '🔢 Numbers & Dots',
+    titleGu: '🔢 સંખ્યા અને ટપકાં',
     pairs: [
-      {left:{emoji:'1️⃣',hi:'एक',en:'One'},   right:{emoji:'⚫',hi:'एक बिंदु',en:'1 dot'}},
-      {left:{emoji:'2️⃣',hi:'दो',en:'Two'},   right:{emoji:'⚫⚫',hi:'दो बिंदु',en:'2 dots'}},
-      {left:{emoji:'3️⃣',hi:'तीन',en:'Three'},right:{emoji:'⚫⚫⚫',hi:'तीन बिंदु',en:'3 dots'}},
-      {left:{emoji:'4️⃣',hi:'चार',en:'Four'}, right:{emoji:'⚫⚫⚫⚫',hi:'चार बिंदु',en:'4 dots'}},
-      {left:{emoji:'5️⃣',hi:'पाँच',en:'Five'},right:{emoji:'⚫⚫⚫⚫⚫',hi:'पाँच बिंदु',en:'5 dots'}},
+      {left:{emoji:'1️⃣',hi:'एक',en:'One',gu:'એક'},     right:{emoji:'⚫',hi:'एक बिंदु',en:'1 dot',gu:'1 ટપકું'}},
+      {left:{emoji:'2️⃣',hi:'दो',en:'Two',gu:'બે'},      right:{emoji:'⚫⚫',hi:'दो बिंदु',en:'2 dots',gu:'2 ટપકાં'}},
+      {left:{emoji:'3️⃣',hi:'तीन',en:'Three',gu:'ત્રણ'}, right:{emoji:'⚫⚫⚫',hi:'तीन बिंदु',en:'3 dots',gu:'3 ટપકાં'}},
+      {left:{emoji:'4️⃣',hi:'चार',en:'Four',gu:'ચાર'},   right:{emoji:'⚫⚫⚫⚫',hi:'चार बिंदु',en:'4 dots',gu:'4 ટપકાં'}},
+      {left:{emoji:'5️⃣',hi:'पाँच',en:'Five',gu:'પાંચ'}, right:{emoji:'⚫⚫⚫⚫⚫',hi:'पाँच बिंदु',en:'5 dots',gu:'5 ટપકાં'}},
     ]
   },
   {
     titleHi: '🌍 चीज़ें और श्रेणी',
-    titleEn: 'Things & Categories',
+    titleEn: '🌍 Things & Categories',
+    titleGu: '🌍 વસ્તુ અને શ્રેણી',
     pairs: [
-      {left:{emoji:'🥭',hi:'आम',en:'Mango'},   right:{emoji:'🍽️',hi:'फल',en:'Fruit'}},
-      {left:{emoji:'🥔',hi:'आलू',en:'Potato'}, right:{emoji:'🥗',hi:'सब्ज़ी',en:'Veggie'}},
-      {left:{emoji:'🐄',hi:'गाय',en:'Cow'},     right:{emoji:'🐾',hi:'जानवर',en:'Animal'}},
-      {left:{emoji:'🚗',hi:'कार',en:'Car'},     right:{emoji:'🛣️',hi:'वाहन',en:'Vehicle'}},
-      {left:{emoji:'📚',hi:'किताब',en:'Book'},  right:{emoji:'✏️',hi:'पढ़ाई',en:'Study'}},
+      {left:{emoji:'🥭',hi:'आम',en:'Mango',gu:'કેરી'},     right:{emoji:'🍽️',hi:'फल',en:'Fruit',gu:'ફળ'}},
+      {left:{emoji:'🥔',hi:'आलू',en:'Potato',gu:'બટાટા'}, right:{emoji:'🥗',hi:'सब्ज़ी',en:'Veggie',gu:'શાક'}},
+      {left:{emoji:'🐄',hi:'गाय',en:'Cow',gu:'ગાય'},       right:{emoji:'🐾',hi:'जानवर',en:'Animal',gu:'પ્રાણી'}},
+      {left:{emoji:'🚗',hi:'कार',en:'Car',gu:'ગાડી'},      right:{emoji:'🛣️',hi:'वाहन',en:'Vehicle',gu:'વાહન'}},
+      {left:{emoji:'📚',hi:'किताब',en:'Book',gu:'ચોપડી'}, right:{emoji:'✏️',hi:'पढ़ाई',en:'Study',gu:'ભણતર'}},
     ]
   },
 ];
@@ -181,10 +191,12 @@ let selectedLeft = null;
 let matchedPairs = 0;
 let totalPairs = 0;
 let currentPairs = [];
-let currentPrompt = 'मिलाओ!';
-const PROMPT_SELECT_LEFT = 'पहले बाईं तरफ से चुनो!';
+let currentPrompt = {en: 'Match them!', hi: 'मिलाओ!', gu: 'મેળવો!'};
+const PROMPT_SELECT_LEFT = {en: 'Pick from the left side first!', hi: 'पहले बाईं तरफ से चुनो!', gu: 'પહેલા ડાબી બાજુ થી પસંદ કરો!'};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   round = 0; mistakes = 0; selectedLeft = null;
@@ -211,8 +223,8 @@ function nextRound() {
   updateProgress(round, TOTAL_ROUNDS);
 
   const rt = roundsQueue[round];
-  document.getElementById('round-badge').textContent = rt.titleHi;
-  currentPrompt = rt.titleHi.replace(/^[^\s]+ /, '') + '! मिलाओ!';
+  document.getElementById('round-badge').textContent = t({en: rt.titleEn, hi: rt.titleHi, gu: rt.titleGu});
+  currentPrompt = {en: rt.titleEn + '! Match them!', hi: rt.titleHi + '! मिलाओ!', gu: rt.titleGu + '! મેળવો!'};
 
   // Pick 4 pairs from this round type
   currentPairs = shuffle([...rt.pairs]).slice(0, 4);
@@ -227,7 +239,7 @@ function nextRound() {
   renderColumn('left-col',  leftItems,  true);
   renderColumn('right-col', rightItems, false);
 
-  speakHindi(currentPrompt);
+  speak(currentPrompt);
 }
 
 function renderColumn(colId, items, isLeft) {
@@ -242,7 +254,9 @@ function renderColumn(colId, items, isLeft) {
     div.className = 'match-item';
     div.dataset.emoji = item.emoji;
     div.dataset.hi    = item.hi;
-    div.innerHTML = `<span>${item.emoji}</span><span class="match-item-label">${item.hi}</span>`;
+    div.dataset.en    = item.en;
+    div.dataset.gu    = item.gu || item.en;
+    div.innerHTML = `<span>${item.emoji}</span><span class="match-item-label">${t(item)}</span>`;
     div.onclick = () => isLeft ? handleLeftTap(div) : handleRightTap(div);
     col.appendChild(div);
   });
@@ -255,13 +269,13 @@ function handleLeftTap(el) {
     .forEach(e => e.classList.remove('selected'));
   selectedLeft = el;
   el.classList.add('selected');
-  speakHindi(el.dataset.hi);
+  speak({en: el.dataset.en, hi: el.dataset.hi, gu: el.dataset.gu});
   hideFeedback();
 }
 
 function handleRightTap(el) {
   if (!selectedLeft) {
-    speakHindi(PROMPT_SELECT_LEFT);
+    speak(PROMPT_SELECT_LEFT);
     return;
   }
   if (el.classList.contains('matched')) return;
@@ -280,7 +294,7 @@ function handleRightTap(el) {
     selectedLeft = null;
     matchedPairs++;
     showFeedback(true);
-    speakHindi('सही!');
+    speak({en: 'Correct!', hi: 'सही!', gu: 'સાચું!'});
     if (matchedPairs >= totalPairs) {
       round++;
       setTimeout(() => { hideFeedback(); nextRound(); }, 1600);
@@ -319,7 +333,7 @@ function drawConnector(leftEl, rightEl) {
   svg.appendChild(line);
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

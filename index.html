@@ -8,20 +8,20 @@
 <style>
   body { padding-bottom: 32px; }
   .hero-tagline { font-size: 1.1rem; margin-top: 6px; }
-  .section-label {
-    font-size: 1rem;
-    font-weight: 900;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 16px;
+  .total-stars-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.2);
     border-radius: 50px;
+    padding: 8px 24px;
+    margin: 12px auto 0;
+    max-width: 320px;
+    font-size: 1.1rem;
+    font-weight: 900;
     color: #fff;
-    display: inline-block;
-    margin-bottom: 16px;
   }
-  .label-4 { background: #2196F3; }
-  .label-5 { background: #4CAF50; }
-  .label-56 { background: #9C27B0; }
   footer {
     text-align: center;
     padding: 24px;
@@ -35,110 +35,232 @@
 <canvas id="confetti-canvas"></canvas>
 
 <header class="site-header">
+  <div id="langSelector" class="language-selector">
+    <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
+    <button class="lang-btn" data-lang="hi">🇮🇳 हिन्दी</button>
+    <button class="lang-btn" data-lang="gu">🇮🇳 ગુજરાતી</button>
+  </div>
   <span class="home-emoji">🎓</span>
   <h1>Kids Fun Learn</h1>
-  <p class="hero-tagline">मज़ेदार शिक्षा · Fun Education for Ages 4–6</p>
-  <div class="voice-badge">🔊 आवाज़ के साथ! With voice!</div>
+  <p class="hero-tagline" id="hero-tagline">Fun Education for Ages 4–6</p>
+  <div class="voice-badge">🔊 <span id="voice-badge-text">With voice!</span></div>
+  <div class="total-stars-bar">⭐ <span id="total-stars-count">0</span> <span id="total-stars-label">stars earned</span></div>
 </header>
 
 <main class="container">
 
-  <!-- Age 4+ -->
+  <!-- ===== Existing Activities ===== -->
   <section class="age-section">
-    <span class="section-label label-4">🧒 Age 4+</span>
+    <span class="section-label label-4">🧒 <span class="lbl-age4">Age 4+</span></span>
     <div class="cards-grid">
 
       <a href="activities/counting.html" class="activity-card card-counting">
         <span class="card-emoji">🔢</span>
-        <span class="card-title">Counting Game</span>
-        <span class="card-subtitle">गिनती सीखो</span>
+        <span class="card-title lbl-counting">Counting Game</span>
+        <span class="card-subtitle lbl-counting-sub">गिनती सीखो · ગણવા શીખો</span>
         <span class="card-stars" id="stars-counting"></span>
       </a>
 
       <a href="activities/identify-fruits.html" class="activity-card card-fruits">
         <span class="card-emoji">🥭</span>
-        <span class="card-title">Fruits & Veggies</span>
-        <span class="card-subtitle">फल और सब्ज़ी</span>
+        <span class="card-title lbl-fruits">Fruits &amp; Veggies</span>
+        <span class="card-subtitle lbl-fruits-sub">फल और सब्ज़ी · ફળ અને શાક</span>
         <span class="card-stars" id="stars-identify-fruits"></span>
       </a>
 
       <a href="activities/identify-animals.html" class="activity-card card-animals">
         <span class="card-emoji">🐘</span>
-        <span class="card-title">Animal Fun</span>
-        <span class="card-subtitle">जानवर पहचानो</span>
+        <span class="card-title lbl-animals">Animal Fun</span>
+        <span class="card-subtitle lbl-animals-sub">जानवर पहचानो · પ્રાણી ઓળખો</span>
         <span class="card-stars" id="stars-identify-animals"></span>
       </a>
 
       <a href="activities/color-by-number.html" class="activity-card card-color">
         <span class="card-emoji">🎨</span>
-        <span class="card-title">Color by Number</span>
-        <span class="card-subtitle">रंग भरो</span>
+        <span class="card-title lbl-color">Color by Number</span>
+        <span class="card-subtitle lbl-color-sub">रंग भरो · રંગ ભરો</span>
         <span class="card-stars" id="stars-color-by-number"></span>
       </a>
 
     </div>
   </section>
 
-  <!-- Age 5+ -->
   <section class="age-section">
-    <span class="section-label label-5">🧒 Age 5+</span>
+    <span class="section-label label-5">🧒 <span class="lbl-age5">Age 5+</span></span>
     <div class="cards-grid">
 
       <a href="activities/shape-matching.html" class="activity-card card-shapes">
         <span class="card-emoji">🔷</span>
-        <span class="card-title">Shape Matching</span>
-        <span class="card-subtitle">आकार मिलाओ</span>
+        <span class="card-title lbl-shapes">Shape Matching</span>
+        <span class="card-subtitle lbl-shapes-sub">आकार मिलाओ · આકાર મેળવો</span>
         <span class="card-stars" id="stars-shape-matching"></span>
       </a>
 
       <a href="activities/odd-one-out.html" class="activity-card card-odd">
         <span class="card-emoji">🔀</span>
-        <span class="card-title">Odd One Out</span>
-        <span class="card-subtitle">अलग कौन है?</span>
+        <span class="card-title lbl-odd">Odd One Out</span>
+        <span class="card-subtitle lbl-odd-sub">अलग कौन है? · કયું અલગ છે?</span>
         <span class="card-stars" id="stars-odd-one-out"></span>
       </a>
 
       <a href="activities/match-columns.html" class="activity-card card-match-columns">
         <span class="card-emoji">🔗</span>
-        <span class="card-title">Match Columns</span>
-        <span class="card-subtitle">मिलाओ</span>
+        <span class="card-title lbl-match">Match Columns</span>
+        <span class="card-subtitle lbl-match-sub">मिलाओ · મેળવો</span>
         <span class="card-stars" id="stars-match-columns"></span>
       </a>
 
       <a href="activities/memory-game.html" class="activity-card card-memory">
         <span class="card-emoji">🃏</span>
-        <span class="card-title">Memory Game</span>
-        <span class="card-subtitle">जोड़ी ढूंढो</span>
+        <span class="card-title lbl-memory">Memory Game</span>
+        <span class="card-subtitle lbl-memory-sub">जोड़ी ढूंढो · જોડી શોધો</span>
         <span class="card-stars" id="stars-memory-game"></span>
       </a>
 
       <a href="activities/sorting-game.html" class="activity-card card-sorting">
         <span class="card-emoji">🧺</span>
-        <span class="card-title">Sort into Baskets</span>
-        <span class="card-subtitle">टोकरी में डालो</span>
+        <span class="card-title lbl-sort">Sort into Baskets</span>
+        <span class="card-subtitle lbl-sort-sub">टोकरी में डालो · ટોપલામાં નાખો</span>
         <span class="card-stars" id="stars-sorting-game"></span>
       </a>
 
     </div>
   </section>
 
-  <!-- Age 5–6 -->
   <section class="age-section">
-    <span class="section-label label-56">🧒 Age 5–6</span>
+    <span class="section-label label-56">🧒 <span class="lbl-age56">Age 5–6</span></span>
     <div class="cards-grid">
 
       <a href="activities/pattern.html" class="activity-card card-pattern">
         <span class="card-emoji">📐</span>
-        <span class="card-title">Pattern Game</span>
-        <span class="card-subtitle">पैटर्न पूरा करो</span>
+        <span class="card-title lbl-pattern">Pattern Game</span>
+        <span class="card-subtitle lbl-pattern-sub">पैटर्न पूरा करो · પેટર્ન પૂરો કરો</span>
         <span class="card-stars" id="stars-pattern"></span>
       </a>
 
       <a href="activities/math.html" class="activity-card card-math">
         <span class="card-emoji">➕</span>
-        <span class="card-title">Simple Math</span>
-        <span class="card-subtitle">जोड़ और घटाव</span>
+        <span class="card-title lbl-math">Simple Math</span>
+        <span class="card-subtitle lbl-math-sub">जोड़ और घटाव · સરવાળા અને બાદ</span>
         <span class="card-stars" id="stars-math"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ===== New Activities ===== -->
+
+  <!-- 🧠 Brain Games -->
+  <section class="category-section">
+    <span class="category-label cat-brain">🧠 <span class="lbl-cat-brain">Brain Games</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/maze.html" class="activity-card card-maze">
+        <span class="card-emoji">🌀</span>
+        <span class="card-title lbl-maze">Maze</span>
+        <span class="card-subtitle">भूलभुलैया · ભૂલભૂલૈયા</span>
+        <span class="card-stars" id="stars-maze"></span>
+      </a>
+
+      <a href="activities/tower-build.html" class="activity-card card-tower">
+        <span class="card-emoji">🧱</span>
+        <span class="card-title lbl-tower">Tower Build</span>
+        <span class="card-subtitle">टॉवर बनाओ · ટાવર બનાવો</span>
+        <span class="card-stars" id="stars-tower-build"></span>
+      </a>
+
+      <a href="activities/jigsaw.html" class="activity-card card-jigsaw">
+        <span class="card-emoji">🧩</span>
+        <span class="card-title lbl-jigsaw">Jigsaw Puzzle</span>
+        <span class="card-subtitle">पहेली · કોયડો</span>
+        <span class="card-stars" id="stars-jigsaw"></span>
+      </a>
+
+      <a href="activities/number-line.html" class="activity-card card-numline">
+        <span class="card-emoji">🔢</span>
+        <span class="card-title lbl-numline">Number Line Jump</span>
+        <span class="card-subtitle">संख्या पर कूदो · સંખ્યા પર કૂદો</span>
+        <span class="card-stars" id="stars-number-line"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- 🎨 Creative -->
+  <section class="category-section">
+    <span class="category-label cat-creative">🎨 <span class="lbl-cat-creative">Creative</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/drawing.html" class="activity-card card-drawing">
+        <span class="card-emoji">🖌️</span>
+        <span class="card-title lbl-drawing">Free Drawing</span>
+        <span class="card-subtitle">चित्र बनाओ · ચિત્ર દોરો</span>
+        <span class="card-stars" id="stars-drawing"></span>
+      </a>
+
+      <a href="activities/dress-up.html" class="activity-card card-dressup">
+        <span class="card-emoji">👗</span>
+        <span class="card-title lbl-dressup">Festival Dress-Up</span>
+        <span class="card-subtitle">त्योहार · તહેવાર</span>
+        <span class="card-stars" id="stars-dress-up"></span>
+      </a>
+
+      <a href="activities/music.html" class="activity-card card-music">
+        <span class="card-emoji">🎵</span>
+        <span class="card-title lbl-music">Music Maker</span>
+        <span class="card-subtitle">संगीत · સંગીત</span>
+        <span class="card-stars" id="stars-music"></span>
+      </a>
+
+      <a href="activities/thali.html" class="activity-card card-thali">
+        <span class="card-emoji">🥗</span>
+        <span class="card-title lbl-thali">Make a Thali</span>
+        <span class="card-subtitle">थाली बनाओ · થાળી બનાવો</span>
+        <span class="card-stars" id="stars-thali"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- 🌍 Real World -->
+  <section class="category-section">
+    <span class="category-label cat-world">🌍 <span class="lbl-cat-world">Real World</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/dukaan.html" class="activity-card card-dukaan">
+        <span class="card-emoji">🏪</span>
+        <span class="card-title lbl-dukaan">Little Dukaan</span>
+        <span class="card-subtitle">दुकान · દુકાન</span>
+        <span class="card-stars" id="stars-dukaan"></span>
+      </a>
+
+      <a href="activities/weather.html" class="activity-card card-weather">
+        <span class="card-emoji">🌤️</span>
+        <span class="card-title lbl-weather">Weather Dress-Up</span>
+        <span class="card-subtitle">मौसम के कपड़े · હવામાન</span>
+        <span class="card-stars" id="stars-weather"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- 👂 Listen & Learn -->
+  <section class="category-section">
+    <span class="category-label cat-listen">👂 <span class="lbl-cat-listen">Listen &amp; Learn</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/sound-bingo.html" class="activity-card card-soundbingo">
+        <span class="card-emoji">🎵</span>
+        <span class="card-title lbl-soundbingo">Sound Bingo</span>
+        <span class="card-subtitle">आवाज़ · અવાજ</span>
+        <span class="card-stars" id="stars-sound-bingo"></span>
+      </a>
+
+      <a href="activities/whats-missing.html" class="activity-card card-whatsmissing">
+        <span class="card-emoji">📸</span>
+        <span class="card-title lbl-missing">What's Missing?</span>
+        <span class="card-subtitle">क्या गायब है? · શું ગાયબ છે?</span>
+        <span class="card-stars" id="stars-whats-missing"></span>
       </a>
 
     </div>
@@ -147,15 +269,58 @@
 </main>
 
 <footer>
-  <p>Made with ❤️ for little learners · कोशिश करते रहो! Keep trying!</p>
+  <p id="footer-text">Made with ❤️ for little learners · Keep trying!</p>
 </footer>
 
 <script src="js/common.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    loadHomeStars();
-    speakHindi('नमस्ते! क्या खेलना है?');
-  });
+const HOME_LABELS = {
+  tagline:   {en:'Fun Education for Ages 4–6', hi:'मज़ेदार शिक्षा · आयु 4–6', gu:'મઝેદાર શિક્ષા · ઉંમર 4–6'},
+  voiceBadge:{en:'With voice!', hi:'आवाज़ के साथ!', gu:'અવાજ સાથે!'},
+  totalLbl:  {en:'stars earned', hi:'सितारे कमाए', gu:'સ્ટાર મેળવ્યા'},
+  greeting:  {en:"Hello! What do you want to play?", hi:'नमस्ते! क्या खेलना है?', gu:'નમસ્તે! શું રમવું છે?'},
+  footer:    {en:"Made with ❤️ for little learners · Keep trying!", hi:"छोटे सीखने वालों के लिए ❤️ · कोशिश करते रहो!", gu:"નાના શીખનારાઓ માટે ❤️ · પ્રયત્ન કરતા રહો!"},
+  age4:      {en:'Age 4+', hi:'आयु 4+', gu:'ઉંમર 4+'},
+  age5:      {en:'Age 5+', hi:'आयु 5+', gu:'ઉંમર 5+'},
+  age56:     {en:'Age 5–6', hi:'आयु 5–6', gu:'ઉંમર 5–6'},
+  catBrain:  {en:'Brain Games', hi:'दिमाग के खेल', gu:'દિમાગની રમત'},
+  catCreate: {en:'Creative', hi:'क्रिएटिव', gu:'સર્જનાત્મક'},
+  catWorld:  {en:'Real World', hi:'असली दुनिया', gu:'વાસ્તવિક દુનિયા'},
+  catListen: {en:'Listen & Learn', hi:'सुनो और सीखो', gu:'સાંભળો અને શીખો'},
+};
+
+function renderHomeLanguage() {
+  document.getElementById('hero-tagline').textContent   = t(HOME_LABELS.tagline);
+  document.getElementById('voice-badge-text').textContent = t(HOME_LABELS.voiceBadge);
+  document.getElementById('total-stars-label').textContent = t(HOME_LABELS.totalLbl);
+  document.getElementById('footer-text').textContent    = t(HOME_LABELS.footer);
+  document.querySelector('.lbl-age4').textContent   = t(HOME_LABELS.age4);
+  document.querySelector('.lbl-age5').textContent   = t(HOME_LABELS.age5);
+  document.querySelector('.lbl-age56').textContent  = t(HOME_LABELS.age56);
+  document.querySelector('.lbl-cat-brain').textContent   = t(HOME_LABELS.catBrain);
+  document.querySelector('.lbl-cat-creative').textContent = t(HOME_LABELS.catCreate);
+  document.querySelector('.lbl-cat-world').textContent   = t(HOME_LABELS.catWorld);
+  document.querySelector('.lbl-cat-listen').textContent  = t(HOME_LABELS.catListen);
+}
+
+function countTotalStars() {
+  const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
+  const total = Object.values(data).reduce((s, v) => s + v, 0);
+  document.getElementById('total-stars-count').textContent = total;
+}
+
+function onLanguageChange() {
+  renderHomeLanguage();
+  speak(HOME_LABELS.greeting);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initLanguageSelector();
+  renderHomeLanguage();
+  loadHomeStars();
+  countTotalStars();
+  speak(HOME_LABELS.greeting);
+});
 </script>
 </body>
 </html>

@@ -16,9 +16,15 @@
   <span class="score-display" id="score-display">0/10</span>
 </header>
 
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
 <div id="game-area">
   <div class="question-area">
-    <p class="question-text">आगे क्या आएगा? What comes next? 👇</p>
+    <p class="question-text" id="question-text">What comes next? 👇</p>
     <button class="hear-btn" onclick="hearAgain()" aria-label="आवाज़ सुनो">🔊</button>
   </div>
 
@@ -84,9 +90,11 @@ function generatePatterns() {
 let allPatterns = [];
 const TOTAL_ROUNDS = 10;
 let round = 0, mistakes = 0, answered = false;
-const currentPrompt = 'आगे क्या आएगा?';
+const currentPrompt = {en: 'What comes next?', hi: 'आगे क्या आएगा?', gu: 'આગળ શું આવશે?'};
 
-function hearAgain() { speakHindi(currentPrompt); }
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() { initGame(); }
 
 function initGame() {
   round = 0; mistakes = 0; answered = false;
@@ -102,7 +110,8 @@ function nextRound() {
   answered = false;
   hideFeedback();
   updateProgress(round, TOTAL_ROUNDS);
-  speakHindi(currentPrompt);
+  document.getElementById('question-text').textContent = t(currentPrompt) + ' 👇';
+  speak(currentPrompt);
 
   const p = allPatterns[round % allPatterns.length];
   document.getElementById('pattern-display').textContent =
@@ -141,7 +150,7 @@ function handleChoice(btn, emoji, answer) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', initGame);
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
 </script>
 </body>
 </html>

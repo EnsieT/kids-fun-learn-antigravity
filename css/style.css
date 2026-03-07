@@ -545,8 +545,72 @@ p  { font-size: clamp(1rem, 2.5vw, 1.3rem); }
   .emoji-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
+/* ===== Language Selector ===== */
+.language-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  flex-wrap: wrap;
+  background: rgba(255,255,255,0.15);
+}
+
+.lang-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 2px solid #ddd;
+  background: white;
+  font-size: 1rem;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+  font-family: var(--font);
+  font-weight: 700;
+}
+
+.lang-btn[data-lang="en"]        { border-color: #2196F3; }
+.lang-btn[data-lang="en"].active  { background: #E3F2FD; border-color: #2196F3; font-weight: 900; }
+.lang-btn[data-lang="hi"]        { border-color: #FF9933; }
+.lang-btn[data-lang="hi"].active  { background: #FFF3E0; border-color: #FF9933; font-weight: 900; }
+.lang-btn[data-lang="gu"]        { border-color: #4CAF50; }
+.lang-btn[data-lang="gu"].active  { background: #E8F5E9; border-color: #4CAF50; font-weight: 900; }
+
+.lang-btn:hover  { transform: scale(1.05); }
+.lang-btn:active { transform: scale(0.97); }
+
+/* ===== Category Section Headers ===== */
+.category-section { margin: 32px 0; }
+.category-label {
+  font-size: 1.1rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 6px 20px;
+  border-radius: 50px;
+  color: #fff;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+.cat-brain    { background: linear-gradient(135deg, #2196F3, #0D47A1); }
+.cat-creative { background: linear-gradient(135deg, #E91E63, #9C27B0); }
+.cat-world    { background: linear-gradient(135deg, #4CAF50, #1B5E20); }
+.cat-listen   { background: linear-gradient(135deg, #FF8C00, #E65100); }
+
+/* Additional card colors for new activities */
+.card-maze         { border-color: #00BCD4; background: #E0F7FA; }
+.card-tower        { border-color: #FF8C00; background: #FFF3E0; }
+.card-jigsaw       { border-color: #9C27B0; background: #F3E5F5; }
+.card-numline      { border-color: #4CAF50; background: #E8F5E9; }
+.card-dukaan       { border-color: #FF9800; background: #FFF8E1; }
+.card-drawing      { border-color: #E91E63; background: #FCE4EC; }
+.card-dressup      { border-color: #9C27B0; background: #EDE7F6; }
+.card-music        { border-color: #2196F3; background: #E3F2FD; }
+.card-weather      { border-color: #03A9F4; background: #E1F5FE; }
+.card-thali        { border-color: #FF5722; background: #FBE9E7; }
+.card-soundbingo   { border-color: #8BC34A; background: #F1F8E9; }
+.card-whatsmissing { border-color: #FF9800; background: #FFF3E0; }
+
+
 /* ===== Utility ===== */
-.hidden { display: none !important; }
 .text-center { text-align: center; }
 .mt-16 { margin-top: 16px; }
 .mt-24 { margin-top: 24px; }

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Number Line Jump 🔢 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+#game-section { display:flex; flex-direction:column; align-items:center; gap:.7rem; padding:.8rem; }
+#round-badge {
+  display:inline-block; padding:3px 14px; border-radius:20px;
+  font-size:.85em; font-weight:bold;
+  background:#E3F2FD; color:#0D47A1; border:1px solid #90CAF9;
+}
+#question-text { font-size:1.3em; font-weight:bold; color:#1a237e; min-height:1.8em; text-align:center; margin:.3rem 0; }
+
+/* Number line section */
+#nl-outer {
+  width:100%; overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:0 4px 4px;
+}
+#nl-inner { position:relative; width:max-content; margin:0 auto; }
+
+/* Frog */
+#frog {
+  position:absolute; top:2px; left:0;
+  font-size:2em; line-height:1;
+  width:48px; text-align:center;
+  transition:left .52s cubic-bezier(.34,1.56,.64,1);
+  pointer-events:none; z-index:5;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));
+}
+#frog.hop   { animation:frog-hop .5s ease; }
+#frog.shake { animation:frog-shake .42s ease; }
+@keyframes frog-hop {
+  0%  {transform:translateY(0)   scale(1)}
+  40% {transform:translateY(-28px) scale(1.25)}
+  100%{transform:translateY(0)   scale(1)}
+}
+@keyframes frog-shake {
+  0%,100%{transform:rotate(0)}
+  25%    {transform:rotate(-16deg) translateX(-5px)}
+  75%    {transform:rotate(16deg)  translateX( 5px)}
+}
+#frog-spacer { height:52px; }
+
+/* Number buttons */
+#number-line { display:flex; gap:4px; width:max-content; }
+.num-btn {
+  width:48px; height:54px; border-radius:10px;
+  border:3px solid #4CAF50; background:#E8F5E9;
+  font-size:1.25em; font-weight:bold; color:#1B5E20;
+  cursor:pointer; touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s, border-color .15s, transform .1s;
+  min-width:48px;
+}
+.num-btn:hover    { background:#C8E6C9; transform:translateY(-2px); }
+.num-btn.hl       { background:#FFF9C4; border-color:#FFC107; box-shadow:0 0 0 3px rgba(255,193,7,.4); }
+.num-btn.correct  { background:#4CAF50!important; color:#fff!important; border-color:#2E7D32!important; }
+.num-btn.wrong    { background:#FFCDD2!important; border-color:#F44336!important; }
+
+/* Multiple choice buttons (Type C) */
+#choices-area { display:flex; gap:.8rem; flex-wrap:wrap; justify-content:center; margin-top:.6rem; }
+.choice-btn {
+  width:72px; height:72px; border-radius:14px;
+  border:3px solid #9C27B0; background:#F3E5F5;
+  font-size:1.9em; font-weight:bold; color:#4A148C;
+  cursor:pointer; touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:all .15s;
+}
+.choice-btn:hover  { background:#E1BEE7; transform:scale(1.06); }
+.choice-btn.correct{ background:#4CAF50; color:#fff; border-color:#2E7D32; }
+.choice-btn.wrong  { background:#FFCDD2; border-color:#F44336; }
+
+/* Number line lily-pad decoration */
+.num-btn::before { content:none; }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔢 Number Jump</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div id="game-section">
+    <p class="question-text" id="main-prompt"></p>
+    <div id="round-badge"></div>
+    <p id="question-text"></p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Hear question again">🔊</button>
+
+    <!-- Number line -->
+    <div id="nl-outer">
+      <div id="nl-inner">
+        <div id="frog-spacer">
+          <div id="frog">🐸</div>
+        </div>
+        <div id="number-line"></div>
+      </div>
+    </div>
+
+    <!-- Type-C multiple choice -->
+    <div id="choices-area"></div>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars">⭐⭐⭐</div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" id="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const TOTAL_ROUNDS = 10;
+const BTN_W        = 52;   // 48px button + 4px gap
+
+let round = 0, mistakes = 0, frogPos = 0;
+let currentRound = null, answered = false;
+let currentPrompt = {};
+
+function hearAgain() { speak(currentPrompt); }
+
+function onLanguageChange() {
+  document.getElementById('main-prompt').textContent =
+    t({en:'Where should the frog jump?', hi:'मेंढक कहाँ कूदे?', gu:'દેડકો ક્યાં કૂદે?'});
+  document.getElementById('play-again-btn').textContent =
+    t({en:'🔄 Play Again', hi:'🔄 फिर से खेलो', gu:'🔄 ફરી રમો'});
+  if (currentRound) renderRoundUI();
+}
+
+/* ── Build static number line ── */
+function buildNumberLine() {
+  const line = document.getElementById('number-line');
+  line.innerHTML = '';
+  for (let i = 0; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'num-btn';
+    btn.id        = 'nb-' + i;
+    btn.dataset.n = i;
+    btn.textContent = i;
+    btn.addEventListener('click', () => onNumBtnClick(i));
+    line.appendChild(btn);
+  }
+}
+
+/* ── Frog movement ── */
+function frogLeft(pos) { return pos * BTN_W + 2; }
+
+function moveFrogInstant(pos) {
+  frogPos = pos;
+  const frog = document.getElementById('frog');
+  frog.style.transition = 'none';
+  frog.style.left = frogLeft(pos) + 'px';
+  void frog.offsetWidth;
+  frog.style.transition = '';
+}
+
+function moveFrog(target, onDone) {
+  const frog = document.getElementById('frog');
+  frog.classList.remove('hop', 'shake');
+  void frog.offsetWidth;
+  frog.style.left = frogLeft(target) + 'px';
+  frog.classList.add('hop');
+  frogPos = target;
+  setTimeout(() => frog.classList.remove('hop'), 550);
+  if (onDone) setTimeout(onDone, 580);
+}
+
+function shakeFrog() {
+  const frog = document.getElementById('frog');
+  frog.classList.remove('hop', 'shake');
+  void frog.offsetWidth;
+  frog.classList.add('shake');
+  setTimeout(() => frog.classList.remove('shake'), 450);
+}
+
+function clearHighlights() {
+  document.querySelectorAll('.num-btn').forEach(b =>
+    b.classList.remove('hl', 'correct', 'wrong'));
+}
+
+/* ── Game Init ── */
+function initGame() {
+  round = 0; mistakes = 0; frogPos = 0; answered = false; currentRound = null;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  hideFeedback();
+  buildNumberLine();
+  moveFrogInstant(0);
+  updateProgress(0, TOTAL_ROUNDS);
+  document.getElementById('score-display').textContent = '0/' + TOTAL_ROUNDS;
+  document.getElementById('main-prompt').textContent =
+    t({en:'Where should the frog jump?', hi:'मेंढक कहाँ कूदे?', gu:'દેડકો ક્યાં કૂદે?'});
+  document.getElementById('choices-area').innerHTML = '';
+  document.getElementById('choices-area').style.display = 'none';
+  clearHighlights();
+  setTimeout(nextRound, 450);
+}
+
+/* ── Round generation ── */
+function nextRound() {
+  if (round >= TOTAL_ROUNDS) { showCompletion('number-line', mistakes, TOTAL_ROUNDS); return; }
+  answered = false;
+  hideFeedback();
+  clearHighlights();
+  document.getElementById('choices-area').innerHTML  = '';
+  document.getElementById('choices-area').style.display = 'none';
+  updateProgress(round, TOTAL_ROUNDS);
+  document.getElementById('score-display').textContent = round + '/' + TOTAL_ROUNDS;
+
+  const typeWeights = [0, 0, 0, 1, 1, 2]; // slightly more A and B
+  const type = typeWeights[Math.floor(Math.random() * typeWeights.length)];
+
+  if (type === 0) {
+    /* Type A: Jump to [N] */
+    const target = Math.floor(Math.random() * 11);
+    currentRound = {type:0, target};
+  } else if (type === 1) {
+    /* Type B: Jump [steps] forward */
+    const pos   = Math.floor(Math.random() * 8);   // 0–7 ensures target ≤ 10
+    const steps = 1 + Math.floor(Math.random() * (10 - pos));
+    currentRound = {type:1, pos, steps, target: pos + steps};
+  } else {
+    /* Type C: What number is the frog on? */
+    const pos = Math.floor(Math.random() * 11);
+    currentRound = {type:2, pos, target: pos};
+  }
+  renderRoundUI();
+}
+
+/* ── Render round ── */
+function renderRoundUI() {
+  const r = currentRound;
+  if (!r) return;
+  clearHighlights();
+  const badge  = document.getElementById('round-badge');
+  const qEl    = document.getElementById('question-text');
+  const chArea = document.getElementById('choices-area');
+
+  if (r.type === 0) {
+    badge.textContent = t({en:'🎯 Find the number', hi:'🎯 नंबर खोजो', gu:'🎯 નંબર શોધો'});
+    const q = {en:`Jump to ${r.target}! 🐸`, hi:`${r.target} पर कूदो! 🐸`, gu:`${r.target} પર કૂદો! 🐸`};
+    qEl.textContent   = t(q); currentPrompt = q;
+    document.getElementById('nb-' + r.target).classList.add('hl');
+    chArea.style.display = 'none';
+    speak(q);
+
+  } else if (r.type === 1) {
+    badge.textContent = t({en:'➡️ Count forward', hi:'➡️ आगे गिनो', gu:'➡️ આગળ ગણો'});
+    chArea.style.display = 'none';
+    moveFrog(r.pos, () => {
+      const enStep = r.steps === 1 ? 'step' : 'steps';
+      const q = {
+        en: `Jump ${r.steps} ${enStep} forward! 🐸`,
+        hi: `${r.steps} कदम आगे कूदो! 🐸`,
+        gu: `${r.steps} ડગ આગળ કૂદો! 🐸`
+      };
+      qEl.textContent = t(q); currentPrompt = q;
+      speak(q);
+    });
+
+  } else {
+    badge.textContent = t({en:'❓ Which number?', hi:'❓ कौन सा नंबर?', gu:'❓ કયો નંબર?'});
+    moveFrog(r.pos, () => {
+      const q = {en:'What number is the frog on? 🐸', hi:'मेंढक किस नंबर पर है? 🐸', gu:'દેડકો કયા નંબર પર છે? 🐸'};
+      qEl.textContent = t(q); currentPrompt = q;
+
+      // Build 4 choices
+      const wrong = new Set();
+      while (wrong.size < 3) {
+        const n = Math.floor(Math.random() * 11);
+        if (n !== r.pos) wrong.add(n);
+      }
+      const choices = shuffle([r.pos, ...wrong]);
+      chArea.innerHTML = '';
+      choices.forEach(n => {
+        const btn = document.createElement('button');
+        btn.className   = 'choice-btn';
+        btn.textContent = n;
+        btn.addEventListener('click', () => onChoiceClick(btn, n));
+        chArea.appendChild(btn);
+      });
+      chArea.style.display = 'flex';
+      speak(q);
+    });
+  }
+}
+
+/* ── Number line click (Type A & B) ── */
+function onNumBtnClick(n) {
+  if (answered) return;
+  const r = currentRound;
+  if (!r || r.type === 2) return;
+
+  if (n === r.target) {
+    answered = true;
+    document.getElementById('nb-' + n).classList.add('correct');
+    moveFrog(n, () => {
+      launchConfetti();
+      const praise = {en:'Great jump! 🎉', hi:'शाबाश! 🎉', gu:'શાબાશ! 🎉'};
+      speak(praise);
+      round++;
+      setTimeout(() => {
+        document.getElementById('nb-' + n).classList.remove('correct');
+        nextRound();
+      }, 1000);
+    });
+  } else {
+    mistakes++;
+    const btn = document.getElementById('nb-' + n);
+    btn.classList.add('wrong');
+    shakeFrog();
+    speak({en:"Not quite! Try again!", hi:'नहीं! फिर से कोशिश करो!', gu:'ના! ફરી પ્રયત્ન કરો!'});
+    setTimeout(() => btn.classList.remove('wrong'), 650);
+  }
+}
+
+/* ── Choice click (Type C) ── */
+function onChoiceClick(btn, n) {
+  if (answered) return;
+  const r = currentRound;
+  if (!r || r.type !== 2) return;
+
+  if (n === r.target) {
+    answered = true;
+    btn.classList.add('correct');
+    launchConfetti();
+    speak({en:"That's right! 🎉", hi:'सही जवाब! 🎉', gu:'સાચો જવાબ! 🎉'});
+    round++;
+    setTimeout(() => {
+      btn.classList.remove('correct');
+      nextRound();
+    }, 1200);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    shakeFrog();
+    speak({en:"Not quite! Look again!", hi:'नहीं! फिर से देखो!', gu:'ના! ફરી જુઓ!'});
+    setTimeout(() => btn.classList.remove('wrong'), 650);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

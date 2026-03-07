@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Music Maker 🎵 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  #game-area { padding-bottom: 32px; }
+
+  .prompt-bar {
+    text-align: center;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    font-weight: 800;
+    color: #2196F3;
+    padding: 6px 16px;
+  }
+
+  /* Instrument pads grid */
+  .pads-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 12px 16px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .pad-btn {
+    background: linear-gradient(135deg, #fff, #f0f4ff);
+    border: 4px solid #90CAF9;
+    border-radius: 24px;
+    min-height: 100px;
+    font-size: 2.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px rgba(33,150,243,.15), 0 2px 4px rgba(0,0,0,.1);
+    transition: transform .1s, box-shadow .1s, background .1s;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    padding: 10px 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pad-btn:active { transform: scale(0.93); }
+  .pad-btn.lit {
+    background: var(--pad-light, linear-gradient(135deg, #E3F2FD, #BBDEFB));
+    box-shadow: 0 0 24px var(--pad-glow, rgba(33,150,243,.6)), 0 4px 16px rgba(0,0,0,.12);
+    transform: scale(0.95);
+    border-color: var(--pad-border, #2196F3);
+  }
+  .pad-btn .pad-name {
+    font-size: clamp(.65rem, 2vw, .85rem);
+    font-weight: 900;
+    color: #444;
+    text-align: center;
+    line-height: 1.2;
+  }
+  /* Individual pad colors */
+  .pad-tabla    { --pad-light: linear-gradient(135deg, #FFF8E1, #FFE082); --pad-glow: rgba(255,193,7,.7);  --pad-border: #FFC107; border-color: #FFE082; }
+  .pad-bell     { --pad-light: linear-gradient(135deg, #E8F5E9, #A5D6A7); --pad-glow: rgba(76,175,80,.7);  --pad-border: #4CAF50; border-color: #A5D6A7; }
+  .pad-flute    { --pad-light: linear-gradient(135deg, #E3F2FD, #90CAF9); --pad-glow: rgba(33,150,243,.7); --pad-border: #2196F3; border-color: #90CAF9; }
+  .pad-clap     { --pad-light: linear-gradient(135deg, #FCE4EC, #F48FB1); --pad-glow: rgba(233,30,99,.7);  --pad-border: #E91E63; border-color: #F48FB1; }
+  .pad-harmoni  { --pad-light: linear-gradient(135deg, #F3E5F5, #CE93D8); --pad-glow: rgba(156,39,176,.7); --pad-border: #9C27B0; border-color: #CE93D8; }
+  .pad-damru    { --pad-light: linear-gradient(135deg, #FBE9E7, #FF8A65); --pad-glow: rgba(255,87,34,.7);  --pad-border: #FF5722; border-color: #FF8A65; }
+
+  /* Recording controls */
+  .record-panel {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+    margin: 8px 16px;
+    border-radius: 20px;
+    border: 3px solid #90CAF9;
+  }
+  .rec-btn {
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 3px 10px rgba(0,0,0,.15);
+    font-family: var(--font);
+  }
+  .rec-btn:hover  { transform: scale(1.07); }
+  .rec-btn:active { transform: scale(0.95); }
+  .rec-btn:disabled { opacity: .45; cursor: default; transform: none; }
+  .rec-btn-record { background: linear-gradient(135deg, #f44336, #b71c1c); color: #fff; }
+  .rec-btn-play   { background: linear-gradient(135deg, #4CAF50, #1B5E20); color: #fff; }
+  .rec-btn-stop   { background: linear-gradient(135deg, #607D8B, #263238); color: #fff; }
+
+  .rec-status {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #555;
+    text-align: center;
+    min-height: 28px;
+    padding: 0 16px;
+  }
+  .rec-status.recording { color: #f44336; animation: blink 1s step-start infinite; }
+  .rec-status.playing   { color: #4CAF50; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Beat counter dots */
+  .beat-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 16px;
+    flex-wrap: wrap;
+    min-height: 28px;
+  }
+  .beat-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background .1s, transform .1s;
+  }
+  .beat-dot.active { background: #2196F3; transform: scale(1.4); }
+
+  @media (max-width: 480px) {
+    .pads-grid { gap: 10px; padding: 8px 10px; }
+    .pad-btn { min-height: 84px; font-size: 2rem; border-radius: 18px; }
+    .rec-btn { padding: 8px 14px; font-size: .95rem; min-height: 44px; }
+  }
+  @media (min-width: 600px) {
+    .pads-grid { grid-template-columns: repeat(3, 1fr); max-width: 600px; }
+    .pad-btn { min-height: 120px; font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1 id="page-title">🎵 Music Maker</h1>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="prompt-bar" id="prompt-bar">Make music!</div>
+
+  <!-- Pads -->
+  <div class="pads-grid" id="pads-grid">
+    <button class="pad-btn pad-tabla"   data-pad="tabla"   onclick="hitPad('tabla',   this)" aria-label="Tabla">
+      🥁<span class="pad-name" data-key="tabla"></span>
+    </button>
+    <button class="pad-btn pad-bell"    data-pad="bell"    onclick="hitPad('bell',    this)" aria-label="Bell">
+      🔔<span class="pad-name" data-key="bell"></span>
+    </button>
+    <button class="pad-btn pad-flute"   data-pad="flute"   onclick="hitPad('flute',   this)" aria-label="Bansuri">
+      🪈<span class="pad-name" data-key="flute"></span>
+    </button>
+    <button class="pad-btn pad-clap"    data-pad="clap"    onclick="hitPad('clap',    this)" aria-label="Clap">
+      👏<span class="pad-name" data-key="clap"></span>
+    </button>
+    <button class="pad-btn pad-harmoni" data-pad="harmoni" onclick="hitPad('harmoni', this)" aria-label="Harmonium">
+      🎵<span class="pad-name" data-key="harmoni"></span>
+    </button>
+    <button class="pad-btn pad-damru"   data-pad="damru"   onclick="hitPad('damru',   this)" aria-label="Damru">
+      🪘<span class="pad-name" data-key="damru"></span>
+    </button>
+  </div>
+
+  <!-- Beat dots -->
+  <div class="beat-dots" id="beat-dots"></div>
+
+  <!-- Recording panel -->
+  <div class="record-panel">
+    <button class="rec-btn rec-btn-record" id="btn-record" onclick="startRecording()">🔴 <span id="rec-label">Record</span></button>
+    <button class="rec-btn rec-btn-play"   id="btn-play"   onclick="startPlayback()" disabled>▶️ <span id="play-label">Play</span></button>
+    <button class="rec-btn rec-btn-stop"   id="btn-stop"   onclick="stopAll()"       disabled>⏹️ <span id="stop-label">Stop</span></button>
+  </div>
+  <div class="rec-status" id="rec-status"></div>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+/* ===== Web Audio ===== */
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTabla() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  // White noise burst
+  const bufLen = ctx.sampleRate * 0.3;
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  // Pitch sweep: 100→50Hz
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(100, now);
+  osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.6, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  src.connect(gain); osc.connect(gain); gain.connect(ctx.destination);
+  src.start(now); src.stop(now + 0.3);
+  osc.start(now); osc.stop(now + 0.3);
+}
+
+function playBell() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, now);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.7, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + 1.5);
+}
+
+function playFlute() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(440, now);
+  osc.frequency.linearRampToValueAtTime(528, now + 0.8);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.5, now + 0.05);
+  gain.gain.setValueAtTime(0.5, now + 0.6);
+  gain.gain.linearRampToValueAtTime(0, now + 0.8);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + 0.85);
+}
+
+function playClap() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const bufLen = Math.floor(ctx.sampleRate * 0.1);
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufLen; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufLen) * 0.9;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(1, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  src.connect(gain); gain.connect(ctx.destination);
+  src.start(now); src.stop(now + 0.15);
+}
+
+function playHarmonium() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(220, now);
+  // Vibrato via gain modulation on a slight detune LFO
+  const lfo = ctx.createOscillator();
+  lfo.frequency.setValueAtTime(5, now);
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.setValueAtTime(4, now);
+  lfo.connect(lfoGain); lfoGain.connect(osc.detune);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.4, now + 0.08);
+  gain.gain.setValueAtTime(0.4, now + 1.2);
+  gain.gain.linearRampToValueAtTime(0, now + 1.5);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(now); osc.stop(now + 1.6);
+  lfo.start(now); lfo.stop(now + 1.6);
+}
+
+function playDamru() {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  // Rapid double sweep
+  [0, 0.15].forEach(offset => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(800, now + offset);
+    osc.frequency.exponentialRampToValueAtTime(200, now + offset + 0.12);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.7, now + offset);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.12);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(now + offset); osc.stop(now + offset + 0.15);
+  });
+}
+
+const SOUND_FNS = {
+  tabla:   playTabla,
+  bell:    playBell,
+  flute:   playFlute,
+  clap:    playClap,
+  harmoni: playHarmonium,
+  damru:   playDamru,
+};
+
+const PAD_NAMES = {
+  tabla:   {en:'Tabla',     hi:'तबला',    gu:'તબલા'},
+  bell:    {en:'Bell',      hi:'घंटी',    gu:'ઘંટ'},
+  flute:   {en:'Bansuri',   hi:'बाँसुरी', gu:'વાંસળી'},
+  clap:    {en:'Clap',      hi:'ताली',    gu:'તાળી'},
+  harmoni: {en:'Harmonium', hi:'हारमोनियम',gu:'હાર્મોનિયમ'},
+  damru:   {en:'Damru',     hi:'डमरू',    gu:'ડમરૂ'},
+};
+
+/* ===== Pad lighting ===== */
+function lightPad(padKey, btn) {
+  btn.classList.add('lit');
+  setTimeout(() => btn.classList.remove('lit'), 300);
+}
+
+/* ===== Record / Playback ===== */
+let recordingState = 'idle'; // 'idle' | 'recording' | 'playing'
+let recording = [];          // [{padKey, time}]
+let recordStartTime = 0;
+let playbackTimers = [];
+let beatDotTimers = [];
+
+function hitPad(padKey, btn) {
+  if (SOUND_FNS[padKey]) SOUND_FNS[padKey]();
+  lightPad(padKey, btn);
+
+  if (recordingState === 'recording') {
+    recording.push({ padKey, time: Date.now() - recordStartTime });
+    flashBeatDot();
+  }
+}
+
+function startRecording() {
+  stopAll();
+  recording = [];
+  recordingState = 'recording';
+  recordStartTime = Date.now();
+  setRecStatus('recording', t({en:'🔴 Recording…', hi:'🔴 रिकॉर्ड हो रहा है…', gu:'🔴 રેકોર્ડ થઈ રહ્યું છે…'}));
+  document.getElementById('btn-record').disabled = true;
+  document.getElementById('btn-play').disabled = true;
+  document.getElementById('btn-stop').disabled = false;
+  speak({en:'Recording! Play the pads!', hi:'रिकॉर्डिंग! पैड बजाओ!', gu:'રેકોર્ડ! પૅડ વગાડો!'});
+}
+
+function startPlayback() {
+  if (recording.length === 0) {
+    speak({en:'Nothing recorded yet!', hi:'अभी कुछ रिकॉर्ड नहीं हुआ!', gu:'હજી કંઈ રેકોર્ડ નથી!'});
+    return;
+  }
+  stopAll(true);
+  recordingState = 'playing';
+  setRecStatus('playing', t({en:'▶️ Playing…', hi:'▶️ चल रहा है…', gu:'▶️ ચાલી રહ્યું છે…'}));
+  document.getElementById('btn-record').disabled = true;
+  document.getElementById('btn-play').disabled = true;
+  document.getElementById('btn-stop').disabled = false;
+
+  recording.forEach(({padKey, time}) => {
+    const timer = setTimeout(() => {
+      if (recordingState !== 'playing') return;
+      if (SOUND_FNS[padKey]) SOUND_FNS[padKey]();
+      const btn = document.querySelector(`.pad-btn[data-pad="${padKey}"]`);
+      if (btn) lightPad(padKey, btn);
+      flashBeatDot();
+    }, time);
+    playbackTimers.push(timer);
+  });
+
+  // Auto-stop after last event + buffer
+  const lastTime = Math.max(...recording.map(e => e.time));
+  const endTimer = setTimeout(() => {
+    if (recordingState === 'playing') stopAll(true);
+  }, lastTime + 600);
+  playbackTimers.push(endTimer);
+}
+
+function stopAll(keepRecording) {
+  playbackTimers.forEach(t => clearTimeout(t));
+  playbackTimers = [];
+  beatDotTimers.forEach(t => clearTimeout(t));
+  beatDotTimers = [];
+
+  if (!keepRecording && recordingState === 'recording') {
+    // finalize recording
+  }
+  recordingState = 'idle';
+  setRecStatus('idle', recording.length > 0
+    ? t({en:`✅ ${recording.length} beats recorded`, hi:`✅ ${recording.length} बीट्स रिकॉर्ड`, gu:`✅ ${recording.length} બીટ્સ રેકોર્ડ`})
+    : '');
+  document.getElementById('btn-record').disabled = false;
+  document.getElementById('btn-play').disabled  = recording.length === 0;
+  document.getElementById('btn-stop').disabled  = true;
+}
+
+function setRecStatus(cls, txt) {
+  const el = document.getElementById('rec-status');
+  el.className = 'rec-status ' + (cls !== 'idle' ? cls : '');
+  el.textContent = txt;
+}
+
+/* ===== Beat dots ===== */
+const MAX_DOTS = 16;
+let dotIndex = 0;
+function flashBeatDot() {
+  const dots = document.getElementById('beat-dots');
+  // Grow dots up to MAX_DOTS
+  if (dots.children.length < MAX_DOTS) {
+    const d = document.createElement('span');
+    d.className = 'beat-dot';
+    dots.appendChild(d);
+  }
+  // Cycle
+  const allDots = dots.querySelectorAll('.beat-dot');
+  const idx = (dotIndex++) % allDots.length;
+  allDots[idx].classList.add('active');
+  const timer = setTimeout(() => allDots[idx] && allDots[idx].classList.remove('active'), 200);
+  beatDotTimers.push(timer);
+}
+
+/* ===== Language ===== */
+function onLanguageChange() { renderLabels(); }
+
+function renderLabels() {
+  document.getElementById('page-title').textContent = t({en:'🎵 Music Maker', hi:'🎵 संगीत बनाओ', gu:'🎵 સંગીત બનાવો'});
+  document.getElementById('prompt-bar').textContent = t({en:'Make music!', hi:'संगीत बनाओ!', gu:'સંગીત બનાવો!'});
+  document.getElementById('rec-label').textContent  = t({en:'Record', hi:'रिकॉर्ड', gu:'રેકોર્ડ'});
+  document.getElementById('play-label').textContent = t({en:'Play',   hi:'चलाओ',   gu:'ચલાવો'});
+  document.getElementById('stop-label').textContent = t({en:'Stop',   hi:'रोको',   gu:'થોભો'});
+
+  document.querySelectorAll('.pad-name').forEach(el => {
+    const key = el.dataset.key;
+    if (PAD_NAMES[key]) el.textContent = t(PAD_NAMES[key]);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initLanguageSelector();
+  renderLabels();
+  speak({en:'Make music!', hi:'संगीत बनाओ!', gu:'સંગીત બનાવો!'});
+});
+</script>
+</body>
+</html>

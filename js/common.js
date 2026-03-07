@@ -1,22 +1,82 @@
 /**
  * common.js — Shared utilities for Kids Fun Learn
- * Confetti, feedback, grading, localStorage helpers, speech
+ * Confetti, feedback, grading, localStorage helpers, speech, multi-language
  */
 
+/* ===== Language System ===== */
+const LANG = { EN: 'en', HI: 'hi', GU: 'gu' };
+const DEFAULT_LANG = LANG.EN;
+
+function getCurrentLanguage() {
+  return localStorage.getItem('kidsFunLearn_language') || DEFAULT_LANG;
+}
+
+function setLanguage(lang) {
+  localStorage.setItem('kidsFunLearn_language', lang);
+}
+
+/** t({en: "Hello", hi: "नमस्ते", gu: "નમસ્તે"}) → text for current language */
+function t(obj) {
+  if (typeof obj === 'string') return obj;
+  const lang = getCurrentLanguage();
+  return obj[lang] || obj.en || '';
+}
+
 /* ===== Speech (Web Speech API) ===== */
-function speak(text, lang) {
+const SPEECH_LANGS = { en: 'en-IN', hi: 'hi-IN', gu: 'gu-IN' };
+
+function speak(textOrObj, langCode) {
   if (!window.speechSynthesis) return;
-  // Cancel any ongoing speech before queuing the new utterance
   window.speechSynthesis.cancel();
+
+  let text, lang;
+  if (typeof textOrObj === 'object' && textOrObj !== null) {
+    const curLang = getCurrentLanguage();
+    text = textOrObj[curLang] || textOrObj.en || '';
+    lang = SPEECH_LANGS[curLang] || 'en-IN';
+  } else {
+    text = textOrObj;
+    lang = langCode || SPEECH_LANGS[getCurrentLanguage()] || 'en-IN';
+  }
+
+  if (!text) return;
   const utter = new SpeechSynthesisUtterance(text);
-  utter.lang  = lang || 'hi-IN';
+  utter.lang  = lang;
   utter.rate  = 0.85;
   utter.pitch = 1.1;
-  // Small delay ensures the cancel() has cleared the queue before speaking
+
+  // Gujarati fallback: try gu-IN voice, fall back to hi-IN, then en-IN
+  if (lang === 'gu-IN') {
+    const voices = window.speechSynthesis.getVoices();
+    const guVoice = voices.find(v => v.lang === 'gu-IN');
+    if (!guVoice) {
+      const hiVoice = voices.find(v => v.lang === 'hi-IN');
+      utter.lang = hiVoice ? 'hi-IN' : 'en-IN';
+    }
+  }
+
   setTimeout(() => window.speechSynthesis.speak(utter), 150);
 }
+
 function speakHindi(text)   { speak(text, 'hi-IN'); }
 function speakEnglish(text) { speak(text, 'en-IN'); }
+
+/* ===== Language Selector UI ===== */
+function initLanguageSelector() {
+  const selector = document.getElementById('langSelector');
+  if (!selector) return;
+
+  const cur = getCurrentLanguage();
+  selector.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === cur);
+    btn.addEventListener('click', () => {
+      setLanguage(btn.dataset.lang);
+      selector.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (typeof onLanguageChange === 'function') onLanguageChange();
+    });
+  });
+}
 
 /* ===== Confetti ===== */
 const CONFETTI_COLORS = ['#FFD700','#FF8C00','#FF69B4','#4CAF50','#2196F3','#9C27B0','#F44336'];
@@ -73,20 +133,23 @@ function launchConfetti() {
 }
 
 /* ===== Feedback ===== */
+const FB_CORRECT = {en: '🎉 Well done!', hi: '🎉 शाबाश!', gu: '🎉 શાબાશ!'};
+const FB_WRONG   = {en: '❌ Try again!', hi: '❌ फिर से कोशिश करो!', gu: '❌ ફરી પ્રયત્ન કરો!'};
+
 function showFeedback(correct) {
   const banner = document.getElementById('feedback-banner');
   if (!banner) return;
   banner.classList.remove('show', 'correct-fb', 'wrong-fb');
   void banner.offsetWidth; // reflow
   if (correct) {
-    banner.textContent = '🎉 शाबाश! Well done!';
+    banner.textContent = t(FB_CORRECT);
     banner.classList.add('show', 'correct-fb');
     launchConfetti();
-    speakHindi('शाबाश!');
+    speak({en: 'Well done!', hi: 'शाबाश!', gu: 'શાબાશ!'});
   } else {
-    banner.textContent = '❌ फिर से कोशिश करो! Try again!';
+    banner.textContent = t(FB_WRONG);
     banner.classList.add('show', 'wrong-fb');
-    speakHindi('फिर से कोशिश करो!');
+    speak({en: 'Try again!', hi: 'फिर से कोशिश करो!', gu: 'ફરી પ્રયત્ન કરો!'});
   }
 }
 
@@ -153,14 +216,14 @@ function showCompletion(activity, mistakes, total) {
   if (starsEl) starsEl.textContent = starsHTML(stars);
   if (titleEl) {
     if (stars === 3) {
-      titleEl.textContent = '🎊 शानदार! Excellent!';
-      speakHindi('बहुत अच्छा! तुमने तीन सितारे कमाए!');
+      titleEl.textContent = t({en: '🎊 Excellent!', hi: '🎊 शानदार!', gu: '🎊 ખૂબ સરસ!'});
+      speak({en: 'Excellent! You earned 3 stars!', hi: 'बहुत अच्छा! तुमने तीन सितारे कमाए!', gu: 'ખૂબ સરસ! તમે ત્રણ સ્ટાર મેળવ્યા!'});
     } else if (stars === 2) {
-      titleEl.textContent = '👏 बहुत अच्छा! Very Good!';
-      speakHindi('बहुत अच्छा! तुमने दो सितारे कमाए!');
+      titleEl.textContent = t({en: '👏 Great job!', hi: '👏 बहुत अच्छा!', gu: '👏 બહુ સારું!'});
+      speak({en: 'Great job! You earned 2 stars!', hi: 'बहुत अच्छा! तुमने दो सितारे कमाए!', gu: 'બહુ સારું! તમે બે સ્ટાર મેળવ્યા!'});
     } else {
-      titleEl.textContent = '💪 अच्छा प्रयास! Good Try!';
-      speakHindi('अच्छा प्रयास! एक सितारा!');
+      titleEl.textContent = t({en: '💪 Good try!', hi: '💪 अच्छा प्रयास!', gu: '💪 સારો પ્રયત્ન!'});
+      speak({en: 'Good try! You earned 1 star!', hi: 'अच्छा प्रयास! एक सितारा!', gu: 'સારો પ્રયત્ન! એક સ્ટાર!'});
     }
   }
   if (scoreEl) scoreEl.textContent = `Score: ${total - mistakes} / ${total}`;

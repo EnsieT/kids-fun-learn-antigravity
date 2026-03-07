@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Free Drawing 🎨 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #FFFDE7; }
+
+  .activity-header { flex-shrink: 0; }
+
+  #langSelector { flex-shrink: 0; }
+
+  .prompt-bar {
+    text-align: center;
+    padding: 6px 16px;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    font-weight: 800;
+    color: #FF8C00;
+    flex-shrink: 0;
+  }
+
+  #canvas-wrapper {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    margin: 0 8px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,.15);
+    border: 3px solid #e0e0e0;
+    cursor: crosshair;
+    touch-action: none;
+  }
+
+  #draw-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 13px;
+    touch-action: none;
+  }
+
+  /* Toolbar */
+  .toolbar {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #fff, #f5f5f5);
+    border-top: 3px solid #e0e0e0;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tool-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tool-divider {
+    width: 2px;
+    height: 36px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Color circles */
+  .color-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    transition: transform .15s, border-color .15s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .color-btn:hover  { transform: scale(1.15); }
+  .color-btn:active { transform: scale(0.93); }
+  .color-btn.active { border-color: #333 !important; transform: scale(1.2); box-shadow: 0 0 0 3px rgba(0,0,0,.25); }
+
+  /* Brush size buttons */
+  .size-btn {
+    background: #fff;
+    border: 3px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s, border-color .15s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .size-btn:hover  { transform: scale(1.12); }
+  .size-btn:active { transform: scale(0.93); }
+  .size-btn.active { border-color: #FF8C00; background: #FFF3E0; }
+  .size-btn .dot {
+    background: #333;
+    border-radius: 50%;
+    display: block;
+  }
+  .size-btn-sm { width: 36px; height: 36px; }
+  .size-btn-md { width: 44px; height: 44px; }
+  .size-btn-lg { width: 52px; height: 52px; }
+  .size-dot-sm { width: 6px; height: 6px; }
+  .size-dot-md { width: 13px; height: 13px; }
+  .size-dot-lg { width: 22px; height: 22px; }
+
+  /* Tool buttons */
+  .tool-btn {
+    background: #fff;
+    border: 3px solid #ccc;
+    border-radius: 14px;
+    padding: 6px 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: 800;
+    transition: transform .15s, background .15s, border-color .15s;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    font-family: var(--font);
+  }
+  .tool-btn:hover  { transform: scale(1.07); }
+  .tool-btn:active { transform: scale(0.95); }
+  .tool-btn.active { background: #E3F2FD; border-color: #2196F3; }
+  .tool-btn.eraser-active { background: #FCE4EC; border-color: #E91E63; }
+  .tool-btn.clear-btn-style { border-color: #e53935; color: #e53935; }
+  .tool-btn.clear-btn-style:hover { background: #FFEBEE; }
+
+  /* Stickers row */
+  .sticker-btn {
+    background: #fff;
+    border: 3px solid #e0e0e0;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s, border-color .15s;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .sticker-btn:hover  { transform: scale(1.12); }
+  .sticker-btn:active { transform: scale(0.93); }
+  .sticker-btn.active { border-color: #9C27B0; background: #F3E5F5; transform: scale(1.12); }
+
+  @media (max-width: 480px) {
+    .tool-divider { display: none; }
+    .color-btn { width: 30px; height: 30px; }
+    .size-btn-sm { width: 30px; height: 30px; }
+    .size-btn-md { width: 36px; height: 36px; }
+    .size-btn-lg { width: 42px; height: 42px; }
+    .sticker-btn { width: 40px; height: 40px; font-size: 1.3rem; }
+    .tool-btn { padding: 4px 8px; font-size: 1rem; min-height: 44px; }
+    .toolbar { gap: 5px; padding: 6px 6px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1 id="page-title">🎨 Drawing</h1>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div class="prompt-bar" id="prompt-bar">Draw anything you want!</div>
+
+<div id="canvas-wrapper">
+  <canvas id="draw-canvas"></canvas>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <!-- Colors -->
+  <div class="tool-group" id="color-group">
+    <button class="color-btn active" data-color="#333333" style="background:#333333;" aria-label="Black" title="Black"></button>
+    <button class="color-btn" data-color="#F44336" style="background:#F44336;" aria-label="Red" title="Red"></button>
+    <button class="color-btn" data-color="#2196F3" style="background:#2196F3;" aria-label="Blue" title="Blue"></button>
+    <button class="color-btn" data-color="#4CAF50" style="background:#4CAF50;" aria-label="Green" title="Green"></button>
+    <button class="color-btn" data-color="#FFD700" style="background:#FFD700;" aria-label="Yellow" title="Yellow"></button>
+    <button class="color-btn" data-color="#FF8C00" style="background:#FF8C00;" aria-label="Orange" title="Orange"></button>
+    <button class="color-btn" data-color="#FF69B4" style="background:#FF69B4;" aria-label="Pink" title="Pink"></button>
+    <button class="color-btn" data-color="#FFFFFF" style="background:#FFFFFF; border-color:#aaa !important;" aria-label="White" title="White"></button>
+  </div>
+
+  <div class="tool-divider"></div>
+
+  <!-- Brush sizes -->
+  <div class="tool-group">
+    <button class="size-btn size-btn-sm active" data-size="4" aria-label="Small brush" title="Small">
+      <span class="dot size-dot-sm"></span>
+    </button>
+    <button class="size-btn size-btn-md" data-size="10" aria-label="Medium brush" title="Medium">
+      <span class="dot size-dot-md"></span>
+    </button>
+    <button class="size-btn size-btn-lg" data-size="20" aria-label="Large brush" title="Large">
+      <span class="dot size-dot-lg"></span>
+    </button>
+  </div>
+
+  <div class="tool-divider"></div>
+
+  <!-- Eraser + Clear -->
+  <div class="tool-group">
+    <button class="tool-btn" id="eraser-btn" onclick="setEraser()" aria-label="Eraser" title="Eraser">🧽</button>
+    <button class="tool-btn clear-btn-style" onclick="clearCanvas()" aria-label="Clear" title="Clear" id="clear-btn">🗑️</button>
+  </div>
+
+  <div class="tool-divider"></div>
+
+  <!-- Stickers -->
+  <div class="tool-group" id="sticker-group">
+    <button class="sticker-btn" data-sticker="🌟" title="Star">🌟</button>
+    <button class="sticker-btn" data-sticker="🦚" title="Peacock">🦚</button>
+    <button class="sticker-btn" data-sticker="🪔" title="Diya">🪔</button>
+    <button class="sticker-btn" data-sticker="🌺" title="Flower">🌺</button>
+    <button class="sticker-btn" data-sticker="🥭" title="Mango">🥭</button>
+    <button class="sticker-btn" data-sticker="🏠" title="House">🏠</button>
+    <button class="sticker-btn" data-sticker="🐘" title="Elephant">🐘</button>
+    <button class="sticker-btn" data-sticker="☀️" title="Sun">☀️</button>
+  </div>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const canvas = document.getElementById('draw-canvas');
+const ctx = canvas.getContext('2d');
+const wrapper = document.getElementById('canvas-wrapper');
+
+let tool = { color: '#333333', size: 4, mode: 'draw', selectedSticker: null };
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+
+function resizeCanvas() {
+  const rect = wrapper.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const newW = Math.floor(rect.width  * dpr);
+  const newH = Math.floor(rect.height * dpr);
+
+  // Capture current drawing into a temp canvas before resizing
+  const snapshot = document.createElement('canvas');
+  snapshot.width  = canvas.width;
+  snapshot.height = canvas.height;
+  snapshot.getContext('2d').drawImage(canvas, 0, 0);
+
+  canvas.width  = newW;
+  canvas.height = newH;
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, newW, newH);
+
+  // Restore previous drawing scaled to new size (best-effort on resize)
+  if (snapshot.width > 0 && snapshot.height > 0) {
+    ctx.drawImage(snapshot, 0, 0, newW, newH);
+  }
+
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+}
+
+function getPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  // canvas.width is in physical pixels; rect is in CSS pixels
+  const scaleX = canvas.width  / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top)  * scaleY
+  };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  const {x, y} = getPos(e);
+  if (tool.mode === 'sticker') {
+    placeSticker(x, y);
+    return;
+  }
+  isDrawing = true;
+  lastX = x; lastY = y;
+  ctx.beginPath();
+  ctx.arc(x, y, (tool.mode === 'erase' ? tool.size * 3 : tool.size) / 2, 0, Math.PI * 2);
+  ctx.fillStyle = tool.mode === 'erase' ? '#ffffff' : tool.color;
+  ctx.fill();
+}
+
+function continueDraw(e) {
+  if (!isDrawing || tool.mode === 'sticker') return;
+  e.preventDefault();
+  const {x, y} = getPos(e);
+  const brushSize = tool.mode === 'erase' ? tool.size * 3 : tool.size;
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(x, y);
+  ctx.strokeStyle = tool.mode === 'erase' ? '#ffffff' : tool.color;
+  ctx.lineWidth = brushSize;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  lastX = x; lastY = y;
+}
+
+function endDraw(e) {
+  isDrawing = false;
+}
+
+function placeSticker(x, y) {
+  if (!tool.selectedSticker) return;
+  const dpr = window.devicePixelRatio || 1;
+  const size = 48 * dpr;
+  ctx.font = `${size}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tool.selectedSticker, x, y);
+}
+
+canvas.addEventListener('pointerdown', startDraw);
+canvas.addEventListener('pointermove', continueDraw);
+canvas.addEventListener('pointerup', endDraw);
+canvas.addEventListener('pointerleave', endDraw);
+canvas.addEventListener('pointercancel', endDraw);
+
+// Color buttons
+document.getElementById('color-group').querySelectorAll('.color-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    tool.color = btn.dataset.color;
+    tool.mode = 'draw';
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('eraser-btn').classList.remove('active', 'eraser-active');
+    clearStickerSelection();
+  });
+});
+
+// Size buttons
+document.querySelectorAll('.size-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    tool.size = parseInt(btn.dataset.size, 10);
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tool.mode === 'sticker') {
+      tool.mode = 'draw';
+      clearStickerSelection();
+    }
+  });
+});
+
+// Sticker buttons
+document.getElementById('sticker-group').querySelectorAll('.sticker-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (tool.mode === 'sticker' && tool.selectedSticker === btn.dataset.sticker) {
+      // Deselect
+      tool.mode = 'draw';
+      tool.selectedSticker = null;
+      btn.classList.remove('active');
+    } else {
+      tool.mode = 'sticker';
+      tool.selectedSticker = btn.dataset.sticker;
+      document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('eraser-btn').classList.remove('active', 'eraser-active');
+    }
+  });
+});
+
+function clearStickerSelection() {
+  tool.selectedSticker = null;
+  document.querySelectorAll('.sticker-btn').forEach(b => b.classList.remove('active'));
+}
+
+function setEraser() {
+  if (tool.mode === 'erase') {
+    tool.mode = 'draw';
+    document.getElementById('eraser-btn').classList.remove('active', 'eraser-active');
+  } else {
+    tool.mode = 'erase';
+    clearStickerSelection();
+    document.getElementById('eraser-btn').classList.add('active', 'eraser-active');
+  }
+}
+
+function clearCanvas() {
+  const msg = t({en:'Erase everything?', hi:'सब मिटा दें?', gu:'બધું ભૂંસી નાખીએ?'});
+  if (confirm(msg)) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    speak({en:'New drawing! Let\'s go!', hi:'नया चित्र! चलो बनाते हैं!', gu:'નવું ચિત્ર! ચાલો બનાવીએ!'});
+  }
+}
+
+function onLanguageChange() {
+  document.getElementById('page-title').textContent = t({en:'🎨 Drawing', hi:'🎨 चित्रकारी', gu:'🎨 ચિત્રકળા'});
+  document.getElementById('prompt-bar').textContent = t({en:'Draw anything you want!', hi:'जो चाहो वो बनाओ!', gu:'જે મન થાય તે દોરો!'});
+}
+
+window.addEventListener('resize', () => {
+  // Debounced resize
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(resizeCanvas, 200);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  initLanguageSelector();
+  resizeCanvas();
+  onLanguageChange();
+  speak({en:'Draw anything you want!', hi:'जो चाहो वो बनाओ!', gu:'જે મન થાય તે દોરો!'});
+});
+</script>
+</body>
+</html>
