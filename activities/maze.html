@@ -127,6 +127,14 @@ let difficulty = 'easy';
 let mazeWalls = null, currentPos = {r:0,c:0};
 let visitedSet = new Set(), wrongMoves = 0, stepCount = 0, gameWon = false;
 
+const MAZE_THEMES = [
+  {p_en:'Help the cow reach the grass!', p_hi:'गाय को घास तक पहुंचाओ!', p_gu:'ગાયને ઘાસ સુધી પહોંચાડો!', hero:'🐄', goal:'🌾'},
+  {p_en:'Help the bunny reach the carrot!', p_hi:'खरगोश को गाजर तक पहुंचाओ!', p_gu:'સસલાને ગાજર સુધી પહોંચાડો!', hero:'🐇', goal:'🥕'},
+  {p_en:'Help the monkey reach the banana!', p_hi:'बंदर को केले तक पहुंचाओ!', p_gu:'વાંદરાને કેળા સુધી પહોંચાડો!', hero:'🐒', goal:'🍌'},
+  {p_en:'Help the bee reach the flower!', p_hi:'मधुमक्खी को फूल तक पहुंचाओ!', p_gu:'મધમાખીને ફૂલ સુધી પહોંચાડો!', hero:'🐝', goal:'🌸'}
+];
+let currentTheme = MAZE_THEMES[0];
+
 function setDifficulty(d) {
   difficulty = d;
   document.querySelectorAll('.diff-btn').forEach((btn,i) => {
@@ -142,19 +150,24 @@ function onLanguageChange() {
 }
 
 function updatePromptText() {
-  const p = {en:'Help the cow reach the grass!',hi:'गाय को घास तक पहुंचाओ!',gu:'ગાયને ઘાસ સુધી પહોંચાડો!'};
+  const p = {en:currentTheme.p_en, hi:currentTheme.p_hi, gu:currentTheme.p_gu};
   document.getElementById('prompt-text').textContent = t(p);
 }
 
 function initGame() {
   gameWon=false; wrongMoves=0; stepCount=0;
   currentPos={r:0,c:0}; visitedSet=new Set(['0,0']);
+
+  // Randomize theme
+  currentTheme = pickRandom(MAZE_THEMES, 1)[0];
+
   const conf = DIFFS[difficulty];
-  mazeWalls = generateMaze(conf.size, conf.seed);
+  // Mix seed with theme pick so maze shapes vary even more, but we can stick to base logic
+  mazeWalls = generateMaze(conf.size, conf.seed + Math.floor(Math.random() * 100));
   document.getElementById('completion-screen').classList.remove('show');
   document.getElementById('game-area').classList.remove('hidden');
   hideFeedback(); updateStats(); renderMaze(); updatePromptText();
-  const p={en:'Help the cow reach the grass!',hi:'गाय को घास तक पहुंचाओ!',gu:'ગાયને ઘાસ સુધી પહોંચાડો!'};
+  const p = {en:currentTheme.p_en, hi:currentTheme.p_hi, gu:currentTheme.p_gu};
   setTimeout(()=>speak(p),300);
 }
 
@@ -194,8 +207,8 @@ function renderMaze() {
       if (isCurrent)  cell.classList.add('current');
       if (isEnd)      cell.classList.add('end-cell');
 
-      if (isCurrent) { const sp=document.createElement('span'); sp.textContent='🐄'; cell.appendChild(sp); }
-      else if (isEnd) { const sp=document.createElement('span'); sp.textContent='🌾'; cell.appendChild(sp); }
+      if (isCurrent) { const sp=document.createElement('span'); sp.textContent=currentTheme.hero; cell.appendChild(sp); }
+      else if (isEnd) { const sp=document.createElement('span'); sp.textContent=currentTheme.goal; cell.appendChild(sp); }
 
       cell.addEventListener('pointerdown', onCellPointer);
       grid.appendChild(cell);
@@ -234,7 +247,7 @@ function handleMove(r, c) {
 
   if (r===DIFFS[difficulty].size-1 && c===DIFFS[difficulty].size-1) {
     gameWon=true;
-    const p={en:'You made it! The cow reached the grass!',hi:'वाह! गाय घास तक पहुंच गई!',gu:'વાહ! ગાય ઘાસ સુધી પહોંચી!'};
+    const p={en:'You made it! Great job!', hi:'वाह! बहुत अच्छा!', gu:'વાહ! બહુ સારું!'};
     speak(p); launchConfetti();
     setTimeout(()=>showCompletion('maze', wrongMoves, stepCount+wrongMoves), 900);
   }

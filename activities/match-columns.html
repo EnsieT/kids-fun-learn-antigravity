@@ -182,9 +182,45 @@ const ROUND_TYPES = [
       {left:{emoji:'📚',hi:'किताब',en:'Book',gu:'ચોપડી'}, right:{emoji:'✏️',hi:'पढ़ाई',en:'Study',gu:'ભણતર'}},
     ]
   },
+  {
+    titleHi: '⚖️ उलटे शब्द',
+    titleEn: '⚖️ Opposites',
+    titleGu: '⚖️ વિરુદ્ધ શબ્દો',
+    pairs: [
+      {left:{emoji:'☀️',hi:'दिन',en:'Day',gu:'દિવસ'},       right:{emoji:'🌙',hi:'रात',en:'Night',gu:'રાત'}},
+      {left:{emoji:'🔥',hi:'गर्म',en:'Hot',gu:'ગરમ'},        right:{emoji:'🧊',hi:'ठंडा',en:'Cold',gu:'ઠંડુ'}},
+      {left:{emoji:'😊',hi:'खुश',en:'Happy',gu:'ખુશ'},       right:{emoji:'😢',hi:'उदास',en:'Sad',gu:'ઉદાસ'}},
+      {left:{emoji:'🐢',hi:'धीमा',en:'Slow',gu:'ધીમું'},      right:{emoji:'🐇',hi:'तेज़',en:'Fast',gu:'ઝડપી'}},
+      {left:{emoji:'🐘',hi:'बड़ा',en:'Big',gu:'મોટું'},        right:{emoji:'🐁',hi:'छोटा',en:'Small',gu:'નાનું'}},
+    ]
+  },
+  {
+    titleHi: '🔷 आकार और चीज़ें',
+    titleEn: '🔷 Shapes & Objects',
+    titleGu: '🔷 આકાર અને વસ્તુઓ',
+    pairs: [
+      {left:{emoji:'🔴',hi:'गोल',en:'Circle',gu:'ગોળ'},      right:{emoji:'⚽',hi:'गेंद',en:'Ball',gu:'દડો'}},
+      {left:{emoji:'🟩',hi:'चौकोर',en:'Square',gu:'ચોરસ'},   right:{emoji:'🎁',hi:'डिब्बा',en:'Box',gu:'ખોખું'}},
+      {left:{emoji:'🔺',hi:'तिकोना',en:'Triangle',gu:'ત્રિકોણ'}, right:{emoji:'🍕',hi:'पिज्ज़ा',en:'Pizza',gu:'પિઝા'}},
+      {left:{emoji:'⭐',hi:'तारा',en:'Star',gu:'તારો'},      right:{emoji:'✨',hi:'चमक',en:'Sparkle',gu:'ચમક'}},
+      {left:{emoji:'♥️',hi:'दिल',en:'Heart',gu:'દિલ'},       right:{emoji:'💌',hi:'चिट्ठी',en:'Letter',gu:'પત્ર'}},
+    ]
+  },
+  {
+    titleHi: '🚀 वाहन और जगह',
+    titleEn: '🚀 Vehicles & Places',
+    titleGu: '🚀 વાહન અને જગ્યા',
+    pairs: [
+      {left:{emoji:'✈️',hi:'हवाई जहाज़',en:'Plane',gu:'વિમાન'}, right:{emoji:'☁️',hi:'आसमान',en:'Sky',gu:'આકાશ'}},
+      {left:{emoji:'🚢',hi:'जहाज़',en:'Ship',gu:'જહાજ'},       right:{emoji:'🌊',hi:'पानी',en:'Water',gu:'પાણી'}},
+      {left:{emoji:'🚗',hi:'कार',en:'Car',gu:'ગાડી'},          right:{emoji:'🛣️',hi:'सड़क',en:'Road',gu:'રસ્તો'}},
+      {left:{emoji:'🚂',hi:'ट्रेन',en:'Train',gu:'ટ્રેન'},        right:{emoji:'🛤️',hi:'पटरी',en:'Track',gu:'પાટા'}},
+      {left:{emoji:'🚀',hi:'रॉकेट',en:'Rocket',gu:'રોકેટ'},      right:{emoji:'🌌',hi:'अंतरिक्ष',en:'Space',gu:'અંતરિક્ષ'}},
+    ]
+  }
 ];
 
-const TOTAL_ROUNDS = 8;
+const TOTAL_ROUNDS = 10;
 let round = 0, mistakes = 0;
 let roundsQueue = [];
 let selectedLeft = null;
