@@ -52,9 +52,11 @@
   <div id="maze-container">
     <p class="question-text" id="prompt-text"></p>
     <div id="difficulty-btns">
-      <button class="diff-btn active" onclick="setDifficulty('easy')">🐣 Easy 5×5</button>
-      <button class="diff-btn"        onclick="setDifficulty('medium')">🐥 Medium 7×7</button>
-      <button class="diff-btn"        onclick="setDifficulty('hard')">🐓 Hard 9×9</button>
+      <button class="diff-btn active" onclick="setDifficulty('easy1')">🐣 Easy 1</button>
+      <button class="diff-btn"        onclick="setDifficulty('easy2')">🐣 Easy 2</button>
+      <button class="diff-btn"        onclick="setDifficulty('easy3')">🐣 Easy 3</button>
+      <button class="diff-btn"        onclick="setDifficulty('medium')">🐥 Medium</button>
+      <button class="diff-btn"        onclick="setDifficulty('hard')">🐓 Hard</button>
     </div>
     <div id="stats-bar">
       <span id="wrong-count">❌ 0</span>
@@ -114,7 +116,9 @@ function generateMaze(size, seed) {
 
 /* ── Config ── */
 const DIFFS = {
-  easy:   {size:5, cs:64, seed:42},
+  easy1:  {size:5, cs:64, seed:42},
+  easy2:  {size:5, cs:64, seed:150},
+  easy3:  {size:5, cs:64, seed:300},
   medium: {size:7, cs:46, seed:137},
   hard:   {size:9, cs:36, seed:999},
 };
@@ -123,7 +127,7 @@ const WALL_W    = '4px';
 const OPEN_CLR  = 'rgba(180,150,100,0.15)';
 const OPEN_W    = '1px';
 
-let difficulty = 'easy';
+let difficulty = 'easy1';
 let mazeWalls = null, currentPos = {r:0,c:0};
 let visitedSet = new Set(), wrongMoves = 0, stepCount = 0, gameWon = false;
 
@@ -138,7 +142,7 @@ let currentTheme = MAZE_THEMES[0];
 function setDifficulty(d) {
   difficulty = d;
   document.querySelectorAll('.diff-btn').forEach((btn,i) => {
-    btn.classList.toggle('active', ['easy','medium','hard'][i]===d);
+    btn.classList.toggle('active', ['easy1','easy2','easy3','medium','hard'][i]===d);
   });
   initGame();
 }
