@@ -294,6 +294,71 @@
     </div>
   </section>
 
+  <!-- 📗 Phonics & Reading -->
+  <section class="category-section">
+    <span class="category-label cat-phonics">📗 <span class="lbl-cat-phonics">Phonics &amp; Reading</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/letter-sounds.html" class="activity-card card-lettersounds">
+        <span class="card-emoji">🔤</span>
+        <span class="card-title">Letter Sounds</span>
+        <span class="card-subtitle">अक्षर और आवाज़ · અક્ષર અને અવાજ</span>
+        <span class="card-stars" id="stars-letter-sounds"></span>
+      </a>
+
+      <a href="activities/rhyming-sort.html" class="activity-card card-rhymingsort">
+        <span class="card-emoji">🎶</span>
+        <span class="card-title">Rhyming Sort</span>
+        <span class="card-subtitle">तुकबंदी · તુકબંધી</span>
+        <span class="card-stars" id="stars-rhyming-sort"></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ✋ Skill Builders -->
+  <section class="category-section">
+    <span class="category-label cat-skills">✋ <span class="lbl-cat-skills">Skill Builders</span></span>
+    <div class="cards-grid">
+
+      <a href="activities/pattern-complete.html" class="activity-card card-patterncomplete">
+        <span class="card-emoji">📐</span>
+        <span class="card-title">What Comes Next?</span>
+        <span class="card-subtitle">आगे क्या? · આગળ શું?</span>
+        <span class="card-stars" id="stars-pattern-complete"></span>
+      </a>
+
+      <a href="activities/concept-match.html" class="activity-card card-conceptmatch">
+        <span class="card-emoji">🧠</span>
+        <span class="card-title">Concept Match</span>
+        <span class="card-subtitle">जोड़ी मिलाओ · જોડી મેળવો</span>
+        <span class="card-stars" id="stars-concept-match"></span>
+      </a>
+
+      <a href="activities/shadow-match.html" class="activity-card card-shadowmatch">
+        <span class="card-emoji">🔦</span>
+        <span class="card-title">Shadow Match</span>
+        <span class="card-subtitle">परछाई ढूंढो · પડછાયો શોધો</span>
+        <span class="card-stars" id="stars-shadow-match"></span>
+      </a>
+
+      <a href="activities/tracing.html" class="activity-card card-tracing">
+        <span class="card-emoji">✏️</span>
+        <span class="card-title">Tracing Fun</span>
+        <span class="card-subtitle">ट्रेस करो · ટ્રેસ કરો</span>
+        <span class="card-stars" id="stars-tracing"></span>
+      </a>
+
+      <a href="activities/block-builder.html" class="activity-card card-blockbuilder">
+        <span class="card-emoji">🧱</span>
+        <span class="card-title">Block Builder</span>
+        <span class="card-subtitle">ब्लॉक बनाओ · બ્લૉક બનાવો</span>
+        <span class="card-stars" id="stars-block-builder"></span>
+      </a>
+
+    </div>
+  </section>
+
 </main>
 
 <footer>
@@ -315,6 +380,8 @@ const HOME_LABELS = {
   catCreate: {en:'Creative', hi:'क्रिएटिव', gu:'સર્જનાત્મક'},
   catWorld:  {en:'Real World', hi:'असली दुनिया', gu:'વાસ્તવિક દુનિયા'},
   catListen: {en:'Listen & Learn', hi:'सुनो और सीखो', gu:'સાંભળો અને શીખો'},
+  catPhonics:{en:'Phonics & Reading', hi:'फोनिक्स और पढ़ाई', gu:'ફોનિક્સ અને વાંચન'},
+  catSkills: {en:'Skill Builders', hi:'कौशल निर्माता', gu:'કૌશલ્ય નિર્માતા'},
 };
 
 function renderHomeLanguage() {
@@ -329,6 +396,8 @@ function renderHomeLanguage() {
   document.querySelector('.lbl-cat-creative').textContent = t(HOME_LABELS.catCreate);
   document.querySelector('.lbl-cat-world').textContent   = t(HOME_LABELS.catWorld);
   document.querySelector('.lbl-cat-listen').textContent  = t(HOME_LABELS.catListen);
+  document.querySelector('.lbl-cat-phonics').textContent = t(HOME_LABELS.catPhonics);
+  document.querySelector('.lbl-cat-skills').textContent  = t(HOME_LABELS.catSkills);
 }
 
 function countTotalStars() {

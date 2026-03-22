@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tracing Fun ✏️ · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .tr-area { max-width: 520px; margin: 0 auto; padding: 8px 16px; text-align: center; }
+
+  .tr-canvas-wrap {
+    position: relative; margin: 12px auto;
+    background: #fff; border-radius: 20px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    border: 4px solid #E0E0E0;
+    overflow: hidden;
+    touch-action: none;
+  }
+  .tr-canvas-wrap canvas {
+    display: block; width: 100%; height: auto;
+    cursor: crosshair;
+  }
+
+  .tr-info-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; padding: 8px 0; flex-wrap: wrap;
+  }
+  .tr-label-text {
+    font-size: 1.3rem; font-weight: 900; color: #333;
+  }
+  .tr-accuracy {
+    font-size: 1rem; font-weight: 800;
+    padding: 4px 16px; border-radius: 50px;
+    background: #E8F5E9; color: #2E7D32;
+    display: inline-block;
+  }
+
+  .tr-hint {
+    font-size: 0.85rem; font-weight: 700; color: #999; margin-top: 4px;
+  }
+
+  .tr-next-btn {
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: #fff; border: none; border-radius: 50px;
+    padding: 12px 32px; font-size: 1.1rem; font-weight: 900;
+    cursor: pointer; margin-top: 12px;
+    box-shadow: 0 4px 16px rgba(76,175,80,0.4);
+    transition: transform 0.2s;
+    display: none;
+  }
+  .tr-next-btn:hover { transform: scale(1.05); }
+  .tr-next-btn.show { display: inline-block; }
+
+  .tr-clear-btn {
+    background: linear-gradient(135deg, #FF8C00, #FFD700);
+    color: #fff; border: none; border-radius: 50px;
+    padding: 8px 20px; font-size: 0.9rem; font-weight: 800;
+    cursor: pointer; margin-top: 8px;
+    box-shadow: 0 3px 12px rgba(255,140,0,0.3);
+    transition: transform 0.2s;
+  }
+  .tr-clear-btn:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>✏️ Tracing Fun</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Trace the shape!</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="tr-area">
+    <div class="tr-info-row">
+      <span class="tr-label-text" id="tr-label">Trace: A</span>
+      <span class="tr-accuracy" id="tr-accuracy">Accuracy: 0%</span>
+    </div>
+    <div class="tr-hint" id="tr-hint">Use your finger or mouse to trace the dashed line</div>
+
+    <div class="tr-canvas-wrap">
+      <canvas id="tr-canvas" width="400" height="400"></canvas>
+    </div>
+
+    <button class="tr-clear-btn" onclick="clearTrace()">🗑️ Clear & Retry</button>
+    <br/>
+    <button class="tr-next-btn" id="tr-next-btn" onclick="nextRound()">Next ➡️</button>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Trace the shape!',
+  hi:'आकार को ट्रेस करो!',
+  gu:'આકાર ટ્રેસ કરો!'
+};
+
+/* Path definitions: each is an array of {x,y} points (0-400 coordinate space) */
+function makeLetterPaths() {
+  return [
+    { label:'A', prompt:{en:'Trace the letter A',hi:'A लिखो',gu:'A લખો'}, points: generateLetterA() },
+    { label:'B', prompt:{en:'Trace the letter B',hi:'B लिखो',gu:'B લખો'}, points: generateLetterB() },
+    { label:'C', prompt:{en:'Trace the letter C',hi:'C लिखो',gu:'C લખો'}, points: generateLetterC() },
+    { label:'1', prompt:{en:'Trace the number 1',hi:'1 लिखो',gu:'1 લખો'}, points: generateNum1() },
+    { label:'2', prompt:{en:'Trace the number 2',hi:'2 लिखो',gu:'2 લખો'}, points: generateNum2() },
+    { label:'S', prompt:{en:'Trace the letter S',hi:'S लिखो',gu:'S લખો'}, points: generateLetterS() },
+    { label:'D', prompt:{en:'Trace the letter D',hi:'D लिखो',gu:'D લખો'}, points: generateLetterD() },
+    { label:'3', prompt:{en:'Trace the number 3',hi:'3 लिखो',gu:'3 લખો'}, points: generateNum3() },
+    { label:'E', prompt:{en:'Trace the letter E',hi:'E लिखो',gu:'E લખો'}, points: generateLetterE() },
+    { label:'Zigzag', prompt:{en:'Trace the zigzag path',hi:'टेढ़ी-मेढ़ी लकीर',gu:'ઝિગઝેગ લીટી'}, points: generateZigzag() },
+    { label:'Wave', prompt:{en:'Trace the wave',hi:'लहर बनाओ',gu:'તરંગ બનાવો'}, points: generateWave() },
+    { label:'Spiral', prompt:{en:'Trace the spiral',hi:'घुमावदार बनाओ',gu:'ગોળ ગોળ બનાવો'}, points: generateSpiral() },
+  ];
+}
+
+// Path generators
+function generateLetterA() {
+  const pts = [];
+  // Left stroke
+  for (let i = 0; i <= 30; i++) { const t = i/30; pts.push({x: 200 - 80*t, y: 80 + 240*t}); }
+  // Right stroke
+  for (let i = 0; i <= 30; i++) { const t = i/30; pts.push({x: 120 + 160*t, y: 320 - 240*t}); }
+  // Cross bar
+  for (let i = 0; i <= 15; i++) { const t = i/15; pts.push({x: 150 + 100*t, y: 220}); }
+  return pts;
+}
+function generateLetterB() {
+  const pts = [];
+  // Vertical line
+  for (let i = 0; i <= 30; i++) { const t = i/30; pts.push({x: 130, y: 80 + 240*t}); }
+  // Top bump
+  for (let i = 0; i <= 25; i++) { const a = -Math.PI/2 + Math.PI*i/25; pts.push({x: 130 + 70*Math.cos(a), y: 160 + 80*Math.sin(a)}); }
+  // Bottom bump
+  for (let i = 0; i <= 25; i++) { const a = -Math.PI/2 + Math.PI*i/25; pts.push({x: 130 + 70*Math.cos(a), y: 240 + 80*Math.sin(a)}); }
+  return pts;
+}
+function generateLetterC() {
+  const pts = [];
+  for (let i = 0; i <= 50; i++) {
+    const a = -0.8 + 2.6*i/50;
+    pts.push({x: 200 + 110*Math.cos(a), y: 200 - 110*Math.sin(a)});
+  }
+  return pts;
+}
+function generateNum1() {
+  const pts = [];
+  // small flag
+  for (let i = 0; i <= 10; i++) { const t = i/10; pts.push({x: 170 + 30*t, y: 120 - 40*t}); }
+  // vertical
+  for (let i = 0; i <= 30; i++) { const t = i/30; pts.push({x: 200, y: 80 + 240*t}); }
+  // base
+  for (let i = 0; i <= 10; i++) { const t = i/10; pts.push({x: 150 + 100*t, y: 320}); }
+  return pts;
+}
+function generateNum2() {
+  const pts = [];
+  // top curve
+  for (let i = 0; i <= 30; i++) { const a = Math.PI + Math.PI*i/30; pts.push({x: 200 + 70*Math.cos(a), y: 150 + 70*Math.sin(a)}); }
+  // diagonal
+  for (let i = 0; i <= 20; i++) { const t = i/20; pts.push({x: 270 - 140*t, y: 150 + 170*t}); }
+  // base
+  for (let i = 0; i <= 10; i++) { const t = i/10; pts.push({x: 130 + 140*t, y: 320}); }
+  return pts;
+}
+function generateLetterS() {
+  const pts = [];
+  for (let i = 0; i <= 60; i++) {
+    const t = i / 60;
+    const x = 200 + 80 * Math.cos(Math.PI * 3 * t + Math.PI);
+    const y = 80 + 240 * t;
+    pts.push({x, y});
+  }
+  return pts;
+}
+function generateLetterD() {
+  const pts = [];
+  // Vertical
+  for (let i = 0; i <= 30; i++) { pts.push({x: 140, y: 80 + 240*i/30}); }
+  // Curve
+  for (let i = 0; i <= 40; i++) { const a = -Math.PI/2 + Math.PI*i/40; pts.push({x: 140 + 100*Math.cos(a), y: 200 + 120*Math.sin(a)}); }
+  return pts;
+}
+function generateNum3() {
+  const pts = [];
+  // Top curve
+  for (let i = 0; i <= 30; i++) { const a = Math.PI + Math.PI*i/30; pts.push({x: 200 + 65*Math.cos(a), y: 145 + 65*Math.sin(a)}); }
+  // Bottom curve
+  for (let i = 0; i <= 30; i++) { const a = -Math.PI*i/30; pts.push({x: 200 + 70*Math.cos(a), y: 260 + 70*Math.sin(a)}); }
+  return pts;
+}
+function generateLetterE() {
+  const pts = [];
+  // Top line
+  for (let i = 0; i <= 10; i++) { pts.push({x: 270 - 140*i/10, y: 80}); }
+  // Vertical
+  for (let i = 0; i <= 25; i++) { pts.push({x: 130, y: 80 + 240*i/25}); }
+  // Middle
+  for (let i = 0; i <= 10; i++) { pts.push({x: 130 + 110*i/10, y: 200}); }
+  // Bottom
+  for (let i = 0; i <= 10; i++) { pts.push({x: 130 + 140*i/10, y: 320}); }
+  return pts;
+}
+function generateZigzag() {
+  const pts = [];
+  const segs = 6;
+  for (let s = 0; s < segs; s++) {
+    const startX = 60 + (280 / segs) * s;
+    const endX = startX + 280 / segs;
+    const yTop = 120, yBot = 280;
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      pts.push({x: startX + (endX - startX) * t, y: s % 2 === 0 ? yTop + (yBot-yTop)*t : yBot - (yBot-yTop)*t});
+    }
+  }
+  return pts;
+}
+function generateWave() {
+  const pts = [];
+  for (let i = 0; i <= 80; i++) {
+    const t = i / 80;
+    pts.push({x: 60 + 280*t, y: 200 + 80*Math.sin(t * Math.PI * 4)});
+  }
+  return pts;
+}
+function generateSpiral() {
+  const pts = [];
+  for (let i = 0; i <= 100; i++) {
+    const t = i / 100;
+    const r = 20 + 100 * t;
+    const a = t * Math.PI * 4;
+    pts.push({x: 200 + r*Math.cos(a), y: 200 + r*Math.sin(a)});
+  }
+  return pts;
+}
+
+const TOTAL = 10;
+const TRACE_RADIUS = 28; // px tolerance
+
+let allPaths = [], rounds = [], pos = 0, totalAccuracy = 0;
+let canvas, ctx, isDrawing = false;
+let pathPoints = [], hitFlags = [];
+
+function hearAgain() {
+  if (rounds[pos]) speak(rounds[pos].prompt);
+  else speak(PROMPT);
+}
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  allPaths = makeLetterPaths();
+  rounds = shuffle(allPaths).slice(0, TOTAL);
+  pos = 0; totalAccuracy = 0;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  updateProgress(0, TOTAL);
+  document.getElementById('score-display').textContent = '0/' + TOTAL;
+  setupCanvas();
+  showRound();
+}
+
+function setupCanvas() {
+  canvas = document.getElementById('tr-canvas');
+  ctx = canvas.getContext('2d');
+
+  // Handle resize
+  const wrap = canvas.parentElement;
+  const w = Math.min(wrap.clientWidth, 400);
+  canvas.style.width = w + 'px';
+  canvas.style.height = w + 'px';
+
+  canvas.addEventListener('mousedown', onStart);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onEnd);
+  canvas.addEventListener('mouseleave', onEnd);
+  canvas.addEventListener('touchstart', onTouchStart, {passive: false});
+  canvas.addEventListener('touchmove', onTouchMove, {passive: false});
+  canvas.addEventListener('touchend', onEnd);
+}
+
+function getCanvasPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY
+  };
+}
+
+function onStart(e) { isDrawing = true; onMove(e); }
+function onMove(e) {
+  if (!isDrawing) return;
+  const p = getCanvasPos(e);
+  drawDot(p.x, p.y);
+  checkHits(p.x, p.y);
+}
+function onEnd() {
+  isDrawing = false;
+  updateAccuracy();
+}
+
+function onTouchStart(e) { e.preventDefault(); const t = e.touches[0]; isDrawing = true; onMove(t); }
+function onTouchMove(e) {
+  e.preventDefault();
+  if (!isDrawing) return;
+  const t = e.touches[0];
+  const p = getCanvasPos(t);
+  drawDot(p.x, p.y);
+  checkHits(p.x, p.y);
+}
+
+function drawDot(x, y) {
+  ctx.beginPath();
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = '#4CAF50';
+  ctx.globalAlpha = 0.7;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function checkHits(x, y) {
+  pathPoints.forEach((pt, i) => {
+    if (!hitFlags[i]) {
+      const dx = pt.x - x, dy = pt.y - y;
+      if (dx*dx + dy*dy < TRACE_RADIUS * TRACE_RADIUS) {
+        hitFlags[i] = true;
+      }
+    }
+  });
+  updateAccuracy();
+}
+
+function updateAccuracy() {
+  const hit = hitFlags.filter(Boolean).length;
+  const pct = pathPoints.length > 0 ? Math.round(hit / pathPoints.length * 100) : 0;
+  document.getElementById('tr-accuracy').textContent = t({en:`Accuracy: ${pct}%`, hi:`सटीकता: ${pct}%`, gu:`ચોકસાઈ: ${pct}%`});
+
+  if (pct >= 70) {
+    document.getElementById('tr-next-btn').classList.add('show');
+    if (pct >= 85) {
+      document.getElementById('tr-accuracy').style.background = '#E8F5E9';
+      document.getElementById('tr-accuracy').style.color = '#2E7D32';
+    }
+  }
+}
+
+function clearTrace() {
+  drawGuidePath();
+}
+
+function drawGuidePath() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw background grid
+  ctx.strokeStyle = '#f0f0f0';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 400; i += 40) {
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 400); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(400, i); ctx.stroke();
+  }
+
+  // Draw dashed guide path
+  ctx.setLineDash([8, 8]);
+  ctx.strokeStyle = '#BDBDBD';
+  ctx.lineWidth = 20;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  pathPoints.forEach((pt, i) => {
+    if (i === 0) ctx.moveTo(pt.x, pt.y);
+    else ctx.lineTo(pt.x, pt.y);
+  });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Draw dots at start and end
+  if (pathPoints.length > 0) {
+    // Start dot (green)
+    ctx.beginPath();
+    ctx.arc(pathPoints[0].x, pathPoints[0].y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#4CAF50';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('▶', pathPoints[0].x, pathPoints[0].y);
+
+    // End dot (red)
+    const last = pathPoints[pathPoints.length - 1];
+    ctx.beginPath();
+    ctx.arc(last.x, last.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#F44336';
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.fillText('●', last.x, last.y);
+  }
+
+  // Reset hit tracking
+  hitFlags = pathPoints.map(() => false);
+  document.getElementById('tr-accuracy').textContent = t({en:'Accuracy: 0%',hi:'सटीकता: 0%',gu:'ચોકસાઈ: 0%'});
+  document.getElementById('tr-next-btn').classList.remove('show');
+}
+
+function showRound() {
+  if (pos >= TOTAL) {
+    // Calculate average accuracy as "mistakes" for grading
+    const avgAcc = totalAccuracy / TOTAL;
+    const fakeMistakes = avgAcc >= 85 ? 0 : avgAcc >= 70 ? 2 : 5;
+    showCompletion('tracing', fakeMistakes, TOTAL);
+    return;
+  }
+  const r = rounds[pos];
+  pathPoints = r.points;
+  document.getElementById('tr-label').textContent = t({
+    en:`Trace: ${r.label}`,
+    hi:`ट्रेस करो: ${r.label}`,
+    gu:`ટ્રેસ કરો: ${r.label}`
+  });
+
+  drawGuidePath();
+  speak(r.prompt);
+  updateProgress(pos, TOTAL);
+  document.getElementById('score-display').textContent = pos + '/' + TOTAL;
+}
+
+function nextRound() {
+  const hit = hitFlags.filter(Boolean).length;
+  const pct = pathPoints.length > 0 ? Math.round(hit / pathPoints.length * 100) : 0;
+  totalAccuracy += pct;
+
+  if (pct >= 70) showFeedback(true);
+  else showFeedback(false);
+
+  pos++;
+  setTimeout(() => { hideFeedback(); showRound(); }, 600);
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

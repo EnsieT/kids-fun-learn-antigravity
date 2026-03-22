@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rhyming Sort 🎶 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .rs-area { max-width: 520px; margin: 0 auto; padding: 8px 16px; }
+
+  .rs-word-card {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; border-radius: 24px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+    padding: 18px 32px; margin: 12px auto;
+    font-size: clamp(2rem, 8vw, 3rem); font-weight: 900; color: #333;
+    border: 5px solid #FF8C00;
+    animation: bounceIn 0.45s ease;
+    text-align: center;
+  }
+  .rs-word-img { font-size: 2.5rem; display: block; margin-bottom: 4px; }
+
+  .rs-baskets {
+    display: flex; gap: 16px; justify-content: center;
+    padding: 8px 0; margin-top: 8px;
+  }
+  .rs-basket {
+    flex: 1; max-width: 200px; min-height: 120px;
+    border-radius: 20px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; border: 5px solid transparent;
+    background: #fff; box-shadow: 0 6px 22px rgba(0,0,0,0.12);
+    transition: transform 0.15s, border-color 0.2s, background 0.2s;
+    padding: 16px 8px; position: relative; overflow: hidden;
+  }
+  .rs-basket:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
+  .rs-basket:active { transform: scale(0.97); }
+  .rs-basket.basket-left  { border-color: #9C27B0; background: #F3E5F5; }
+  .rs-basket.basket-right { border-color: #FF8C00; background: #FFF3E0; }
+  .rs-basket-family {
+    font-size: 1.6rem; font-weight: 900; color: #333;
+  }
+  .rs-basket-label {
+    font-size: 0.8rem; font-weight: 800; color: #666; text-align: center;
+  }
+  .rs-basket.correct-flash { animation: basketPulse 0.5s; }
+  .rs-basket.wrong-flash   { animation: shake 0.5s; background: #FFEBEE !important; border-color: #F44336 !important; }
+  @keyframes basketPulse { 0%{transform:scale(1);} 40%{transform:scale(1.08);} 100%{transform:scale(1);} }
+
+  .rs-progress-row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 0;
+    font-weight: 800; color: #555; font-size: 1rem;
+  }
+  .rs-progress-bar { flex:1; height:12px; background:rgba(0,0,0,0.1); border-radius:50px; overflow:hidden; }
+  .rs-progress-fill { height:100%; background:linear-gradient(90deg,#9C27B0,#E040FB); border-radius:50px; transition:width 0.4s ease; }
+
+  .rs-round-title {
+    text-align: center; font-size: 1rem; font-weight: 900;
+    color: #888; text-transform: uppercase; letter-spacing: 1px; padding: 4px 0;
+  }
+
+  .rs-word-card.fly-correct { animation: flyCorrect 0.5s forwards; }
+  .rs-word-card.bounce-back { animation: bounceBack 0.55s ease; }
+  @keyframes bounceIn { 0%{transform:scale(0.3) translateY(-30px);opacity:0;} 70%{transform:scale(1.1);} 100%{transform:scale(1);opacity:1;} }
+  @keyframes flyCorrect { 0%{transform:scale(1);opacity:1;} 100%{transform:scale(0.2) translateY(100px);opacity:0;} }
+  @keyframes bounceBack { 0%{transform:translateX(0);} 25%{transform:translateX(-18px) rotate(-6deg);} 50%{transform:translateX(18px) rotate(6deg);} 75%{transform:translateX(-8px) rotate(-3deg);} 100%{transform:translateX(0) rotate(0);} }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🎶 Rhyming Sort</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/0</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Which basket does it rhyme with?</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="rs-area">
+    <div class="rs-round-title" id="rs-round-title"></div>
+
+    <div style="text-align:center;">
+      <div class="rs-word-card" id="rs-word">
+        <span class="rs-word-img" id="rs-word-img">🐱</span>
+        <span id="rs-word-text">Cat</span>
+      </div>
+    </div>
+
+    <div class="rs-progress-row">
+      <span id="rs-count">0/8</span>
+      <div class="rs-progress-bar"><div class="rs-progress-fill" id="rs-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="rs-baskets">
+      <div class="rs-basket basket-left" id="basket-left" onclick="handleBasket('left')">
+        <span class="rs-basket-family" id="basket-left-family">-at</span>
+        <span class="rs-basket-label" id="basket-left-label">cat, bat, hat…</span>
+      </div>
+      <div class="rs-basket basket-right" id="basket-right" onclick="handleBasket('right')">
+        <span class="rs-basket-family" id="basket-right-family">-og</span>
+        <span class="rs-basket-label" id="basket-right-label">dog, log, frog…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Which basket does it rhyme with?',
+  hi:'यह किस टोकरी में जाएगा?',
+  gu:'આ કઈ ટોપલીમાં જશે?'
+};
+
+const ROUNDS = [
+  {
+    left: { family:'-at', examples:'cat, bat, hat…' },
+    right: { family:'-an', examples:'fan, man, van…' },
+    items: [
+      { emoji:'🐱', word:'Cat',  side:'left' },
+      { emoji:'🦇', word:'Bat',  side:'left' },
+      { emoji:'🎩', word:'Hat',  side:'left' },
+      { emoji:'🐀', word:'Rat',  side:'left' },
+      { emoji:'💨', word:'Fan',  side:'right' },
+      { emoji:'🧑', word:'Man',  side:'right' },
+      { emoji:'🚐', word:'Van',  side:'right' },
+      { emoji:'🥫', word:'Can',  side:'right' },
+    ]
+  },
+  {
+    left: { family:'-og', examples:'dog, log, frog…' },
+    right: { family:'-ug', examples:'bug, mug, rug…' },
+    items: [
+      { emoji:'🐶', word:'Dog',  side:'left' },
+      { emoji:'🪵', word:'Log',  side:'left' },
+      { emoji:'🐸', word:'Frog', side:'left' },
+      { emoji:'🌫️', word:'Fog',  side:'left' },
+      { emoji:'🐛', word:'Bug',  side:'right' },
+      { emoji:'☕', word:'Mug',  side:'right' },
+      { emoji:'🧶', word:'Rug',  side:'right' },
+      { emoji:'🤗', word:'Hug',  side:'right' },
+    ]
+  },
+  {
+    left: { family:'-ig', examples:'pig, big, dig…' },
+    right: { family:'-en', examples:'hen, pen, ten…' },
+    items: [
+      { emoji:'🐷', word:'Pig',  side:'left' },
+      { emoji:'🕳️', word:'Dig',  side:'left' },
+      { emoji:'💃', word:'Jig',  side:'left' },
+      { emoji:'🥜', word:'Fig',  side:'left' },
+      { emoji:'🐔', word:'Hen',  side:'right' },
+      { emoji:'🖊️', word:'Pen',  side:'right' },
+      { emoji:'🔟', word:'Ten',  side:'right' },
+      { emoji:'🧑‍🤝‍🧑', word:'Men', side:'right' },
+    ]
+  },
+  {
+    left: { family:'-op', examples:'hop, mop, top…' },
+    right: { family:'-ot', examples:'hot, pot, dot…' },
+    items: [
+      { emoji:'🐇', word:'Hop',  side:'left' },
+      { emoji:'🧹', word:'Mop',  side:'left' },
+      { emoji:'🔝', word:'Top',  side:'left' },
+      { emoji:'🛑', word:'Stop', side:'left' },
+      { emoji:'🌡️', word:'Hot',  side:'right' },
+      { emoji:'🫕', word:'Pot',  side:'right' },
+      { emoji:'⚫', word:'Dot',  side:'right' },
+      { emoji:'🧸', word:'Tot',  side:'right' },
+    ]
+  },
+];
+
+let roundIdx = 0, itemQueue = [], itemPos = 0, mistakes = 0;
+let totalAnswered = 0, isAnimating = false;
+const totalAll = ROUNDS.reduce((s,r) => s + r.items.length, 0);
+
+function hearAgain() {
+  const wordEl = document.getElementById('rs-word-text');
+  if (wordEl) speak({en: wordEl.textContent, hi: wordEl.textContent, gu: wordEl.textContent});
+}
+
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  roundIdx = 0; mistakes = 0; totalAnswered = 0; isAnimating = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  updateProgress(0, totalAll);
+  document.getElementById('score-display').textContent = '0/' + totalAll;
+  loadRound(0);
+}
+
+function loadRound(idx) {
+  if (idx >= ROUNDS.length) { showCompletion('rhyming-sort', mistakes, totalAll); return; }
+  roundIdx = idx;
+  const rd = ROUNDS[idx];
+  itemQueue = shuffle([...rd.items]);
+  itemPos = 0;
+
+  document.getElementById('rs-round-title').textContent = `Round ${idx + 1}: ${rd.left.family} vs ${rd.right.family}`;
+  document.getElementById('basket-left-family').textContent = rd.left.family;
+  document.getElementById('basket-left-label').textContent = rd.left.examples;
+  document.getElementById('basket-right-family').textContent = rd.right.family;
+  document.getElementById('basket-right-label').textContent = rd.right.examples;
+
+  updateLocalProgress(0, itemQueue.length);
+  showNextWord();
+}
+
+function showNextWord() {
+  if (itemPos >= itemQueue.length) {
+    roundIdx++;
+    if (roundIdx < ROUNDS.length) setTimeout(() => loadRound(roundIdx), 600);
+    else setTimeout(() => showCompletion('rhyming-sort', mistakes, totalAll), 600);
+    return;
+  }
+  const item = itemQueue[itemPos];
+  const cardEl = document.getElementById('rs-word');
+  document.getElementById('rs-word-img').textContent = item.emoji;
+  document.getElementById('rs-word-text').textContent = item.word;
+  cardEl.className = 'rs-word-card';
+  void cardEl.offsetWidth;
+  cardEl.style.animation = 'bounceIn 0.45s ease';
+  speak({en: item.word, hi: item.word, gu: item.word});
+}
+
+function handleBasket(side) {
+  if (isAnimating) return;
+  const item = itemQueue[itemPos];
+  const correctSide = item.side === 'left' ? 'left' : 'right';
+  const cardEl = document.getElementById('rs-word');
+
+  if (side === correctSide) {
+    isAnimating = true;
+    cardEl.className = 'rs-word-card fly-correct';
+    const bEl = document.getElementById('basket-' + side);
+    bEl.classList.add('correct-flash');
+    setTimeout(() => bEl.classList.remove('correct-flash'), 500);
+    showFeedback(true);
+    totalAnswered++;
+    itemPos++;
+    updateLocalProgress(itemPos, itemQueue.length);
+    updateProgress(totalAnswered, totalAll);
+    document.getElementById('score-display').textContent = totalAnswered + '/' + totalAll;
+    setTimeout(() => { isAnimating = false; hideFeedback(); showNextWord(); }, 650);
+  } else {
+    mistakes++;
+    cardEl.className = 'rs-word-card bounce-back';
+    const bEl = document.getElementById('basket-' + side);
+    bEl.classList.add('wrong-flash');
+    showFeedback(false);
+    setTimeout(() => {
+      bEl.classList.remove('wrong-flash');
+      cardEl.className = 'rs-word-card';
+    }, 600);
+  }
+}
+
+function updateLocalProgress(cur, total) {
+  const pct = total > 0 ? (cur / total * 100) : 0;
+  document.getElementById('rs-fill').style.width = pct + '%';
+  document.getElementById('rs-count').textContent = cur + '/' + total;
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

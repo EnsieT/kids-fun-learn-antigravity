@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Letter Sounds 🔤 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .ls-area { max-width: 520px; margin: 0 auto; padding: 16px; text-align: center; }
+
+  .ls-letter-card {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 140px; height: 140px;
+    background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+    border-radius: 28px; box-shadow: 0 8px 28px rgba(33,150,243,0.25);
+    font-size: 5rem; font-weight: 900; color: #1565C0;
+    margin: 12px auto; animation: bounceIn 0.5s ease;
+    border: 5px solid #2196F3;
+    text-transform: uppercase;
+  }
+  .ls-letter-sub {
+    font-size: 1rem; font-weight: 800; color: #666; margin-bottom: 8px;
+  }
+
+  .ls-choices {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 16px; padding: 12px 0; max-width: 400px; margin: 0 auto;
+  }
+
+  .ls-choice {
+    background: #fff; border: 4px solid #E0E0E0; border-radius: 20px;
+    padding: 16px 8px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    min-height: 110px; justify-content: center;
+  }
+  .ls-choice:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.16); }
+  .ls-choice:active { transform: scale(0.95); }
+  .ls-choice .ls-emoji { font-size: 3rem; line-height: 1; }
+  .ls-choice .ls-label { font-size: 0.85rem; font-weight: 800; color: #555; text-transform: capitalize; }
+  .ls-choice.correct { border-color: #4CAF50; background: #E8F5E9; animation: pulse-correct 0.5s; }
+  .ls-choice.wrong   { border-color: #F44336; background: #FFEBEE; animation: shake 0.5s; }
+  .ls-choice:disabled { cursor: default; }
+
+  @keyframes bounceIn {
+    0%   { transform: scale(0.3) translateY(-30px); opacity:0; }
+    70%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity:1; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔤 Letter Sounds</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Which one starts with this letter?</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="ls-area">
+    <div class="ls-letter-card" id="ls-letter">A</div>
+    <div class="ls-letter-sub" id="ls-letter-sub">"A" says "ah" like Apple</div>
+    <div class="ls-choices" id="ls-choices"></div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Which one starts with this letter?',
+  hi:'इस अक्षर से कौन शुरू होता है?',
+  gu:'આ અક્ષરથી કોણ શરૂ થાય છે?'
+};
+
+const LETTER_DATA = [
+  { letter:'A', sound:{en:'"A" says "ah" like Apple',hi:'A अ जैसे Apple',gu:'A અ જેમ Apple'},
+    correct:{emoji:'🍎',en:'Apple',hi:'सेब',gu:'સફરજન'},
+    wrong:[{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'}]},
+  { letter:'B', sound:{en:'"B" says "buh" like Ball',hi:'B ब जैसे Ball',gu:'B બ જેમ Ball'},
+    correct:{emoji:'⚽',en:'Ball',hi:'गेंद',gu:'દડો'},
+    wrong:[{emoji:'🍌',en:'Banana',hi:'केला',gu:'કેળું'},{emoji:'🌞',en:'Sun',hi:'सूरज',gu:'સૂરજ'},{emoji:'🎈',en:'Balloon',hi:'गुब्बारा',gu:'ફુગ્ગો'}]},
+  { letter:'C', sound:{en:'"C" says "kuh" like Cat',hi:'C क जैसे Cat',gu:'C ક જેમ Cat'},
+    correct:{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},
+    wrong:[{emoji:'🍎',en:'Apple',hi:'सेब',gu:'સફરજન'},{emoji:'🐘',en:'Elephant',hi:'हाथी',gu:'હાથી'},{emoji:'🌺',en:'Flower',hi:'फूल',gu:'ફૂલ'}]},
+  { letter:'D', sound:{en:'"D" says "duh" like Dog',hi:'D ड जैसे Dog',gu:'D ડ જેમ Dog'},
+    correct:{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},
+    wrong:[{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'🍊',en:'Orange',hi:'संतरा',gu:'નારંગી'},{emoji:'🌙',en:'Moon',hi:'चाँद',gu:'ચાંદ'}]},
+  { letter:'E', sound:{en:'"E" says "eh" like Elephant',hi:'E ए जैसे Elephant',gu:'E એ જેમ Elephant'},
+    correct:{emoji:'🐘',en:'Elephant',hi:'हाथी',gu:'હાથી'},
+    wrong:[{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},{emoji:'⚽',en:'Ball',hi:'गेंद',gu:'દડો'},{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'}]},
+  { letter:'F', sound:{en:'"F" says "fuh" like Fish',hi:'F फ जैसे Fish',gu:'F ફ જેમ Fish'},
+    correct:{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'},
+    wrong:[{emoji:'🍎',en:'Apple',hi:'सेब',gu:'સફરજન'},{emoji:'🐘',en:'Elephant',hi:'हाथी',gu:'હાથી'},{emoji:'⚽',en:'Ball',hi:'गेंद',gu:'દડો'}]},
+  { letter:'G', sound:{en:'"G" says "guh" like Grapes',hi:'G ग जैसे Grapes',gu:'G ગ જેમ Grapes'},
+    correct:{emoji:'🍇',en:'Grapes',hi:'अंगूर',gu:'દ્રાક્ષ'},
+    wrong:[{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'🌞',en:'Sun',hi:'सूरज',gu:'સૂરજ'},{emoji:'🍌',en:'Banana',hi:'केला',gu:'કેળું'}]},
+  { letter:'H', sound:{en:'"H" says "huh" like Hat',hi:'H ह जैसे Hat',gu:'H હ જેમ Hat'},
+    correct:{emoji:'🎩',en:'Hat',hi:'टोपी',gu:'ટોપી'},
+    wrong:[{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},{emoji:'🍊',en:'Orange',hi:'संतरा',gu:'નારંગી'},{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'}]},
+  { letter:'I', sound:{en:'"I" says "ih" like Ice cream',hi:'I इ जैसे Ice cream',gu:'I ઇ જેમ Ice cream'},
+    correct:{emoji:'🍦',en:'Ice cream',hi:'आइसक्रीम',gu:'આઇસક્રીમ'},
+    wrong:[{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'⚽',en:'Ball',hi:'गेंद',gu:'દડો'},{emoji:'🌺',en:'Flower',hi:'फूल',gu:'ફૂલ'}]},
+  { letter:'J', sound:{en:'"J" says "juh" like Jug',hi:'J ज जैसे Jug',gu:'J જ જેમ Jug'},
+    correct:{emoji:'🫗',en:'Jug',hi:'जग',gu:'જગ'},
+    wrong:[{emoji:'🍎',en:'Apple',hi:'सेब',gu:'સફરજન'},{emoji:'🐘',en:'Elephant',hi:'हाथी',gu:'હાથી'},{emoji:'🌙',en:'Moon',hi:'चाँद',gu:'ચાંદ'}]},
+  { letter:'K', sound:{en:'"K" says "kuh" like Kite',hi:'K क जैसे Kite',gu:'K ક જેમ Kite'},
+    correct:{emoji:'🪁',en:'Kite',hi:'पतंग',gu:'પતંગ'},
+    wrong:[{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'},{emoji:'🍇',en:'Grapes',hi:'अंगूर',gu:'દ્રાક્ષ'}]},
+  { letter:'L', sound:{en:'"L" says "luh" like Lion',hi:'L ल जैसे Lion',gu:'L લ જેમ Lion'},
+    correct:{emoji:'🦁',en:'Lion',hi:'शेर',gu:'સિંહ'},
+    wrong:[{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'🍌',en:'Banana',hi:'केला',gu:'કેળું'},{emoji:'🎩',en:'Hat',hi:'टोपी',gu:'ટોપી'}]},
+  { letter:'M', sound:{en:'"M" says "muh" like Monkey',hi:'M म जैसे Monkey',gu:'M મ જેમ Monkey'},
+    correct:{emoji:'🐒',en:'Monkey',hi:'बंदर',gu:'વાંદરો'},
+    wrong:[{emoji:'🐘',en:'Elephant',hi:'हाथी',gu:'હાથી'},{emoji:'🍎',en:'Apple',hi:'सेब',gu:'સફરજન'},{emoji:'⚽',en:'Ball',hi:'गेंद',gu:'દડો'}]},
+  { letter:'S', sound:{en:'"S" says "sss" like Sun',hi:'S स जैसे Sun',gu:'S સ જેમ Sun'},
+    correct:{emoji:'🌞',en:'Sun',hi:'सूरज',gu:'સૂરજ'},
+    wrong:[{emoji:'🐶',en:'Dog',hi:'कुत्ता',gu:'કૂતરો'},{emoji:'🐱',en:'Cat',hi:'बिल्ली',gu:'બિલાડી'},{emoji:'🍇',en:'Grapes',hi:'अंगूर',gu:'દ્રાક્ષ'}]},
+  { letter:'T', sound:{en:'"T" says "tuh" like Tree',hi:'T ट जैसे Tree',gu:'T ટ જેમ Tree'},
+    correct:{emoji:'🌳',en:'Tree',hi:'पेड़',gu:'ઝાડ'},
+    wrong:[{emoji:'🐟',en:'Fish',hi:'मछली',gu:'માછલી'},{emoji:'🍦',en:'Ice cream',hi:'आइसक्रीम',gu:'આઇસક્રીમ'},{emoji:'🦁',en:'Lion',hi:'शेर',gu:'સિંહ'}]},
+];
+
+const TOTAL = 10;
+let rounds = [], pos = 0, mistakes = 0, isLocked = false;
+
+function hearAgain() {
+  const r = rounds[pos];
+  if (r) speak(r.sound);
+  else speak(PROMPT);
+}
+
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  rounds = shuffle(LETTER_DATA).slice(0, TOTAL);
+  pos = 0; mistakes = 0; isLocked = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  updateProgress(0, TOTAL);
+  showRound();
+}
+
+function showRound() {
+  if (pos >= TOTAL) { showCompletion('letter-sounds', mistakes, TOTAL); return; }
+  const r = rounds[pos];
+  document.getElementById('ls-letter').textContent = r.letter;
+  document.getElementById('ls-letter').style.animation = 'none';
+  void document.getElementById('ls-letter').offsetWidth;
+  document.getElementById('ls-letter').style.animation = 'bounceIn 0.5s ease';
+  document.getElementById('ls-letter-sub').textContent = t(r.sound);
+
+  const allChoices = shuffle([r.correct, ...pickRandom(r.wrong, 3)]);
+  const grid = document.getElementById('ls-choices');
+  grid.innerHTML = '';
+  allChoices.forEach(item => {
+    const btn = document.createElement('button');
+    btn.className = 'ls-choice';
+    btn.innerHTML = `<span class="ls-emoji">${item.emoji}</span><span class="ls-label">${t({en:item.en,hi:item.hi,gu:item.gu})}</span>`;
+    btn.onclick = () => handleChoice(btn, item === r.correct, item);
+    grid.appendChild(btn);
+  });
+
+  speak(r.sound);
+  updateProgress(pos, TOTAL);
+  document.getElementById('score-display').textContent = pos + '/' + TOTAL;
+}
+
+function handleChoice(btn, isCorrect, item) {
+  if (isLocked) return;
+  if (isCorrect) {
+    isLocked = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    pos++;
+    setTimeout(() => { isLocked = false; hideFeedback(); showRound(); }, 900);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    showFeedback(false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

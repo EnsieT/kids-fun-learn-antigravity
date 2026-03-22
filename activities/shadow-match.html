@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Shadow Match 🔦 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .sm-area { max-width: 520px; margin: 0 auto; padding: 12px 16px; text-align: center; }
+
+  .sm-target-wrap {
+    display: flex; flex-direction: column; align-items: center; padding: 12px 0;
+  }
+  .sm-target-label {
+    font-size: 0.95rem; font-weight: 800; color: #666; margin-bottom: 6px;
+  }
+  .sm-target {
+    font-size: clamp(4rem, 14vw, 6rem); line-height: 1;
+    background: #fff; border-radius: 24px;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+    width: 130px; height: 130px;
+    display: flex; align-items: center; justify-content: center;
+    border: 5px solid #FF8C00;
+    animation: bounceIn 0.5s ease;
+  }
+
+  .sm-shadows {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 14px; padding: 16px 0; max-width: 400px; margin: 0 auto;
+  }
+  @media (max-width: 400px) { .sm-shadows { grid-template-columns: repeat(2,1fr); } }
+
+  .sm-shadow {
+    aspect-ratio: 1; min-height: 80px;
+    background: #2C2C2C; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    transition: transform 0.15s, box-shadow 0.2s;
+    border: 4px solid #444;
+    font-size: clamp(2.8rem, 9vw, 3.8rem);
+    /* Make the emoji look like a solid shadow */
+    filter: brightness(0);
+    -webkit-filter: brightness(0);
+  }
+  .sm-shadow:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+  .sm-shadow:active { transform: scale(0.95); }
+  .sm-shadow.correct {
+    border-color: #4CAF50 !important; background: #E8F5E9 !important;
+    filter: none !important; -webkit-filter: none !important;
+    animation: pulse-correct 0.5s;
+  }
+  .sm-shadow.wrong {
+    border-color: #F44336 !important;
+    animation: shake 0.5s;
+  }
+
+  .sm-round-info {
+    font-size: 0.9rem; font-weight: 800; color: #888; padding: 4px 0;
+  }
+
+  @keyframes bounceIn {
+    0%   { transform: scale(0.3) translateY(-30px); opacity:0; }
+    70%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity:1; }
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🔦 Shadow Match</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Find the matching shadow!</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="sm-area">
+    <div class="sm-target-wrap">
+      <div class="sm-target-label" id="sm-target-label">Which shadow matches this?</div>
+      <div class="sm-target" id="sm-target">🐘</div>
+    </div>
+    <div class="sm-round-info" id="sm-round-info">Round 1 of 10</div>
+    <div class="sm-shadows" id="sm-shadows"></div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Find the matching shadow!',
+  hi:'सही परछाई ढूंढो!',
+  gu:'સાચો પડછાયો શોધો!'
+};
+
+const TARGET_LABEL = {
+  en:'Which shadow matches this?',
+  hi:'कौन सी परछाई मिलती है?',
+  gu:'કયો પડછાયો મળે છે?'
+};
+
+/* Pool of objects. Each round picks one as target and several distractors. */
+const OBJECTS = [
+  {emoji:'🐘', name:{en:'Elephant',hi:'हाथी',gu:'હાથી'}},
+  {emoji:'🐱', name:{en:'Cat',hi:'बिल्ली',gu:'બિલાડી'}},
+  {emoji:'🐶', name:{en:'Dog',hi:'कुत्ता',gu:'કૂતરો'}},
+  {emoji:'🐟', name:{en:'Fish',hi:'मछली',gu:'માછલી'}},
+  {emoji:'🦋', name:{en:'Butterfly',hi:'तितली',gu:'પતંગિયું'}},
+  {emoji:'🐢', name:{en:'Turtle',hi:'कछुआ',gu:'કાચબો'}},
+  {emoji:'🐸', name:{en:'Frog',hi:'मेंढक',gu:'દેડકો'}},
+  {emoji:'🦁', name:{en:'Lion',hi:'शेर',gu:'સિંહ'}},
+  {emoji:'🐰', name:{en:'Rabbit',hi:'खरगोश',gu:'સસલું'}},
+  {emoji:'🐦', name:{en:'Bird',hi:'चिड़िया',gu:'પક્ષી'}},
+  {emoji:'🚗', name:{en:'Car',hi:'कार',gu:'ગાડી'}},
+  {emoji:'✈️', name:{en:'Plane',hi:'हवाई जहाज',gu:'વિમાન'}},
+  {emoji:'🚂', name:{en:'Train',hi:'ट्रेन',gu:'ટ્રેઇન'}},
+  {emoji:'🚲', name:{en:'Bicycle',hi:'साइकिल',gu:'સાઇકલ'}},
+  {emoji:'🌺', name:{en:'Flower',hi:'फूल',gu:'ફૂલ'}},
+  {emoji:'🌳', name:{en:'Tree',hi:'पेड़',gu:'ઝાડ'}},
+  {emoji:'⭐', name:{en:'Star',hi:'तारा',gu:'તારો'}},
+  {emoji:'🍎', name:{en:'Apple',hi:'सेब',gu:'સફરજન'}},
+  {emoji:'🎩', name:{en:'Hat',hi:'टोपी',gu:'ટોપી'}},
+  {emoji:'🏠', name:{en:'House',hi:'घर',gu:'ઘર'}},
+  {emoji:'⚽', name:{en:'Ball',hi:'गेंद',gu:'દડો'}},
+  {emoji:'🎸', name:{en:'Guitar',hi:'गिटार',gu:'ગિટાર'}},
+  {emoji:'🪁', name:{en:'Kite',hi:'पतंग',gu:'પતંગ'}},
+  {emoji:'🍌', name:{en:'Banana',hi:'केला',gu:'કેળું'}},
+];
+
+const TOTAL = 10;
+const CHOICES_PER_ROUND = 6;
+
+let rounds = [], pos = 0, mistakes = 0, isLocked = false;
+
+function hearAgain() {
+  if (rounds[pos]) speak(rounds[pos].target.name);
+  else speak(PROMPT);
+}
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  // Build 10 unique rounds
+  const shuffledObjs = shuffle(OBJECTS);
+  rounds = [];
+  for (let i = 0; i < TOTAL; i++) {
+    const target = shuffledObjs[i % shuffledObjs.length];
+    const distractors = shuffle(OBJECTS.filter(o => o.emoji !== target.emoji)).slice(0, CHOICES_PER_ROUND - 1);
+    rounds.push({ target, distractors });
+  }
+  pos = 0; mistakes = 0; isLocked = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  document.getElementById('sm-target-label').textContent = t(TARGET_LABEL);
+  hideFeedback();
+  updateProgress(0, TOTAL);
+  document.getElementById('score-display').textContent = '0/' + TOTAL;
+  showRound();
+}
+
+function showRound() {
+  if (pos >= TOTAL) { showCompletion('shadow-match', mistakes, TOTAL); return; }
+  const r = rounds[pos];
+
+  const targetEl = document.getElementById('sm-target');
+  targetEl.textContent = r.target.emoji;
+  targetEl.style.animation = 'none';
+  void targetEl.offsetWidth;
+  targetEl.style.animation = 'bounceIn 0.5s ease';
+
+  document.getElementById('sm-round-info').textContent = t({
+    en:`Round ${pos+1} of ${TOTAL}`,
+    hi:`राउंड ${pos+1} / ${TOTAL}`,
+    gu:`રાઉન્ડ ${pos+1} / ${TOTAL}`
+  });
+
+  // Build shadow choices
+  const allChoices = shuffle([r.target, ...r.distractors]);
+  const grid = document.getElementById('sm-shadows');
+  grid.innerHTML = '';
+  allChoices.forEach(obj => {
+    const btn = document.createElement('button');
+    btn.className = 'sm-shadow';
+    btn.textContent = obj.emoji;
+    btn.onclick = () => handleShadow(btn, obj.emoji === r.target.emoji, obj);
+    grid.appendChild(btn);
+  });
+
+  speak(r.target.name);
+  updateProgress(pos, TOTAL);
+  document.getElementById('score-display').textContent = pos + '/' + TOTAL;
+}
+
+function handleShadow(btn, isCorrect, obj) {
+  if (isLocked) return;
+  if (isCorrect) {
+    isLocked = true;
+    btn.classList.add('correct');
+    showFeedback(true);
+    pos++;
+    setTimeout(() => { isLocked = false; hideFeedback(); showRound(); }, 900);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    showFeedback(false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

@@ -614,3 +614,16 @@ p  { font-size: clamp(1rem, 2.5vw, 1.3rem); }
 .text-center { text-align: center; }
 .mt-16 { margin-top: 16px; }
 .mt-24 { margin-top: 24px; }
+
+/* ===== New Activity Card Colors ===== */
+.card-lettersounds    { border-color: #1E88E5; background: #E3F2FD; }
+.card-rhymingsort     { border-color: #AB47BC; background: #F3E5F5; }
+.card-patterncomplete { border-color: #E53935; background: #FFEBEE; }
+.card-conceptmatch    { border-color: #00897B; background: #E0F2F1; }
+.card-shadowmatch     { border-color: #546E7A; background: #ECEFF1; }
+.card-tracing         { border-color: #43A047; background: #E8F5E9; }
+.card-blockbuilder    { border-color: #F4511E; background: #FBE9E7; }
+
+/* ===== New Category Headers ===== */
+.cat-phonics { background: linear-gradient(135deg, #1E88E5, #0D47A1); }
+.cat-skills  { background: linear-gradient(135deg, #F4511E, #E65100); }

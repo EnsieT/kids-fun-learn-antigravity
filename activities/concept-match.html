@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Concept Match 🧠 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .cm-area { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+  .cm-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 8px;
+  }
+
+  .cm-card {
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #7C4DFF, #536DFE);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    transition: transform 0.3s;
+    position: relative;
+    transform-style: preserve-3d;
+    min-height: 70px;
+  }
+  .cm-card:hover { transform: scale(1.05); }
+  .cm-card:active { transform: scale(0.95); }
+
+  .cm-card-inner {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 16px;
+    transition: transform 0.5s;
+    transform-style: preserve-3d;
+  }
+  .cm-card.flipped .cm-card-inner { transform: rotateY(180deg); }
+
+  .cm-card-front, .cm-card-back {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 2px;
+  }
+  .cm-card-front {
+    background: linear-gradient(135deg, #7C4DFF, #536DFE);
+    font-size: 2rem; color: rgba(255,255,255,0.6);
+  }
+  .cm-card-back {
+    background: #fff;
+    transform: rotateY(180deg);
+    border: 3px solid #E0E0E0;
+  }
+  .cm-card-back .cm-emoji { font-size: clamp(1.8rem, 6vw, 2.8rem); line-height: 1; }
+  .cm-card-back .cm-label { font-size: 0.6rem; font-weight: 800; color: #666; text-align: center; }
+
+  .cm-card.matched .cm-card-back {
+    border-color: #4CAF50;
+    background: #E8F5E9;
+  }
+  .cm-card.matched { pointer-events: none; }
+
+  .cm-card.wrong-flash .cm-card-back {
+    border-color: #F44336;
+    background: #FFEBEE;
+    animation: shake 0.5s;
+  }
+
+  .cm-info {
+    text-align: center; font-size: 1rem; font-weight: 800;
+    color: #666; padding: 8px 0;
+  }
+
+  .cm-round-label {
+    text-align: center; font-size: 0.9rem; font-weight: 900;
+    color: #888; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🧠 Concept Match</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">Round 1/3</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Match the related pairs!</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="cm-area">
+    <div class="cm-round-label" id="cm-round-label">Round 1 of 3</div>
+    <div class="cm-info" id="cm-info">Find 6 matching concept pairs</div>
+    <div class="cm-board" id="cm-board"></div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Match the related pairs!',
+  hi:'जोड़ी मिलाओ!',
+  gu:'જોડી મેળવો!'
+};
+
+/* Each pair is [itemA, itemB] — they are conceptually linked. */
+const ALL_PAIRS = [
+  [{emoji:'🌧️',label:'Rain'}, {emoji:'☂️',label:'Umbrella'}],
+  [{emoji:'✏️',label:'Pencil'}, {emoji:'📓',label:'Notebook'}],
+  [{emoji:'🔑',label:'Key'}, {emoji:'🔒',label:'Lock'}],
+  [{emoji:'🌞',label:'Sun'}, {emoji:'🌻',label:'Sunflower'}],
+  [{emoji:'👶',label:'Baby'}, {emoji:'🍼',label:'Bottle'}],
+  [{emoji:'🐝',label:'Bee'}, {emoji:'🍯',label:'Honey'}],
+  [{emoji:'🐔',label:'Hen'}, {emoji:'🥚',label:'Egg'}],
+  [{emoji:'🌳',label:'Tree'}, {emoji:'🍃',label:'Leaf'}],
+  [{emoji:'🐶',label:'Dog'}, {emoji:'🦴',label:'Bone'}],
+  [{emoji:'🐱',label:'Cat'}, {emoji:'🧶',label:'Yarn'}],
+  [{emoji:'🎂',label:'Cake'}, {emoji:'🕯️',label:'Candle'}],
+  [{emoji:'👨‍🍳',label:'Chef'}, {emoji:'🍳',label:'Cooking'}],
+  [{emoji:'📷',label:'Camera'}, {emoji:'🖼️',label:'Photo'}],
+  [{emoji:'🌙',label:'Moon'}, {emoji:'⭐',label:'Star'}],
+  [{emoji:'🏠',label:'House'}, {emoji:'🚪',label:'Door'}],
+  [{emoji:'👟',label:'Shoe'}, {emoji:'🧦',label:'Sock'}],
+  [{emoji:'🦷',label:'Tooth'}, {emoji:'🪥',label:'Toothbrush'}],
+  [{emoji:'✉️',label:'Letter'}, {emoji:'📮',label:'Mailbox'}],
+];
+
+const PAIRS_PER_ROUND = 6;
+const TOTAL_ROUNDS = 3;
+
+let roundIdx = 0, mistakes = 0, matchedCount = 0;
+let boardCards = [], firstFlipped = null, isLocked = false;
+
+function hearAgain() { speak(PROMPT); }
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  roundIdx = 0; mistakes = 0; matchedCount = 0;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  loadRound(0);
+}
+
+function loadRound(idx) {
+  if (idx >= TOTAL_ROUNDS) {
+    showCompletion('concept-match', mistakes, TOTAL_ROUNDS * PAIRS_PER_ROUND);
+    return;
+  }
+  roundIdx = idx;
+  firstFlipped = null; isLocked = false;
+  matchedCount = 0;
+
+  document.getElementById('cm-round-label').textContent = `Round ${idx+1} of ${TOTAL_ROUNDS}`;
+  document.getElementById('score-display').textContent = `Round ${idx+1}/${TOTAL_ROUNDS}`;
+  updateProgress(idx, TOTAL_ROUNDS);
+
+  // Pick 6 random pairs for this round
+  const roundPairs = shuffle(ALL_PAIRS).slice(0, PAIRS_PER_ROUND);
+
+  // Create cards: each pair produces 2 cards with the same pairId
+  boardCards = [];
+  roundPairs.forEach((pair, i) => {
+    boardCards.push({ ...pair[0], pairId: i, cardIdx: boardCards.length });
+    boardCards.push({ ...pair[1], pairId: i, cardIdx: boardCards.length });
+  });
+  boardCards = shuffle(boardCards);
+
+  const board = document.getElementById('cm-board');
+  board.innerHTML = '';
+  boardCards.forEach((card, i) => {
+    const div = document.createElement('div');
+    div.className = 'cm-card';
+    div.id = 'cm-card-' + i;
+    div.innerHTML = `
+      <div class="cm-card-inner">
+        <div class="cm-card-front">❓</div>
+        <div class="cm-card-back">
+          <span class="cm-emoji">${card.emoji}</span>
+          <span class="cm-label">${card.label}</span>
+        </div>
+      </div>`;
+    div.onclick = () => flipCard(i);
+    board.appendChild(div);
+  });
+
+  document.getElementById('cm-info').textContent = t({
+    en:`Find ${PAIRS_PER_ROUND} matching concept pairs`,
+    hi:`${PAIRS_PER_ROUND} जोड़ी ढूंढो`,
+    gu:`${PAIRS_PER_ROUND} જોડી શોધો`
+  });
+
+  speak(PROMPT);
+}
+
+function flipCard(idx) {
+  if (isLocked) return;
+  const cardEl = document.getElementById('cm-card-' + idx);
+  if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+
+  cardEl.classList.add('flipped');
+  const card = boardCards[idx];
+
+  if (firstFlipped === null) {
+    firstFlipped = { idx, card };
+  } else {
+    isLocked = true;
+    const first = firstFlipped;
+    firstFlipped = null;
+
+    if (first.card.pairId === card.pairId && first.idx !== idx) {
+      // Match!
+      setTimeout(() => {
+        document.getElementById('cm-card-' + first.idx).classList.add('matched');
+        document.getElementById('cm-card-' + idx).classList.add('matched');
+        showFeedback(true);
+        matchedCount++;
+        if (matchedCount >= PAIRS_PER_ROUND) {
+          setTimeout(() => {
+            hideFeedback();
+            roundIdx++;
+            loadRound(roundIdx);
+          }, 800);
+        }
+        isLocked = false;
+      }, 400);
+    } else {
+      // No match
+      mistakes++;
+      setTimeout(() => {
+        document.getElementById('cm-card-' + first.idx).classList.add('wrong-flash');
+        document.getElementById('cm-card-' + idx).classList.add('wrong-flash');
+        showFeedback(false);
+      }, 400);
+      setTimeout(() => {
+        document.getElementById('cm-card-' + first.idx).classList.remove('flipped', 'wrong-flash');
+        document.getElementById('cm-card-' + idx).classList.remove('flipped', 'wrong-flash');
+        hideFeedback();
+        isLocked = false;
+      }, 1200);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

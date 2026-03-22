@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pattern Complete 📐 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .pc-area { max-width: 560px; margin: 0 auto; padding: 16px; text-align: center; }
+
+  .pc-sequence {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; flex-wrap: wrap;
+    background: #fff; border-radius: 20px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+    padding: 20px 16px; margin: 12px auto;
+  }
+  .pc-item {
+    font-size: clamp(2.2rem, 7vw, 3.2rem); line-height: 1;
+    transition: transform 0.3s;
+  }
+  .pc-blank {
+    width: 56px; height: 56px;
+    border: 4px dashed #2196F3; border-radius: 14px;
+    background: #E3F2FD;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #2196F3; font-weight: 900;
+    animation: pulse 1.5s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.1);} }
+
+  .pc-choices {
+    display: flex; gap: 14px; justify-content: center;
+    flex-wrap: wrap; padding: 16px 0; max-width: 440px; margin: 0 auto;
+  }
+  .pc-choice {
+    width: 80px; height: 80px;
+    background: #fff; border: 4px solid #E0E0E0; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+    transition: transform 0.15s, border-color 0.2s;
+  }
+  .pc-choice:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 8px 24px rgba(0,0,0,0.16); }
+  .pc-choice:active { transform: scale(0.95); }
+  .pc-choice.correct { border-color: #4CAF50; background: #E8F5E9; animation: pulse-correct 0.5s; }
+  .pc-choice.wrong   { border-color: #F44336; background: #FFEBEE; animation: shake 0.5s; }
+
+  .pc-hint {
+    font-size: 0.95rem; color: #888; font-weight: 700; margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>📐 What Comes Next?</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/10</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">What comes next in the pattern?</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="pc-area">
+    <div class="pc-sequence" id="pc-sequence"></div>
+    <div class="pc-hint" id="pc-hint"></div>
+    <div class="pc-choices" id="pc-choices"></div>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'What comes next in the pattern?',
+  hi:'पैटर्न में आगे क्या आएगा?',
+  gu:'પેટર્નમાં આગળ શું આવશે?'
+};
+
+/* Each pattern: sequence of emojis with a repeating unit. The last item is the answer. */
+const PATTERNS = [
+  { seq:['🔴','🔵','🔴','🔵','🔴'], ans:'🔵', choices:['🔵','🔴','🟢','🟡'] },
+  { seq:['⭐','🌙','⭐','🌙','⭐'], ans:'🌙', choices:['🌙','⭐','🌞','☁️'] },
+  { seq:['🍎','🍌','🍎','🍌','🍎'], ans:'🍌', choices:['🍌','🍎','🍇','🍊'] },
+  { seq:['🔺','🔵','🔺','🔵','🔺'], ans:'🔵', choices:['🔵','🔺','🟩','🔶'] },
+  { seq:['🐶','🐱','🐶','🐱','🐶'], ans:'🐱', choices:['🐱','🐶','🐰','🐻'] },
+  { seq:['🟢','🟡','🔴','🟢','🟡'], ans:'🔴', choices:['🔴','🟢','🟡','🔵'] },
+  { seq:['🌺','🌸','🌼','🌺','🌸'], ans:'🌼', choices:['🌼','🌺','🌸','🌻'] },
+  { seq:['🟨','🟦','🟨','🟦','🟨'], ans:'🟦', choices:['🟦','🟨','🟥','🟩'] },
+  { seq:['🚗','🚌','🚗','🚌','🚗'], ans:'🚌', choices:['🚌','🚗','✈️','🚂'] },
+  { seq:['▲','■','●','▲','■'], ans:'●', choices:['●','▲','■','◆'] },
+  { seq:['1️⃣','2️⃣','3️⃣','1️⃣','2️⃣'], ans:'3️⃣', choices:['3️⃣','1️⃣','2️⃣','4️⃣'] },
+  { seq:['🐸','🐸','🦋','🐸','🐸'], ans:'🦋', choices:['🦋','🐸','🐝','🐞'] },
+  { seq:['👏','👏','👣','👏','👏'], ans:'👣', choices:['👣','👏','✋','🦶'] },
+  { seq:['🔷','🔶','🔷','🔶','🔷'], ans:'🔶', choices:['🔶','🔷','💎','⬛'] },
+  { seq:['🍕','🍔','🌮','🍕','🍔'], ans:'🌮', choices:['🌮','🍕','🍔','🌯'] },
+];
+
+const TOTAL = 10;
+let rounds = [], pos = 0, mistakes = 0, isLocked = false;
+
+function hearAgain() { speak(PROMPT); }
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  rounds = shuffle(PATTERNS).slice(0, TOTAL);
+  pos = 0; mistakes = 0; isLocked = false;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  updateProgress(0, TOTAL);
+  document.getElementById('score-display').textContent = '0/' + TOTAL;
+  showRound();
+}
+
+function showRound() {
+  if (pos >= TOTAL) { showCompletion('pattern-complete', mistakes, TOTAL); return; }
+  const p = rounds[pos];
+
+  // Build sequence display (show sequence items, last one is a blank)
+  const seqEl = document.getElementById('pc-sequence');
+  seqEl.innerHTML = '';
+  p.seq.forEach(item => {
+    const span = document.createElement('span');
+    span.className = 'pc-item';
+    span.textContent = item;
+    seqEl.appendChild(span);
+  });
+  // Add the blank
+  const blank = document.createElement('span');
+  blank.className = 'pc-blank';
+  blank.id = 'pc-blank';
+  blank.textContent = '?';
+  seqEl.appendChild(blank);
+
+  document.getElementById('pc-hint').textContent = t({
+    en:`Round ${pos+1} of ${TOTAL}`,
+    hi:`राउंड ${pos+1} / ${TOTAL}`,
+    gu:`રાઉન્ડ ${pos+1} / ${TOTAL}`
+  });
+
+  // Choices
+  const choicesEl = document.getElementById('pc-choices');
+  choicesEl.innerHTML = '';
+  shuffle(p.choices).forEach(ch => {
+    const btn = document.createElement('button');
+    btn.className = 'pc-choice';
+    btn.textContent = ch;
+    btn.onclick = () => handleChoice(btn, ch === p.ans, ch);
+    choicesEl.appendChild(btn);
+  });
+
+  speak(PROMPT);
+  updateProgress(pos, TOTAL);
+  document.getElementById('score-display').textContent = pos + '/' + TOTAL;
+}
+
+function handleChoice(btn, isCorrect, emoji) {
+  if (isLocked) return;
+  if (isCorrect) {
+    isLocked = true;
+    btn.classList.add('correct');
+    const blank = document.getElementById('pc-blank');
+    blank.textContent = emoji;
+    blank.style.borderStyle = 'solid';
+    blank.style.borderColor = '#4CAF50';
+    blank.style.background = '#E8F5E9';
+    blank.style.animation = 'none';
+    showFeedback(true);
+    pos++;
+    setTimeout(() => { isLocked = false; hideFeedback(); showRound(); }, 1000);
+  } else {
+    mistakes++;
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    showFeedback(false);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Block Builder 🧱 · Kids Fun Learn</title>
+<link rel="stylesheet" href="../css/style.css"/>
+<style>
+  .bb-area { max-width: 560px; margin: 0 auto; padding: 8px 16px; text-align: center; }
+
+  .bb-split {
+    display: flex; gap: 16px; align-items: flex-start;
+    justify-content: center; flex-wrap: wrap; margin: 12px 0;
+  }
+
+  .bb-panel {
+    background: #fff; border-radius: 18px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+    padding: 8px;
+  }
+  .bb-panel-label {
+    font-size: 0.8rem; font-weight: 900; color: #888;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .bb-grid {
+    display: grid; gap: 2px;
+    border: 3px solid #E0E0E0; border-radius: 10px;
+    overflow: hidden;
+  }
+  .bb-cell {
+    width: 50px; height: 50px;
+    background: #FAFAFA;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    border: 1px solid #eee;
+  }
+  .bb-cell:hover { background: #E3F2FD; transform: scale(1.05); }
+  .bb-cell.target-cell { background: #E8EAF6; }
+  .bb-cell.filled { cursor: default; }
+  .bb-cell.correct-cell { background: #E8F5E9 !important; border-color: #4CAF50; }
+  .bb-cell.wrong-cell { background: #FFEBEE !important; animation: shake 0.4s; }
+
+  /* Target preview */
+  .bb-target-grid {
+    display: grid; gap: 2px;
+    border: 3px solid #FF8C00; border-radius: 10px;
+    overflow: hidden;
+  }
+  .bb-target-cell {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; border: 1px solid #f5f5f5;
+  }
+  .bb-target-cell.has-block { background: #FFF3E0; }
+  .bb-target-cell.empty { background: #FAFAFA; }
+
+  /* Block palette */
+  .bb-palette {
+    display: flex; gap: 10px; justify-content: center;
+    flex-wrap: wrap; padding: 10px 0;
+  }
+  .bb-block {
+    width: 56px; height: 56px;
+    border-radius: 12px; border: 3px solid #E0E0E0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+  }
+  .bb-block:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+  .bb-block:active { transform: scale(0.95); }
+  .bb-block.selected {
+    border-color: #2196F3; background: #E3F2FD;
+    transform: scale(1.1); box-shadow: 0 6px 20px rgba(33,150,243,0.3);
+  }
+
+  .bb-eraser {
+    background: #FFEBEE !important; border-color: #F44336 !important;
+  }
+  .bb-eraser.selected { background: #FFCDD2 !important; }
+
+  .bb-info {
+    font-size: 0.95rem; font-weight: 800; color: #666; padding: 4px 0;
+  }
+
+  .bb-check-btn {
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: #fff; border: none; border-radius: 50px;
+    padding: 12px 32px; font-size: 1.1rem; font-weight: 900;
+    cursor: pointer; margin-top: 8px;
+    box-shadow: 0 4px 16px rgba(76,175,80,0.4);
+    transition: transform 0.2s;
+  }
+  .bb-check-btn:hover { transform: scale(1.05); }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<header class="activity-header">
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <h1>🧱 Block Builder</h1>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  <span class="score-display" id="score-display">0/8</span>
+</header>
+
+<div id="langSelector" class="language-selector">
+  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
+  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
+  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
+</div>
+
+<div id="game-area">
+  <div class="question-area">
+    <p class="question-text" id="question-text">Build the shape!</p>
+    <button class="hear-btn" onclick="hearAgain()" aria-label="Listen">🔊</button>
+  </div>
+  <div id="feedback-banner" class="feedback-banner"></div>
+
+  <div class="bb-area">
+    <div class="bb-info" id="bb-info">Select a block, then tap cells to place it</div>
+
+    <div class="bb-split">
+      <div>
+        <div class="bb-panel-label">🎯 Target</div>
+        <div class="bb-panel">
+          <div class="bb-target-grid" id="bb-target"></div>
+        </div>
+      </div>
+      <div>
+        <div class="bb-panel-label">🏗️ Your Build</div>
+        <div class="bb-panel">
+          <div class="bb-grid" id="bb-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bb-palette" id="bb-palette"></div>
+    <button class="bb-check-btn" onclick="checkBuild()">✅ Check My Build</button>
+  </div>
+</div>
+
+<div id="completion-screen" class="completion-screen">
+  <div class="completion-stars" id="completion-stars"></div>
+  <div class="completion-title" id="completion-title"></div>
+  <div class="completion-score" id="completion-score"></div>
+  <div class="completion-best"  id="completion-best"></div>
+  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+</div>
+
+<script src="../js/common.js"></script>
+<script>
+const PROMPT = {
+  en:'Build the shape!',
+  hi:'आकार बनाओ!',
+  gu:'આકાર બનાવો!'
+};
+
+/* Block types available to place */
+const BLOCKS = [
+  { id:'sq', emoji:'🟦', label:'Square' },
+  { id:'tri', emoji:'🔺', label:'Triangle' },
+  { id:'rect', emoji:'🟩', label:'Rectangle' },
+  { id:'cir', emoji:'🟡', label:'Circle' },
+];
+
+/* Puzzle definitions: a grid (rows x cols) with target cells marked with block IDs.
+   Empty = '', filled = block id */
+const PUZZLES = [
+  {
+    name:{en:'House',hi:'घर',gu:'ઘર'}, rows:5, cols:5,
+    target:[
+      ['','','🔺','',''],
+      ['','🔺','🔺','🔺',''],
+      ['','🟦','🟦','🟦',''],
+      ['','🟦','🟩','🟦',''],
+      ['','🟦','🟩','🟦',''],
+    ]
+  },
+  {
+    name:{en:'Tree',hi:'पेड़',gu:'ઝાડ'}, rows:5, cols:5,
+    target:[
+      ['','','🔺','',''],
+      ['','🔺','🔺','🔺',''],
+      ['🔺','🔺','🔺','🔺','🔺'],
+      ['','','🟩','',''],
+      ['','','🟩','',''],
+    ]
+  },
+  {
+    name:{en:'Boat',hi:'नाव',gu:'હોડી'}, rows:5, cols:5,
+    target:[
+      ['','','🟦','',''],
+      ['','','🟦','',''],
+      ['🟩','🟩','🟩','🟩','🟩'],
+      ['','🟦','🟦','🟦',''],
+      ['','','🟦','',''],
+    ]
+  },
+  {
+    name:{en:'Tower',hi:'टॉवर',gu:'ટાવર'}, rows:6, cols:3,
+    target:[
+      ['','🔺',''],
+      ['🟦','🟦','🟦'],
+      ['🟦','🟡','🟦'],
+      ['🟩','🟩','🟩'],
+      ['🟩','🟡','🟩'],
+      ['🟩','🟩','🟩'],
+    ]
+  },
+  {
+    name:{en:'Rocket',hi:'रॉकेट',gu:'રૉકેટ'}, rows:6, cols:3,
+    target:[
+      ['','🔺',''],
+      ['🟦','🟦','🟦'],
+      ['🟦','🟡','🟦'],
+      ['🟦','🟦','🟦'],
+      ['🔺','','🔺'],
+      ['🔺','','🔺'],
+    ]
+  },
+  {
+    name:{en:'Star',hi:'तारा',gu:'તારો'}, rows:5, cols:5,
+    target:[
+      ['','','🟡','',''],
+      ['','🟡','🟡','🟡',''],
+      ['🟡','🟡','🟡','🟡','🟡'],
+      ['','🟡','🟡','🟡',''],
+      ['','🟡','','🟡',''],
+    ]
+  },
+  {
+    name:{en:'Robot',hi:'रोबोट',gu:'રોબોટ'}, rows:5, cols:5,
+    target:[
+      ['','🟦','🟦','🟦',''],
+      ['','🟦','🟡','🟦',''],
+      ['🟩','🟩','🟩','🟩','🟩'],
+      ['','🟩','','🟩',''],
+      ['','🟦','','🟦',''],
+    ]
+  },
+  {
+    name:{en:'Bridge',hi:'पुल',gu:'પુલ'}, rows:4, cols:5,
+    target:[
+      ['🟩','🟩','🟩','🟩','🟩'],
+      ['🟦','','','','🟦'],
+      ['🟦','','','','🟦'],
+      ['🟦','🟦','','🟦','🟦'],
+    ]
+  },
+];
+
+const TOTAL = 8;
+let rounds = [], pos = 0, mistakes = 0;
+let selectedBlock = null;
+let playerGrid = [];
+
+function hearAgain() {
+  if (rounds[pos]) speak(rounds[pos].name);
+  else speak(PROMPT);
+}
+function onLanguageChange() { initGame(); }
+
+function initGame() {
+  rounds = shuffle(PUZZLES).slice(0, TOTAL);
+  pos = 0; mistakes = 0; selectedBlock = null;
+  document.getElementById('completion-screen').classList.remove('show');
+  document.getElementById('game-area').classList.remove('hidden');
+  document.getElementById('question-text').textContent = t(PROMPT);
+  hideFeedback();
+  updateProgress(0, TOTAL);
+  document.getElementById('score-display').textContent = '0/' + TOTAL;
+  buildPalette();
+  showRound();
+}
+
+function buildPalette() {
+  const pal = document.getElementById('bb-palette');
+  pal.innerHTML = '';
+  BLOCKS.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'bb-block';
+    btn.id = 'bb-block-' + b.id;
+    btn.textContent = b.emoji;
+    btn.title = b.label;
+    btn.onclick = () => selectBlock(b);
+    pal.appendChild(btn);
+  });
+  // Eraser
+  const eraser = document.createElement('button');
+  eraser.className = 'bb-block bb-eraser';
+  eraser.id = 'bb-block-eraser';
+  eraser.textContent = '🗑️';
+  eraser.title = 'Eraser';
+  eraser.onclick = () => selectBlock({id:'eraser', emoji:''});
+  pal.appendChild(eraser);
+}
+
+function selectBlock(b) {
+  selectedBlock = b;
+  document.querySelectorAll('.bb-block').forEach(el => el.classList.remove('selected'));
+  const el = document.getElementById('bb-block-' + b.id);
+  if (el) el.classList.add('selected');
+}
+
+function showRound() {
+  if (pos >= TOTAL) { showCompletion('block-builder', mistakes, TOTAL); return; }
+  const puzzle = rounds[pos];
+
+  document.getElementById('bb-info').textContent = t({
+    en:`Build: ${t(puzzle.name)} (${pos+1}/${TOTAL})`,
+    hi:`बनाओ: ${t(puzzle.name)} (${pos+1}/${TOTAL})`,
+    gu:`બનાવો: ${t(puzzle.name)} (${pos+1}/${TOTAL})`
+  });
+
+  // Render target (small preview)
+  const targetEl = document.getElementById('bb-target');
+  targetEl.style.gridTemplateColumns = `repeat(${puzzle.cols}, 36px)`;
+  targetEl.innerHTML = '';
+  puzzle.target.forEach(row => {
+    row.forEach(cell => {
+      const div = document.createElement('div');
+      div.className = 'bb-target-cell' + (cell ? ' has-block' : ' empty');
+      div.textContent = cell || '';
+      targetEl.appendChild(div);
+    });
+  });
+
+  // Render player grid
+  playerGrid = puzzle.target.map(row => row.map(() => ''));
+  const gridEl = document.getElementById('bb-grid');
+  gridEl.style.gridTemplateColumns = `repeat(${puzzle.cols}, 50px)`;
+  gridEl.innerHTML = '';
+  for (let r = 0; r < puzzle.rows; r++) {
+    for (let c = 0; c < puzzle.cols; c++) {
+      const div = document.createElement('div');
+      div.className = 'bb-cell';
+      if (puzzle.target[r][c]) div.classList.add('target-cell');
+      div.id = `cell-${r}-${c}`;
+      div.onclick = () => placeBlock(r, c);
+      gridEl.appendChild(div);
+    }
+  }
+
+  selectedBlock = null;
+  document.querySelectorAll('.bb-block').forEach(el => el.classList.remove('selected'));
+  speak(puzzle.name);
+  updateProgress(pos, TOTAL);
+  document.getElementById('score-display').textContent = pos + '/' + TOTAL;
+}
+
+function placeBlock(r, c) {
+  if (!selectedBlock) return;
+  const cell = document.getElementById(`cell-${r}-${c}`);
+  if (selectedBlock.id === 'eraser') {
+    playerGrid[r][c] = '';
+    cell.textContent = '';
+    cell.classList.remove('filled');
+  } else {
+    playerGrid[r][c] = selectedBlock.emoji;
+    cell.textContent = selectedBlock.emoji;
+    cell.classList.add('filled');
+  }
+}
+
+function checkBuild() {
+  const puzzle = rounds[pos];
+  let allCorrect = true;
+
+  for (let r = 0; r < puzzle.rows; r++) {
+    for (let c = 0; c < puzzle.cols; c++) {
+      const cell = document.getElementById(`cell-${r}-${c}`);
+      const expected = puzzle.target[r][c];
+      const placed = playerGrid[r][c];
+      cell.classList.remove('correct-cell', 'wrong-cell');
+
+      if (expected && placed === expected) {
+        cell.classList.add('correct-cell');
+      } else if (expected && placed !== expected) {
+        cell.classList.add('wrong-cell');
+        allCorrect = false;
+      } else if (!expected && placed) {
+        cell.classList.add('wrong-cell');
+        allCorrect = false;
+      }
+    }
+  }
+
+  if (allCorrect) {
+    showFeedback(true);
+    pos++;
+    setTimeout(() => { hideFeedback(); showRound(); }, 1000);
+  } else {
+    mistakes++;
+    showFeedback(false);
+    speak({en:'Not quite! Try again!', hi:'फिर से कोशिश करो!', gu:'ફરી પ્રયત્ન કરો!'});
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
+</script>
+</body>
+</html>
