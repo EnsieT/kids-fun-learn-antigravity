@@ -355,11 +355,49 @@ function handleSlotClick(cell) {
   }
 }
 
+// Train audio synthesizer
+let chugInterval;
+function startTrainSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    let chugCount = 0;
+    if (chugInterval) clearInterval(chugInterval);
+    
+    chugInterval = setInterval(() => {
+      let volume = chugCount % 4 === 0 ? 0.4 : 0.15;
+      chugCount++;
+      const bufferSize = audioCtx.sampleRate * 0.1;
+      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+      
+      const noise = audioCtx.createBufferSource();
+      noise.buffer = buffer;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 500;
+      
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      
+      noise.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      noise.start();
+    }, 250);
+  } catch(e) {}
+}
+
+function stopTrainSound() {
+  if (chugInterval) clearInterval(chugInterval);
+}
+
 // Global scope train anim function
 window.runTrain = function() {
   document.getElementById('go-btn').style.display = 'none';
-  playSound('pop'); // Or choo choo
-  
+  startTrainSound();
   const train = document.getElementById('train');
   const path = currentLevel.pathCoords;
   let step = 1;
@@ -372,6 +410,8 @@ window.runTrain = function() {
       setTimeout(moveToNext, 500);
     } else {
       setTimeout(() => {
+        stopTrainSound();
+        playSound('tada');
         round++;
         loadRound();
       }, 1000);
