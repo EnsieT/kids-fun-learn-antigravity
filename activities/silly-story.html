@@ -239,7 +239,7 @@ function updateSlotDisplay(type) {
   slotWindow.classList.add('spinning');
   
   document.getElementById(`emoji-${type}`).innerText = item.emoji;
-  document.getElementById(`text-${type}`).innerText = item[currentLang];
+  document.getElementById(`text-${type}`).innerText = item[getCurrentLanguage()];
 }
 
 function spinSlot(type) {
@@ -260,9 +260,9 @@ function spinAll() {
 }
 
 function readStory() {
-  const cWho = banks.who[currentStory.who][currentLang];
-  const cAct = banks.action[currentStory.action][currentLang];
-  const cWhere = banks.where[currentStory.where][currentLang];
+  const cWho = banks.who[currentStory.who][getCurrentLanguage()];
+  const cAct = banks.action[currentStory.action][getCurrentLanguage()];
+  const cWhere = banks.where[currentStory.where][getCurrentLanguage()];
   
   const sentence = `${cWho} ${cAct} ${cWhere}.`;
   speak(sentence);
