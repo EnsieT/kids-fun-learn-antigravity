@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tower Build 🧱 · Kids Fun Learn</title>
+<title>Tower Build 🎮 Kids Fun Learn</title>
+<meta name="description" content="Stack blocks to build the tallest tower you can! A physics and balance game for children aged 4-6."/>
+<meta property="og:title" content="Tower Build 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Stack blocks to build the tallest tower you can! A physics and balance game for children aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
 #game-section { display:flex; flex-direction:column; align-items:center; gap:.6rem; padding:.8rem; }
@@ -97,12 +101,13 @@
 }
 #oops-msg.show { opacity:1; }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🧱 Tower Build</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>

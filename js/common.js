@@ -18,8 +18,13 @@ function setLanguage(lang) {
 /** t({en: "Hello", hi: "नमस्ते", gu: "નમસ્તે"}) → text for current language */
 function t(obj) {
   if (typeof obj === 'string') return obj;
-  const lang = getCurrentLanguage();
-  return obj[lang] || obj.en || '';
+  try {
+    const lang = getCurrentLanguage();
+    return obj[lang] || obj.en || '';
+  } catch (e) {
+    console.error('Translation error:', e);
+    return obj.en || '';
+  }
 }
 
 /* ===== Speech (Web Speech API) ===== */
@@ -27,35 +32,48 @@ const SPEECH_LANGS = { en: 'en-IN', hi: 'hi-IN', gu: 'gu-IN' };
 
 function speak(textOrObj, langCode) {
   if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+  
+  try {
+    window.speechSynthesis.cancel();
 
-  let text, lang;
-  if (typeof textOrObj === 'object' && textOrObj !== null) {
+    let text, lang;
     const curLang = getCurrentLanguage();
-    text = textOrObj[curLang] || textOrObj.en || '';
-    lang = SPEECH_LANGS[curLang] || 'en-IN';
-  } else {
-    text = textOrObj;
-    lang = langCode || SPEECH_LANGS[getCurrentLanguage()] || 'en-IN';
-  }
-
-  if (!text) return;
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang  = lang;
-  utter.rate  = 0.85;
-  utter.pitch = 1.1;
-
-  // Gujarati fallback: try gu-IN voice, fall back to hi-IN, then en-IN
-  if (lang === 'gu-IN') {
-    const voices = window.speechSynthesis.getVoices();
-    const guVoice = voices.find(v => v.lang === 'gu-IN');
-    if (!guVoice) {
-      const hiVoice = voices.find(v => v.lang === 'hi-IN');
-      utter.lang = hiVoice ? 'hi-IN' : 'en-IN';
+    
+    if (typeof textOrObj === 'object' && textOrObj !== null) {
+      text = textOrObj[curLang] || textOrObj.en || '';
+      lang = SPEECH_LANGS[curLang] || 'en-IN';
+    } else {
+      text = textOrObj;
+      lang = langCode || SPEECH_LANGS[curLang] || 'en-IN';
     }
-  }
 
-  setTimeout(() => window.speechSynthesis.speak(utter), 150);
+    if (!text) return;
+    
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang  = lang;
+    utter.rate  = 0.9;
+    utter.pitch = 1.05;
+
+    // Enhanced voice selection
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      const preferredVoice = voices.find(v => v.lang === lang || v.lang.startsWith(lang.split('-')[0]));
+      if (preferredVoice) utter.voice = preferredVoice;
+    }
+
+    // Gujarati fallback
+    if (lang === 'gu-IN' && !voices.find(v => v.lang === 'gu-IN')) {
+      const hiVoice = voices.find(v => v.lang === 'hi-IN');
+      if (hiVoice) {
+        utter.voice = hiVoice;
+        utter.lang = 'hi-IN';
+      }
+    }
+
+    setTimeout(() => window.speechSynthesis.speak(utter), 100);
+  } catch (e) {
+    console.error('Speech error:', e);
+  }
 }
 
 function speakHindi(text)   { speak(text, 'hi-IN'); }
@@ -177,15 +195,24 @@ function starsHTML(n) {
 
 /* ===== LocalStorage helpers ===== */
 function getBestScore(activity) {
-  const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
-  return data[activity] || 0;
+  try {
+    const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
+    return data[activity] || 0;
+  } catch (e) {
+    console.error('Error getting best score:', e);
+    return 0;
+  }
 }
 
 function saveBestScore(activity, stars) {
-  const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
-  if ((data[activity] || 0) < stars) {
-    data[activity] = stars;
-    localStorage.setItem('kfl_scores', JSON.stringify(data));
+  try {
+    const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
+    if ((Number(data[activity]) || 0) < stars) {
+      data[activity] = stars;
+      localStorage.setItem('kfl_scores', JSON.stringify(data));
+    }
+  } catch (e) {
+    console.error('Error saving best score:', e);
   }
 }
 
@@ -254,9 +281,13 @@ function pickRandom(arr, n) {
 
 /* ===== Update homepage card stars ===== */
 function loadHomeStars() {
-  const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
-  Object.entries(data).forEach(([key, stars]) => {
-    const el = document.getElementById('stars-' + key);
-    if (el) el.textContent = starsHTML(stars);
-  });
+  try {
+    const data = JSON.parse(localStorage.getItem('kfl_scores') || '{}');
+    Object.entries(data).forEach(([key, stars]) => {
+      const el = document.getElementById('stars-' + key);
+      if (el) el.textContent = starsHTML(Number(stars) || 0);
+    });
+  } catch (e) {
+    console.error('Error loading home stars:', e);
+  }
 }

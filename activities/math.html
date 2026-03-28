@@ -3,14 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Simple Math ➕ · Kids Fun Learn</title>
+<title>Math 🎮 Kids Fun Learn</title>
+<meta name="description" content="Practice simple addition and subtraction with fun emoji visuals. An interactive math game for children aged 5-6."/>
+<meta property="og:title" content="Simple Math 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Practice simple addition and subtraction with fun emoji visuals. An interactive math game for children aged 5-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>➕ Simple Math</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>
@@ -45,9 +50,9 @@
 
 <script src="../js/common.js"></script>
 <script>
-const MATH_OBJECTS = ['🥭','🍌','🥥','🍐','🍎','🐘','🦚','🌸','⭐','🪔','🚗','🎈','🍓','🐶','🐟','🌞','🦋','🍔'];
-const HINDI_NUMS = ['शून्य','एक','दो','तीन','चार','पाँच','छः','सात','आठ','नौ','दस'];
-const GUJARATI_NUMS = ['શૂન્ય','એક','બે','ત્રણ','ચાર','પાંચ','છ','સાત','આઠ','નવ','દસ'];
+const MATH_OBJECTS = ['🥭','🍌','🥥','🍐','🍎','🐘','🦚','🌸','⭐','🪔','🚗','🎈','🍓','🐶','🐟','🌞','🦋','🍔','🍦','🍕','🧁','🍭','🧸','🤖','🛸','🚀','🌈','💎'];
+const HINDI_NUMS = ['शून्य','एक','दो','तीन','चार','पाँच','छः','सात','आठ','नौ','दस','ग्यारह','बारह','तेरह','चौदह','पंद्रह','सोलह','सत्रह','अठारह','उन्नीस','बीस'];
+const GUJARATI_NUMS = ['શૂન્ય','એક','બે','ત્રણ','ચાર','પાંચ','છ','સાત','આઠ','નવ','દસ','અગિયાર','બાર','તેર','ચૌદ','પંદર','સોળ','સત્તર','અઢાર','ઓગણીસ','વીસ'];
 
 const TOTAL_ROUNDS = 10;
 let round = 0, mistakes = 0, answered = false, correctAnswer = 0;
@@ -76,10 +81,10 @@ function nextRound() {
 
   let a, b;
   if (isAdd) {
-    a = 1 + Math.floor(Math.random() * 5);
-    b = 1 + Math.floor(Math.random() * 5);
-    // Keep total ≤ 10
-    if (a + b > 10) b = 10 - a;
+    a = 1 + Math.floor(Math.random() * 8);
+    b = 1 + Math.floor(Math.random() * 7);
+    // Keep total ≤ 15 for kids
+    if (a + b > 15) b = 15 - a;
     correctAnswer = a + b;
   } else {
     a = 2 + Math.floor(Math.random() * 8);
@@ -119,7 +124,7 @@ function nextRound() {
   const wrong = new Set();
   while (wrong.size < 3) {
     let n = correctAnswer + (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
-    n = Math.max(0, Math.min(10, n));
+    n = Math.max(0, Math.min(15, n));
     if (n !== correctAnswer) wrong.add(n);
   }
   const choices = shuffle([correctAnswer, ...wrong]);

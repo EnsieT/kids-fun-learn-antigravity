@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tracing Fun ✏️ · Kids Fun Learn</title>
+<title>Tracing 🎮 Kids Fun Learn</title>
+<meta name="description" content="Trace letters and shapes with your finger or mouse. A handwriting practice activity for kids aged 4-6."/>
+<meta property="og:title" content="Tracing Fun 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Trace letters and shapes with your finger or mouse. A handwriting practice activity for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   .tr-area { max-width: 520px; margin: 0 auto; padding: 8px 16px; text-align: center; }
@@ -61,12 +65,13 @@
   }
   .tr-clear-btn:hover { transform: scale(1.05); }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>✏️ Tracing Fun</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>

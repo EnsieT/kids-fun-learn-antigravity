@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Rhyming Sort 🎶 · Kids Fun Learn</title>
+<title>Rhyming Sort 🎮 Kids Fun Learn</title>
+<meta name="description" content="Sort words by their rhyming sounds into the right groups. A phonics and reading activity for kids aged 4-6."/>
+<meta property="og:title" content="Rhyming Sort 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Sort words by their rhyming sounds into the right groups. A phonics and reading activity for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   .rs-area { max-width: 520px; margin: 0 auto; padding: 8px 16px; }
@@ -65,12 +69,13 @@
   @keyframes flyCorrect { 0%{transform:scale(1);opacity:1;} 100%{transform:scale(0.2) translateY(100px);opacity:0;} }
   @keyframes bounceBack { 0%{transform:translateX(0);} 25%{transform:translateX(-18px) rotate(-6deg);} 50%{transform:translateX(18px) rotate(6deg);} 75%{transform:translateX(-8px) rotate(-3deg);} 100%{transform:translateX(0) rotate(0);} }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🎶 Rhyming Sort</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/0</span>

@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Music Maker 🎵 · Kids Fun Learn</title>
+<title>Music 🎮 Kids Fun Learn</title>
+<meta name="description" content="Create your own music by playing virtual instruments! A creative sound exploration activity for kids aged 4-6."/>
+<meta property="og:title" content="Music Maker 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Create your own music by playing virtual instruments! A creative sound exploration activity for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   #game-area { padding-bottom: 32px; }
@@ -143,12 +147,13 @@
     .pad-btn { min-height: 120px; font-size: 3rem; }
   }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1 id="page-title">🎵 Music Maker</h1>
 </header>
 

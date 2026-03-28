@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Free Drawing 🎨 · Kids Fun Learn</title>
+<title>Drawing 🎮 Kids Fun Learn</title>
+<meta name="description" content="Express your creativity with a free drawing canvas! Pick colors, brushes, and stamps in this art activity for kids."/>
+<meta property="og:title" content="Free Drawing 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Express your creativity with a free drawing canvas! Pick colors, brushes, and stamps in this art activity for kids."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   body { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #FFFDE7; }
@@ -170,12 +174,13 @@
     .toolbar { gap: 5px; padding: 6px 6px; }
   }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1 id="page-title">🎨 Drawing</h1>
 </header>
 

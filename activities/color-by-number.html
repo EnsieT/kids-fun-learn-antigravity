@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Color by Number 🎨 · Kids Fun Learn</title>
+<title>Color By Number 🎮 Kids Fun Learn</title>
+<meta name="description" content="Learn colors and numbers together by painting beautiful pictures. A creative activity for children aged 4-6."/>
+<meta property="og:title" content="Color by Number 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Learn colors and numbers together by painting beautiful pictures. A creative activity for children aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   .cbn-wrap {
@@ -116,12 +120,13 @@
   }
   .validate-btn:hover { transform: scale(1.06); }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🎨 Color by Number</h1>
   <span class="score-display" id="score-display"></span>
 </header>
@@ -169,7 +174,7 @@
   <div class="completion-best"  id="completion-best"></div>
   <div class="completion-stars" id="completion-stars"></div>
   <button class="play-again-btn" onclick="restartCurrent()">🔄 Color Again</button>
-  <br/><button class="play-again-btn" style="background:linear-gradient(135deg,#2196F3,#0D47A1);margin-top:12px" onclick="goHome()">🏠 Home</button>
+  <br/><button class="play-again-btn" style="background:linear-gradient(135deg,#2196F3,#0D47A1);margin-top:12px" onclick="goHome()" aria-label="Go Home">🏠 Home</button>
 </div>
 
 <script src="../js/common.js"></script>

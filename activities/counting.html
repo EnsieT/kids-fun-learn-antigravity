@@ -3,14 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Counting Game 🔢 · Kids Fun Learn</title>
+<title>Counting 🎮 Kids Fun Learn</title>
+<meta name="description" content="Learn to count objects from 1 to 9 with fun emojis and voice support. An interactive counting game for ages 4-6."/>
+<meta property="og:title" content="Counting Game 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Learn to count objects from 1 to 9 with fun emojis and voice support. An interactive counting game for ages 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🔢 Counting Game</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>

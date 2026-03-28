@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Shadow Match 🔦 · Kids Fun Learn</title>
+<title>Shadow Match 🎮 Kids Fun Learn</title>
+<meta name="description" content="Match objects to their shadows! A visual perception game that builds observation skills for ages 4-6."/>
+<meta property="og:title" content="Shadow Match 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Match objects to their shadows! A visual perception game that builds observation skills for ages 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
   .sm-area { max-width: 520px; margin: 0 auto; padding: 12px 16px; text-align: center; }
@@ -41,8 +45,8 @@
     font-size: clamp(2.8rem, 9vw, 3.8rem);
   }
   .shadow-emoji {
-    filter: brightness(0) opacity(0.65);
-    -webkit-filter: brightness(0) opacity(0.65);
+    color: transparent;
+    text-shadow: 0 0 0 rgba(0,0,0,0.6);
     pointer-events: none;
   }
   .sm-shadow:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
@@ -52,7 +56,7 @@
     animation: pulse-correct 0.5s;
   }
   .sm-shadow.correct .shadow-emoji {
-    filter: none !important; -webkit-filter: none !important;
+    color: initial !important; text-shadow: none !important;
   }
   .sm-shadow.wrong {
     border-color: #F44336 !important;
@@ -69,12 +73,13 @@
     100% { transform: scale(1); opacity:1; }
   }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🔦 Shadow Match</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>

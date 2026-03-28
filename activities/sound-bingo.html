@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎵 Sound Bingo</title>
+  <title>Sound Bingo 🎮 Kids Fun Learn</title>
+<meta name="description" content="Listen to sounds and mark the matching pictures on your bingo card. An auditory learning game for kids aged 4-6."/>
+<meta property="og:title" content="Sound Bingo 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Listen to sounds and mark the matching pictures on your bingo card. An auditory learning game for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
     @keyframes bounce-card {
@@ -87,12 +91,13 @@
       margin: 4px 16px 0;
     }
   </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-  <canvas id="confetti-canvas"></canvas>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
   <header class="activity-header">
-    <button class="back-btn" onclick="goHome()">🏠</button>
+    <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
     <h1>🎵 Sound Bingo</h1>
   </header>
 
@@ -122,7 +127,7 @@
       <div id="completion-best"></div>
       <div class="completion-buttons">
         <button onclick="restartGame()" class="btn-primary">🔄 Play Again</button>
-        <button onclick="goHome()" class="btn-secondary">🏠 Home</button>
+        <button onclick="goHome()" aria-label="Go Home" class="btn-secondary">🏠 Home</button>
       </div>
     </div>
   </div>
@@ -230,7 +235,7 @@
         const card = document.createElement('div');
         card.className = 'animal-card';
         card.dataset.key = animal.key;
-        card.innerHTML = `<span class="card-emoji">${animal.emoji}</span><span class="card-name">${animal[lang]}</span>`;
+        card.innerHTML = `<span class="card-emoji" aria-hidden="true">${animal.emoji}</span><span class="card-name">${animal[lang]}</span>`;
         card.addEventListener('click', () => onCardClick(card, animal));
         grid.appendChild(card);
       });

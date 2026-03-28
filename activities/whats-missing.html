@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>What's Missing?</title>
+  <title>Whats Missing 🎮 Kids Fun Learn</title>
+<meta name="description" content="Study a scene, then figure out what disappeared! A memory and observation game for children aged 4-6."/>
+<meta property="og:title" content="What's Missing? 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Study a scene, then figure out what disappeared! A memory and observation game for children aged 4-6."/>
+<meta property="og:type" content="website"/>
   <link rel="stylesheet" href="../css/style.css" />
   <style>
     .item-card {
@@ -121,12 +125,13 @@
       padding: 2px 0 8px;
     }
   </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-  <canvas id="confetti-canvas"></canvas>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
   <header class="activity-header">
-    <button class="back-btn" onclick="goHome()">🏠</button>
+    <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
     <h1>📸 What's Missing?</h1>
   </header>
 
@@ -158,7 +163,7 @@
       <div id="completion-best"></div>
       <div class="completion-buttons">
         <button onclick="restartGame()" class="btn-primary">🔄 Play Again</button>
-        <button onclick="goHome()" class="btn-secondary">🏠 Home</button>
+        <button onclick="goHome()" aria-label="Go Home" class="btn-secondary">🏠 Home</button>
       </div>
     </div>
   </div>

@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Maze 🌀 · Kids Fun Learn</title>
+<title>Maze 🎮 Kids Fun Learn</title>
+<meta name="description" content="Navigate through exciting mazes from start to finish! A problem-solving adventure game for kids aged 4-6."/>
+<meta property="og:title" content="Maze Adventure 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Navigate through exciting mazes from start to finish! A problem-solving adventure game for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
 #maze-container { display:flex; flex-direction:column; align-items:center; gap:.8rem; padding:1rem; }
@@ -31,12 +35,13 @@
 }
 .maze-cell span { pointer-events:none; line-height:1; }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🌀 Maze</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0</span>
@@ -55,6 +60,8 @@
       <button class="diff-btn active" onclick="setDifficulty('easy1')">🐣 Easy 1</button>
       <button class="diff-btn"        onclick="setDifficulty('easy2')">🐣 Easy 2</button>
       <button class="diff-btn"        onclick="setDifficulty('easy3')">🐣 Easy 3</button>
+      <button class="diff-btn"        onclick="setDifficulty('easy4')">🐣 Easy 4</button>
+      <button class="diff-btn"        onclick="setDifficulty('easy5')">🐣 Easy 5</button>
       <button class="diff-btn"        onclick="setDifficulty('medium')">🐥 Medium</button>
       <button class="diff-btn"        onclick="setDifficulty('hard')">🐓 Hard</button>
     </div>
@@ -74,7 +81,10 @@
   <div class="completion-title" id="completion-title"></div>
   <div class="completion-score" id="completion-score"></div>
   <div class="completion-best"  id="completion-best"></div>
-  <button class="play-again-btn" id="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+  <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+    <button class="play-again-btn" id="play-again-btn" onclick="initGame()">🔄 Play Again</button>
+    <button class="play-again-btn" id="next-lvl-btn" onclick="nextLevel()" style="background: linear-gradient(135deg, #FF9800, #F57C00);">➡️ Next Level</button>
+  </div>
 </div>
 
 <script src="../js/common.js"></script>
@@ -119,6 +129,8 @@ const DIFFS = {
   easy1:  {size:5, cs:64, seed:42},
   easy2:  {size:5, cs:64, seed:150},
   easy3:  {size:5, cs:64, seed:300},
+  easy4:  {size:5, cs:64, seed:450},
+  easy5:  {size:5, cs:64, seed:600},
   medium: {size:7, cs:46, seed:137},
   hard:   {size:9, cs:36, seed:999},
 };
@@ -135,16 +147,30 @@ const MAZE_THEMES = [
   {p_en:'Help the cow reach the grass!', p_hi:'गाय को घास तक पहुंचाओ!', p_gu:'ગાયને ઘાસ સુધી પહોંચાડો!', hero:'🐄', goal:'🌾'},
   {p_en:'Help the bunny reach the carrot!', p_hi:'खरगोश को गाजर तक पहुंचाओ!', p_gu:'સસલાને ગાજર સુધી પહોંચાડો!', hero:'🐇', goal:'🥕'},
   {p_en:'Help the monkey reach the banana!', p_hi:'बंदर को केले तक पहुंचाओ!', p_gu:'વાંદરાને કેળા સુધી પહોંચાડો!', hero:'🐒', goal:'🍌'},
-  {p_en:'Help the bee reach the flower!', p_hi:'मधुमक्खी को फूल तक पहुंचाओ!', p_gu:'મધમાખીને ફૂલ સુધી પહોંચાડો!', hero:'🐝', goal:'🌸'}
+  {p_en:'Help the bee reach the flower!', p_hi:'मधुमक्खी को फूल तक पहुंचाओ!', p_gu:'મધમાખીને ફૂલ સુધી પહોંચાડો!', hero:'🌸', goal:'🍯'},
+  {p_en:'Help the squirrel reach the nut!', p_hi:'गिलहरी को अखरोट तक पहुंचाओ!', p_gu:'ખિસકોલીને અખરોટ સુધી પહોંચાડો!', hero:'🐿️', goal:'🥜'},
+  {p_en:'Help the fish reach the coral!', p_hi:'मछली को मूंगे तक पहुंचाओ!', p_gu:'માછલીને પરવાળા સુધી પહોંચાડો!', hero:'🐠', goal:'🪸'},
+  {p_en:'Help the astronaut reach the planet!', p_hi:'अंतरिक्ष यात्री को ग्रह तक पहुंचाओ!', p_gu:'અંતરિક્ષયાત્રીને ગ્રહ સુધી પહોંચાડો!', hero:'👨‍🚀', goal:'🪐'},
+  {p_en:'Help the car reach the house!', p_hi:'कार को घर तक पहुंचाओ!', p_gu:'કારને ઘર સુધી પહોંચાડો!', hero:'🚗', goal:'🏠'}
 ];
 let currentTheme = MAZE_THEMES[0];
 
 function setDifficulty(d) {
   difficulty = d;
   document.querySelectorAll('.diff-btn').forEach((btn,i) => {
-    btn.classList.toggle('active', ['easy1','easy2','easy3','medium','hard'][i]===d);
+    btn.classList.toggle('active', ['easy1','easy2','easy3','easy4','easy5','medium','hard'][i]===d);
   });
   initGame();
+}
+
+function nextLevel() {
+  const diffs = ['easy1','easy2','easy3','easy4','easy5','medium','hard'];
+  let idx = diffs.indexOf(difficulty);
+  if (idx < diffs.length - 1) {
+    setDifficulty(diffs[idx+1]);
+  } else {
+    initGame();
+  }
 }
 
 function onLanguageChange() {

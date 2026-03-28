@@ -3,14 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Animal Fun 🐘 · Kids Fun Learn</title>
+<title>Identify Animals 🎮 Kids Fun Learn</title>
+<meta name="description" content="Identify different animals by their emoji pictures. A fun wildlife recognition game for children aged 4-6."/>
+<meta property="og:title" content="Animal Fun 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Identify different animals by their emoji pictures. A fun wildlife recognition game for children aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🐘 Animal Fun</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>
@@ -56,6 +61,16 @@ const ANIMALS = [
   {emoji:'🐪', en:'Camel',    hi:'ऊँट',       gu:'ઊંટ'},
   {emoji:'🐊', en:'Crocodile',hi:'मगरमच्छ',   gu:'મગર'},
   {emoji:'🦋', en:'Butterfly',hi:'तितली',     gu:'પતંગિયું'},
+  {emoji:'🐎', en:'Horse',     hi:'घोड़ा',      gu:'ઘોડો'},
+  {emoji:'🐢', en:'Turtle',    hi:'कछुआ',      gu:'કાચબો'},
+  {emoji:'🦉', en:'Owl',       hi:'उल्लू',      gu:'ઘુવડ'},
+  {emoji:'🦊', en:'Fox',       hi:'लोमड़ी',     gu:'શિયાળ'},
+  {emoji:'🦓', en:'Zebra',     hi:'जेब्रा',      gu:'ઝેબ્રા'},
+  {emoji:'🦒', en:'Giraffe',   hi:'जिराफ़',     gu:'જિરાફ'},
+  {emoji:'🦏', en:'Rhino',     hi:'गेंडा',      gu:'ગેંડો'},
+  {emoji:'🦥', en:'Sloth',     hi:'स्लोथ',      gu:'સ્લોથ'},
+  {emoji:'🦌', en:'Deer',      hi:'हिरण',      gu:'હરણ'},
+  {emoji:'🦩', en:'Flamingo',  hi:'राजहंस',     gu:'રાજહંસ'},
 ];
 
 const TOTAL_ROUNDS = 10;

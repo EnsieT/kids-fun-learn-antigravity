@@ -3,14 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Fruits &amp; Veggies 🥭 · Kids Fun Learn</title>
+<title>Identify Fruits 🎮 Kids Fun Learn</title>
+<meta name="description" content="Learn to recognize fruits and vegetables by their pictures. A healthy eating awareness game for kids aged 4-6."/>
+<meta property="og:title" content="Fruits & Veggies 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Learn to recognize fruits and vegetables by their pictures. A healthy eating awareness game for kids aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🥭 Fruits &amp; Veggies</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/10</span>
@@ -56,6 +61,16 @@ const ITEMS = [
   {emoji:'🥒', en:'Cucumber',     hi:'खीरा',          gu:'કાકડી'},
   {emoji:'🧅', en:'Onion',        hi:'प्याज',         gu:'ડુંગળી'},
   {emoji:'🫑', en:'Bell Pepper',  hi:'शिमला मिर्च',   gu:'સિમ્લા મરચું'},
+  {emoji:'🍎', en:'Apple',        hi:'सेब',           gu:'સફરજન'},
+  {emoji:'🍓', en:'Strawberry',   hi:'स्ट्रॉबेरी',     gu:'સ્ટ્રોબેરી'},
+  {emoji:'🍇', en:'Grapes',       hi:'अंगूर',          gu:'દ્રાક્ષ'},
+  {emoji:'🍉', en:'Watermelon',   hi:'तरबूज',         gu:'તરબૂચ'},
+  {emoji:'🍍', en:'Pineapple',    hi:'अनानास',        gu:'અનાનસ'},
+  {emoji:'🥦', en:'Broccoli',     hi:'ब्रोकोली',        gu:'બ્રોકોલી'},
+  {emoji:'🥕', en:'Carrot',       hi:'गाजर',          gu:'ગાજર'},
+  {emoji:'🍋', en:'Lemon',        hi:'नींबू',          gu:'લીંબુ'},
+  {emoji:'🍒', en:'Cherry',       hi:'चेरी',          gu:'ચેરી'},
+  {emoji:'🍑', en:'Peach',        hi:'आड़ू',           gu:'પીच'},
 ];
 
 const TOTAL_ROUNDS = 10;

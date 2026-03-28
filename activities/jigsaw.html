@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Jigsaw Puzzle 🧩 · Kids Fun Learn</title>
+<title>Jigsaw 🎮 Kids Fun Learn</title>
+<meta name="description" content="Solve colorful jigsaw puzzles by dragging pieces into place. A brain-training puzzle game for children aged 4-6."/>
+<meta property="og:title" content="Jigsaw Puzzle 🎮 Kids Fun Learn"/>
+<meta property="og:description" content="Solve colorful jigsaw puzzles by dragging pieces into place. A brain-training puzzle game for children aged 4-6."/>
+<meta property="og:type" content="website"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
 #game-section { display:flex; flex-direction:column; align-items:center; gap:.7rem; padding:.8rem; }
@@ -88,12 +92,13 @@
 .puzzle-piece.bounce  { animation:piece-bounce .4s ease; }
 @keyframes piece-bounce { 0%{transform:scale(1)} 40%{transform:scale(1.25)} 70%{transform:scale(.9)} 100%{transform:scale(1)} }
 </style>
+<meta name="theme-color" content="#FFD700"/>
 </head>
 <body>
-<canvas id="confetti-canvas"></canvas>
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
 
 <header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home">🏠</button>
+  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🧩 Jigsaw</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
   <span class="score-display" id="score-display">0/0</span>

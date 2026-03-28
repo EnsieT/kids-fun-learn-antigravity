@@ -610,6 +610,98 @@ p  { font-size: clamp(1rem, 2.5vw, 1.3rem); }
 .card-whatsmissing { border-color: #FF9800; background: #FFF3E0; }
 
 
+/* ===== Accessibility: Focus States ===== */
+/* High-contrast focus ring for all interactive elements */
+:focus-visible {
+  outline: 3px solid #1565C0;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.activity-card:focus-visible {
+  outline: 4px solid #1565C0;
+  outline-offset: 2px;
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+}
+
+.choice-btn:focus-visible {
+  outline: 4px solid #1565C0;
+  outline-offset: 2px;
+  transform: scale(1.08);
+}
+
+.lang-btn:focus-visible {
+  outline: 3px solid #333;
+  outline-offset: 2px;
+}
+
+.hear-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(33,150,243,0.5);
+}
+
+.back-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  background: rgba(255,255,255,0.5);
+}
+
+.play-again-btn:focus-visible {
+  outline: 4px solid #1565C0;
+  outline-offset: 3px;
+}
+
+.emoji-item:focus-visible {
+  outline: 4px solid #1565C0;
+  outline-offset: 2px;
+  transform: scale(1.08);
+}
+
+.shape-item:focus-visible {
+  outline: 4px solid #1565C0;
+  outline-offset: 2px;
+}
+
+.palette-btn:focus-visible {
+  outline: 3px solid #333;
+  outline-offset: 3px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  background: #1565C0;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 0 0 8px 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  z-index: 10000;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ===== Utility ===== */
 .text-center { text-align: center; }
 .mt-16 { margin-top: 16px; }
