@@ -104,6 +104,12 @@
     }
     .draggable-piece:active { cursor: grabbing; }
 
+    .draggable-piece.selected {
+      border: 3px solid #FFEB3B;
+      border-radius: 8px;
+      transform: scale(1.1);
+    }
+
     #train {
       position: absolute;
       top: 10px;
@@ -243,9 +249,16 @@ const PUZZLES = [
   }
 ];
 
+
 let correctlyPlaced = 0;
+let selectedPiece = null;
 
 function initGame() {
+  round = 0; mistakes = 0; selectedPiece = null;
+  hideFeedback();
+  document.getElementById('completion-screen').style.display = 'none';
+  loadRound();
+}
   round = 0; mistakes = 0;
   hideFeedback();
   document.getElementById('completion-screen').style.display = 'none';
@@ -310,9 +323,7 @@ function loadRound() {
     cell.dataset.accept = type;
     
     // Drop logic
-    cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('drag-over'); });
-    cell.addEventListener('dragleave', e => { cell.classList.remove('drag-over'); });
-    cell.addEventListener('drop', handleDrop);
+    cell.addEventListener('click', () => handleSlotClick(cell));
   });
   
   // Prepare toolbox pieces
@@ -322,27 +333,25 @@ function loadRound() {
   piecesToRender.forEach((p, idx) => {
     const div = document.createElement('div');
     div.className = `draggable-piece track-${p}`;
-    div.draggable = true;
     div.dataset.type = p;
     div.id = `piece-${idx}`;
-    div.addEventListener('dragstart', handleDragStart);
+    div.addEventListener('click', () => handlePieceClick(div));
     tb.appendChild(div);
   });
 }
 
-function handleDragStart(e) {
-  e.dataTransfer.setData('text/plain', e.target.id);
+function handlePieceClick(piece) {
+  if (selectedPiece) selectedPiece.classList.remove('selected');
+  selectedPiece = piece;
+  piece.classList.add('selected');
   playSound('pop');
 }
 
-function handleDrop(e) {
-  e.preventDefault();
-  const cell = e.currentTarget;
-  cell.classList.remove('drag-over');
+function handleSlotClick(cell) {
+  if (!selectedPiece) return;
+  if (!cell.classList.contains('dropzone')) return;
   
-  const pieceId = e.dataTransfer.getData('text/plain');
-  const piece = document.getElementById(pieceId);
-  if(!piece) return;
+  const piece = selectedPiece;
   
   if (piece.dataset.type === cell.dataset.accept) {
     // Correct

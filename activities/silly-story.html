@@ -249,7 +249,7 @@ function spinSlot(type) {
 
 function spinAll() {
   playSound('pop');
-  currentStory.who = getRandomIndex(banks[who].length);
+  currentStory.who = getRandomIndex(banks['who'].length);
   currentStory.action = getRandomIndex(banks.action.length);
   currentStory.where = getRandomIndex(banks.where.length);
   
