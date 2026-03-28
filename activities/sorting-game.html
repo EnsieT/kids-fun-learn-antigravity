@@ -158,7 +158,7 @@
   <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🧺 Sort into Baskets</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-  <span class="score-display" id="score-display">0/10</span>
+  <span class="score-display" id="score-display">0/5</span>
 </header>
 
 <div id="langSelector" class="language-selector">
@@ -185,7 +185,7 @@
 
     <!-- Progress -->
     <div class="sort-progress-row">
-      <span id="sort-count">0/10</span>
+      <span id="sort-count">0/5</span>
       <div class="sort-progress-bar">
         <div class="sort-progress-fill" id="sort-fill" style="width:0%"></div>
       </div>
@@ -216,105 +216,26 @@
 <script src="../js/common.js"></script>
 <script>
 const ROUND_TYPES = [
-  {
-    titleHi: '🍎 फल vs 🥕 सब्ज़ी',
-    catA: {label:{en:'Fruits',    hi:'फल',    gu:'ફળ'},   emoji:'🍎'},
-    catB: {label:{en:'Veggies',   hi:'सब्ज़ी', gu:'શાક'},  emoji:'🥕'},
-    items: [
-      {emoji:'🥭',hi:'आम',       gu:'કેરી',    cat:'a'},
-      {emoji:'🍌',hi:'केला',     gu:'કેળું',   cat:'a'},
-      {emoji:'🍎',hi:'सेब',      gu:'સફરજન',   cat:'a'},
-      {emoji:'🍊',hi:'संतरा',    gu:'નારંગી',  cat:'a'},
-      {emoji:'🥥',hi:'नारियल',   gu:'નાળિયેર', cat:'a'},
-      {emoji:'🥕',hi:'गाजर',     gu:'ગાજર',    cat:'b'},
-      {emoji:'🥔',hi:'आलू',      gu:'બટાટા',   cat:'b'},
-      {emoji:'🍆',hi:'बैंगन',    gu:'રીંગણ',   cat:'b'},
-      {emoji:'🌽',hi:'मकई',      gu:'મકાઈ',    cat:'b'},
-      {emoji:'🧅',hi:'प्याज',    gu:'ડુંગળી',  cat:'b'},
-    ]
-  },
-  {
-    titleHi: '🐾 जानवर vs 🚗 वाहन',
-    catA: {label:{en:'Animals',  hi:'जानवर',  gu:'પ્રાણી'}, emoji:'🐾'},
-    catB: {label:{en:'Vehicles', hi:'वाहन',   gu:'વાહન'},   emoji:'🚗'},
-    items: [
-      {emoji:'🐄',hi:'गाय',     gu:'ગાય',        cat:'a'},
-      {emoji:'🐘',hi:'हाथी',    gu:'હાથી',       cat:'a'},
-      {emoji:'🦚',hi:'मोर',     gu:'મોર',        cat:'a'},
-      {emoji:'🐯',hi:'बाघ',     gu:'વાઘ',        cat:'a'},
-      {emoji:'🐕',hi:'कुत्ता',  gu:'કૂતરો',      cat:'a'},
-      {emoji:'🚗',hi:'कार',      gu:'ગાડી',       cat:'b'},
-      {emoji:'🚌',hi:'बस',       gu:'બસ',         cat:'b'},
-      {emoji:'✈️',hi:'हवाई जहाज',gu:'વિમાન',      cat:'b'},
-      {emoji:'🚂',hi:'ट्रेन',    gu:'ટ્રેઇન',     cat:'b'},
-      {emoji:'🚲',hi:'साइकिल',   gu:'સાઇકલ',     cat:'b'},
-    ]
-  },
-  {
-    titleHi: '✈️ उड़ने वाले vs 🐟 पानी वाले',
-    catA: {label:{en:'Flies',   hi:'उड़ता है',    gu:'ઉડે છે'},      emoji:'✈️'},
-    catB: {label:{en:'Swims',   hi:'पानी में',    gu:'પાણીમાં'},     emoji:'🐟'},
-    items: [
-      {emoji:'✈️',hi:'हवाई जहाज', gu:'વિમાન',       cat:'a'},
-      {emoji:'🦅',hi:'चील',        gu:'ગરુડ',        cat:'a'},
-      {emoji:'🦋',hi:'तितली',       gu:'પતંગિયું',    cat:'a'},
-      {emoji:'🦜',hi:'तोता',        gu:'પોપટ',        cat:'a'},
-      {emoji:'🚁',hi:'हेलीकॉप्टर', gu:'હેલિકૉપ્ટર', cat:'a'},
-      {emoji:'🐟',hi:'मछली',        gu:'માછલી',       cat:'b'},
-      {emoji:'🐬',hi:'डॉल्फिन',    gu:'ડૉલ્ફિન',     cat:'b'},
-      {emoji:'🦈',hi:'शार्क',       gu:'શાર્ક',       cat:'b'},
-      {emoji:'🐊',hi:'मगरमच्छ',    gu:'મગર',         cat:'b'},
-      {emoji:'🐸',hi:'मेंढक',       gu:'દેડકો',       cat:'b'},
-    ]
-  },
-  {
-    titleHi: '🔴 लाल vs 🔵 नीला',
-    catA: {label:{en:'Red',  hi:'लाल',  gu:'લાલ'},   emoji:'🔴'},
-    catB: {label:{en:'Blue', hi:'नीला', gu:'વાદળી'}, emoji:'🔵'},
-    items: [
-      {emoji:'🍎',hi:'लाल सेब',    gu:'લાલ સફરજન',  cat:'a'},
-      {emoji:'🌹',hi:'लाल गुलाब',  gu:'લાલ ગુલાબ',  cat:'a'},
-      {emoji:'🍅',hi:'टमाटर',      gu:'ટામેટું',     cat:'a'},
-      {emoji:'🌶️',hi:'लाल मिर्च', gu:'લાલ મરચું',  cat:'a'},
-      {emoji:'🎈',hi:'लाल गुब्बारा',gu:'લાલ ફુગ્ગો', cat:'a'},
-      {emoji:'🫐',hi:'ब्लूबेरी',   gu:'બ્લૂબેરી',   cat:'b'},
-      {emoji:'💧',hi:'पानी',        gu:'પાણી',        cat:'b'},
-      {emoji:'🌊',hi:'समुद्र',      gu:'સમુદ્ર',      cat:'b'},
-      {emoji:'🔷',hi:'नीला हीरा',   gu:'વાદળી હીરો', cat:'b'},
-      {emoji:'🫙',hi:'नीला जार',    gu:'વાદળી ઢાંકણ', cat:'b'},
-    ]
-  },
+  { titleHi: '🍎 फल vs 🥕 सब्ज़ी', catA: {label:{en:'Fruits', hi:'फल', gu:'ફળ'}, emoji:'🍎'}, catB: {label:{en:'Veggies', hi:'सब्ज़ी', gu:'શાક'}, emoji:'🥕'}, items: [ {emoji:'🥭',hi:'आम', cat:'a'}, {emoji:'🍌',hi:'केला', cat:'a'}, {emoji:'🍎',hi:'सेब', cat:'a'}, {emoji:'🍊',hi:'संतरा', cat:'a'}, {emoji:'🥥',hi:'नारियल', cat:'a'}, {emoji:'🥕',hi:'गाजर', cat:'b'}, {emoji:'🥔',hi:'आलू', cat:'b'}, {emoji:'🍆',hi:'बैंगन', cat:'b'}, {emoji:'🌽',hi:'मकई', cat:'b'}, {emoji:'🧅',hi:'प्याज', cat:'b'} ] },
+  { titleHi: '🐾 जानवर vs 🚗 वाहन', catA: {label:{en:'Animals', hi:'जानवर', gu:'પ્રાણી'}, emoji:'🐾'}, catB: {label:{en:'Vehicles', hi:'वाहन', gu:'વાહન'}, emoji:'🚗'}, items: [ {emoji:'🐄',hi:'गाय', cat:'a'}, {emoji:'🐘',hi:'हाथी', cat:'a'}, {emoji:'🦚',hi:'मोर', cat:'a'}, {emoji:'🐯',hi:'बाघ', cat:'a'}, {emoji:'🐕',hi:'कुत्ता', cat:'a'}, {emoji:'🚗',hi:'कार', cat:'b'}, {emoji:'🚌',hi:'बस', cat:'b'}, {emoji:'✈️',hi:'हवाई जहाज', cat:'b'}, {emoji:'🚂',hi:'ट्रेन', cat:'b'}, {emoji:'🚲',hi:'साइकिल', cat:'b'} ] },
+  { titleHi: 'उड़ने वाले vs पानी वाले', catA: {label:{en:'Flies', hi:'उड़ता है', gu:'ઉડે છે'}, emoji:'✈️'}, catB: {label:{en:'Swims', hi:'पानी में', gu:'પાણીમાં'}, emoji:'🐟'}, items: [ {emoji:'✈️',hi:'हवाई जहाज', cat:'a'}, {emoji:'🦅',hi:'चील', cat:'a'}, {emoji:'🦋',hi:'तितली', cat:'a'}, {emoji:'🦜',hi:'तोता', cat:'a'}, {emoji:'🚁',hi:'हेलीकॉप्टर', cat:'a'}, {emoji:'🐟',hi:'मछली', cat:'b'}, {emoji:'🐬',hi:'डॉल्फिन', cat:'b'}, {emoji:'🦈',hi:'शार्क', cat:'b'}, {emoji:'🐊',hi:'मगरमच्छ', cat:'b'}, {emoji:'🐸',hi:'मेंढक', cat:'b'} ] },
+  { titleHi: 'गर्म vs ठंडा', catA: {label:{en:'Hot', hi:'गर्म', gu:'ગરમ'}, emoji:'🔥'}, catB: {label:{en:'Cold', hi:'ठंडा', gu:'ઠંડુ'}, emoji:'🧊'}, items: [ {emoji:'☀️',hi:'सूरज', cat:'a'}, {emoji:'☕',hi:'चाय', cat:'a'}, {emoji:'🔥',hi:'आग', cat:'a'}, {emoji:'🌋',hi:'ज्वालामुखी', cat:'a'}, {emoji:'🍳',hi:'गर्म तवा', cat:'a'}, {emoji:'🧊',hi:'बर्फ', cat:'b'}, {emoji:'🍦',hi:'आइसक्रीम', cat:'b'}, {emoji:'❄️',hi:'स्नो', cat:'b'}, {emoji:'🥶',hi:'ठंड', cat:'b'}, {emoji:'⛄',hi:'स्नोमैन', cat:'b'} ] },
+  { titleHi: 'लाल vs नीला', catA: {label:{en:'Red', hi:'लाल', gu:'લાલ'}, emoji:'🔴'}, catB: {label:{en:'Blue', hi:'नीला', gu:'વાદળી'}, emoji:'🔵'}, items: [ {emoji:'🍎',hi:'लाल', cat:'a'}, {emoji:'🌹',hi:'लाल', cat:'a'}, {emoji:'🍅',hi:'लाल', cat:'a'}, {emoji:'🌶️',hi:'लाल', cat:'a'}, {emoji:'🎈',hi:'लाल', cat:'a'}, {emoji:'🫐',hi:'नीला', cat:'b'}, {emoji:'💧',hi:'नीला', cat:'b'}, {emoji:'🌊',hi:'नीला', cat:'b'}, {emoji:'🔷',hi:'नीला', cat:'b'}, {emoji:'🫙',hi:'नीला', cat:'b'} ] },
+  { titleHi: 'खिलौना vs फर्नीचर', catA: {label:{en:'Toys', hi:'खिलौने', gu:'રમકડાં'}, emoji:'🧸'}, catB: {label:{en:'Furniture', hi:'फर्नीचर', gu:'ફર્નિચર'}, emoji:'🪑'}, items: [ {emoji:'🧸',hi:'खिलौना', cat:'a'}, {emoji:'🪀',hi:'यो-यो', cat:'a'}, {emoji:'🪁',hi:'पतंग', cat:'a'}, {emoji:'🎮',hi:'गेम', cat:'a'}, {emoji:'🧩',hi:'पहेली', cat:'a'}, {emoji:'🪑',hi:'कुर्सी', cat:'b'}, {emoji:'🛏️',hi:'बिस्तर', cat:'b'}, {emoji:'🛋️',hi:'सोफा', cat:'b'}, {emoji:'🚪',hi:'दरवाजा', cat:'b'}, {emoji:'🛁',hi:'टब', cat:'b'} ] },
+  { titleHi: 'मीठा vs नमकीन', catA: {label:{en:'Sweet', hi:'मीठा', gu:'મીઠું'}, emoji:'🍩'}, catB: {label:{en:'Salty', hi:'नमकीन', gu:'નમકીન'}, emoji:'🥨'}, items: [ {emoji:'🍩',hi:'डोनट', cat:'a'}, {emoji:'🎂',hi:'केक', cat:'a'}, {emoji:'🍫',hi:'चॉकलेट', cat:'a'}, {emoji:'🍭',hi:'लॉलीपॉप', cat:'a'}, {emoji:'🍬',hi:'टॉफी', cat:'a'}, {emoji:'🥨',hi:'नमकीन', cat:'b'}, {emoji:'🍟',hi:'फ्रेंच फ्राइज़', cat:'b'}, {emoji:'🍕',hi:'पिज्ज़ा', cat:'b'}, {emoji:'🍿',hi:'पॉपकॉर्न', cat:'b'}, {emoji:'🧀',hi:'पनीर', cat:'b'} ] },
+  { titleHi: 'दिन vs रात', catA: {label:{en:'Day', hi:'दिन', gu:'દિવસ'}, emoji:'☀️'}, catB: {label:{en:'Night', hi:'रात', gu:'રાત'}, emoji:'🌙'}, items: [ {emoji:'☀️',hi:'सूरज', cat:'a'}, {emoji:'🌻',hi:'धूप', cat:'a'}, {emoji:'🌈',hi:'इंद्रधनुष', cat:'a'}, {emoji:'🕶️',hi:'धूप का चश्मा', cat:'a'}, {emoji:'🏖️',hi:'गर्मी', cat:'a'}, {emoji:'🌙',hi:'चांद', cat:'b'}, {emoji:'⭐',hi:'तारा', cat:'b'}, {emoji:'🌌',hi:'रात', cat:'b'}, {emoji:'🦉',hi:'उल्लू', cat:'b'}, {emoji:'🦇',hi:'चमगादड़', cat:'b'} ] }
 ];
 
 const ITEMS_PER_ROUND = 10;
-const TOTAL_ROUNDS = ROUND_TYPES.length;
+const TOTAL_ROUNDS = Math.min(5, ROUND_TYPES.length);
 
-let roundIdx = 0;
-let itemQueue = [];
-let itemPos = 0;
-let mistakes = 0;
-let totalAnswered = 0;
-let totalItems = 0;
-let isAnimating = false;
-const currentPrompt = {en: 'Sort it!', hi: 'सही टोकरी में डालो!', gu: 'સાચી ટોપલીમાં નાખો!'};
+let hideFeedback();
+  // Shuffle ROUND_TYPES once
+  var currentRounds = shuffle(ROUND_TYPES).slice(0, TOTAL_ROUNDS);
+  window.currentRounds = currentRounds;
+  roundIdx = 0;
+  mistakes = 0; totalAnswered = 0;
 
-function hearAgain() {
-  const itemEl = document.getElementById('current-item');
-  if (itemEl && itemEl.dataset.hi) {
-    speak({en: itemEl.dataset.en || itemEl.dataset.hi, hi: itemEl.dataset.hi, gu: itemEl.dataset.gu || itemEl.dataset.hi});
-  } else {
-    speak(currentPrompt);
-  }
-}
-
-function onLanguageChange() { initGame(); }
-
-function initGame() {
-  roundIdx = 0; mistakes = 0; totalAnswered = 0;
-  document.getElementById('completion-screen').classList.remove('show');
-  document.getElementById('game-area').classList.remove('hidden');
-  document.getElementById('question-text').textContent = t(currentPrompt);
-  hideFeedback();
   loadRound(0);
 }
 
@@ -324,7 +245,7 @@ function loadRound(idx) {
     return;
   }
   roundIdx = idx;
-  const rt = ROUND_TYPES[idx];
+  const rt = window.currentRounds[idx];
   itemQueue = shuffle([...rt.items]);
   itemPos = 0;
   isAnimating = false;

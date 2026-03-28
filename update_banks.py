@@ -1,144 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Match Columns 🎮 Kids Fun Learn</title>
-<meta name="description" content="Draw lines to match items from two columns. A visual connection game that builds logical thinking for ages 4-6."/>
-<meta property="og:title" content="Match Columns 🎮 Kids Fun Learn"/>
-<meta property="og:description" content="Draw lines to match items from two columns. A visual connection game that builds logical thinking for ages 4-6."/>
-<meta property="og:type" content="website"/>
-<link rel="stylesheet" href="../css/style.css"/>
-<style>
-  .match-wrap {
-    padding: 12px 16px;
-    max-width: 680px;
-    margin: 0 auto;
-    position: relative;
-  }
-  .match-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    position: relative;
-  }
-  .match-col {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .match-col-label {
-    text-align: center;
-    font-weight: 900;
-    font-size: 1rem;
-    color: #888;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-  .match-item {
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-    padding: 14px 10px;
-    text-align: center;
-    cursor: pointer;
-    border: 4px solid transparent;
-    transition: transform 0.15s, border-color 0.2s, background 0.2s;
-    font-size: 2rem;
-    min-height: 72px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    user-select: none;
-  }
-  .match-item:hover { transform: scale(1.06); }
-  .match-item:active { transform: scale(0.95); }
-  .match-item.selected  { border-color: #2196F3; background: #E3F2FD; }
-  .match-item.matched   { border-color: #4CAF50; background: #E8F5E9; opacity: 0.75; cursor: default; transform: none; }
-  .match-item.wrong     { border-color: #F44336; background: #FFEBEE; animation: shake 0.5s; }
-  .match-item-label { font-size: 0.75rem; font-weight: 800; color: #555; }
+import os
+import re
 
-  /* SVG connector overlay */
-  #connector-svg {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    pointer-events: none;
-    z-index: 5;
-    overflow: visible;
-  }
+cur_dir = os.path.dirname(__file__)
+act_dir = os.path.join(cur_dir, 'activities')
 
-  .round-type-badge {
-    text-align: center;
-    padding: 6px 16px;
-    background: linear-gradient(135deg, #FF8C00, #FFD700);
-    color: #fff;
-    font-weight: 900;
-    font-size: 1rem;
-    border-radius: 50px;
-    display: inline-block;
-    margin: 8px auto;
-    display: flex;
-    justify-content: center;
-  }
-</style>
-<meta name="theme-color" content="#FFD700"/>
-</head>
-<body>
-<canvas id="confetti-canvas" aria-hidden="true"></canvas>
-
-<header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
-  <h1>🔗 Match Columns</h1>
-  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-  <span class="score-display" id="score-display">0/8</span>
-</header>
-
-<div id="langSelector" class="language-selector">
-  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
-  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
-  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
-</div>
-
-<div id="game-area">
-  <div class="question-area">
-    <p class="question-text" id="question-text">मिलाओ! Match them!</p>
-    <button class="hear-btn" onclick="hearAgain()" aria-label="आवाज़ सुनो">🔊</button>
-  </div>
-
-  <div style="display:flex;justify-content:center;">
-    <div class="round-type-badge" id="round-badge">🐄 जानवर और आवाज़</div>
-  </div>
-
-  <div id="feedback-banner" class="feedback-banner"></div>
-
-  <div class="match-wrap">
-    <div class="match-columns" id="match-columns">
-      <svg id="connector-svg"></svg>
-      <div class="match-col" id="left-col">
-        <div class="match-col-label">👈 इन्हें</div>
-      </div>
-      <div class="match-col" id="right-col">
-        <div class="match-col-label">👉 इनसे मिलाओ</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="completion-screen" class="completion-screen">
-  <div class="completion-stars" id="completion-stars"></div>
-  <div class="completion-title" id="completion-title"></div>
-  <div class="completion-score" id="completion-score"></div>
-  <div class="completion-best"  id="completion-best"></div>
-  <button class="play-again-btn" onclick="initGame()">🔄 Play Again</button>
-</div>
-
-<script src="../js/common.js"></script>
-<script>
-const ROUND_TYPES = [
+# 1. Update Match Columns
+match_val = """const ROUND_TYPES = [
   // 1
   {
     titleHi: '🐄 जानवर और आवाज़', titleEn: '🐄 Animals & Sounds', titleGu: '🐄 પ્રાણી અને અવાજ',
@@ -359,158 +226,91 @@ const ROUND_TYPES = [
       {left:{emoji:'🟦',hi:'नीला',en:'Blue',gu:'વાદળી'}, right:{emoji:'💧',hi:'पानी',en:'Water',gu:'પાણી'}},
     ]
   }
-];
+];"""
 
-const TOTAL_ROUNDS = 5;
-let round = 0, mistakes = 0;
-let roundsQueue = [];
-let selectedLeft = null;
-let matchedPairs = 0;
-let totalPairs = 0;
-let currentPairs = [];
-let currentPrompt = {en: 'Match them!', hi: 'मिलाओ!', gu: 'મેળવો!'};
-const PROMPT_SELECT_LEFT = {en: 'Pick from the left side first!', hi: 'पहले बाईं तरफ से चुनो!', gu: 'પહેલા ડાબી બાજુ થી પસંદ કરો!'};
+mc_path = os.path.join(act_dir, 'match-columns.html')
+with open(mc_path, 'r', encoding='utf-8') as f:
+    mc_content = f.read()
 
-function hearAgain() { speak(currentPrompt); }
+mc_content = re.sub(r'const ROUND_TYPES = \[.*?\];', match_val, mc_content, flags=re.DOTALL)
+with open(mc_path, 'w', encoding='utf-8') as f:
+    f.write(mc_content)
+print("Updated match-columns.html banks")
 
-function onLanguageChange() { initGame(); }
+# 2. Update Odd One Out Puzzles
+odd_val = """const PUZZLES = [
+  { items:['🥭','🍌','🥥','🐄'], odd:'🐄',  hint:'Fruits vs Animal' },
+  { items:['🐘','🦚','🥭','🐯'], odd:'🥭',  hint:'Animals vs Fruit' },
+  { items:['🔴','🟦','🟢','🥔'], odd:'🥔',  hint:'Colors vs Veggie' },
+  { items:['🚗','🚌','🐘','🚲'], odd:'🐘',  hint:'Vehicles vs Animal' },
+  { items:['🍆','🥒','🧅','🍌'], odd:'🍌',  hint:'Vegetables vs Fruit' },
+  { items:['🐄','🐕','🐈','🌻'], odd:'🌻',  hint:'Animals vs Flower' },
+  { items:['✏️','📚','🖊️','🐒'], odd:'🐒',  hint:'School items vs Animal' },
+  { items:['🪔','🎆','🎇','🥥'], odd:'🥥',  hint:'Festival vs Fruit' },
+  { items:['🏠','🏫','🏥','🍎'], odd:'🍎',  hint:'Buildings vs Fruit' },
+  { items:['🌧️','☀️','❄️','🐯'], odd:'🐯',  hint:'Weather vs Animal' },
+  { items:['🥭','🥔','🍆','🧅'], odd:'🥭',  hint:'Vegetables vs Fruit' },
+  { items:['🚌','✈️','🚂','🦜'], odd:'🦜',  hint:'Transport vs Bird' },
+  { items:['🐒','🦁','🐯','🚗'], odd:'🚗',  hint:'Animals vs Vehicle' },
+  { items:['📱','💻','📺','🥦'], odd:'🥦',  hint:'Electronics vs Veggie' },
+  { items:['🌸','🌺','🌻','🐘'], odd:'🐘',  hint:'Flowers vs Animal' },
+  { items:['🔴','🔴','🔴','🟦'], odd:'🟦',  hint:'3 Red vs 1 Blue' },
+  { items:['🍫','🎂','🍩','🥨'], odd:'🥨',  hint:'Sweet vs Salty' },
+  { items:['👕','👖','🧦','🧸'], odd:'🧸',  hint:'Clothes vs Toy' },
+  { items:['🐕','🐈','🐎','🦜'], odd:'🦜',  hint:'4 legs vs Bird' },
+  { items:['⚽','🏀','🎾','📱'], odd:'📱',  hint:'Balls vs Phone' },
+  { items:['🍓','🍒','🍉','🍋'], odd:'🍋',  hint:'Red Fruits vs Yellow' },
+  { items:['🌲','🌳','🌴','🌹'], odd:'🌹',  hint:'Trees vs Flower' },
+  { items:['🚢','🚤','🛶','✈️'], odd:'✈️',  hint:'Water vs Air' },
+  { items:['🐝','🦋','🐞','🐀'], odd:'🐀',  hint:'Insects vs Mammal' },
+  { items:['👨‍🍳','👨‍⚕️','👮‍♂️','🐕'], odd:'🐕',  hint:'Jobs vs Animal' },
+  { items:['🎹','🎸','🎺','🍔'], odd:'🍔',  hint:'Instruments vs Food' },
+  { items:['🥶','🧊','❄️','🔥'], odd:'🔥',  hint:'Cold vs Hot' },
+  { items:['🛏️','🛋️','🪑','🚗'], odd:'🚗',  hint:'Furniture vs Vehicle' },
+  { items:['👓','🧤','🧣','📸'], odd:'📸',  hint:'Wearable vs Camera' },
+  { items:['🌙','⭐','🌌','☀️'], odd:'☀️',  hint:'Night vs Day' },
+];"""
 
-function initGame() {
-  round = 0; mistakes = 0; selectedLeft = null;
-  // Build a queue of 8 rounds by cycling through round types
-  roundsQueue = [];
-  const types = shuffle([...ROUND_TYPES]);
-  for (let i = 0; i < TOTAL_ROUNDS; i++) {
-    roundsQueue.push(types[i % types.length]);
-  }
-  document.getElementById('completion-screen').classList.remove('show');
-  document.getElementById('game-area').classList.remove('hidden');
-  hideFeedback();
-  nextRound();
-}
+odd_path = os.path.join(act_dir, 'odd-one-out.html')
+with open(odd_path, 'r', encoding='utf-8') as f:
+    odd_content = f.read()
 
-function nextRound() {
-  if (round >= TOTAL_ROUNDS) {
-    showCompletion('match-columns', mistakes, TOTAL_ROUNDS);
-    return;
-  }
-  selectedLeft = null;
-  matchedPairs = 0;
-  hideFeedback();
-  updateProgress(round, TOTAL_ROUNDS);
+odd_content = re.sub(r'const PUZZLES = \[.*?\];', odd_val, odd_content, flags=re.DOTALL)
+with open(odd_path, 'w', encoding='utf-8') as f:
+    f.write(odd_content)
+print("Updated odd-one-out.html banks")
 
-  const rt = roundsQueue[round];
-  document.getElementById('round-badge').textContent = t({en: rt.titleEn, hi: rt.titleHi, gu: rt.titleGu});
-  currentPrompt = {en: rt.titleEn + '! Match them!', hi: rt.titleHi + '! मिलाओ!', gu: rt.titleGu + '! મેળવો!'};
+# 3. Update Sorting Game Arrays
+sort_val = """const ROUND_TYPES = [
+  { titleHi: '🍎 फल vs 🥕 सब्ज़ी', catA: {label:{en:'Fruits', hi:'फल', gu:'ફળ'}, emoji:'🍎'}, catB: {label:{en:'Veggies', hi:'सब्ज़ी', gu:'શાક'}, emoji:'🥕'}, items: [ {emoji:'🥭',hi:'आम', cat:'a'}, {emoji:'🍌',hi:'केला', cat:'a'}, {emoji:'🍎',hi:'सेब', cat:'a'}, {emoji:'🍊',hi:'संतरा', cat:'a'}, {emoji:'🥥',hi:'नारियल', cat:'a'}, {emoji:'🥕',hi:'गाजर', cat:'b'}, {emoji:'🥔',hi:'आलू', cat:'b'}, {emoji:'🍆',hi:'बैंगन', cat:'b'}, {emoji:'🌽',hi:'मकई', cat:'b'}, {emoji:'🧅',hi:'प्याज', cat:'b'} ] },
+  { titleHi: '🐾 जानवर vs 🚗 वाहन', catA: {label:{en:'Animals', hi:'जानवर', gu:'પ્રાણી'}, emoji:'🐾'}, catB: {label:{en:'Vehicles', hi:'वाहन', gu:'વાહન'}, emoji:'🚗'}, items: [ {emoji:'🐄',hi:'गाय', cat:'a'}, {emoji:'🐘',hi:'हाथी', cat:'a'}, {emoji:'🦚',hi:'मोर', cat:'a'}, {emoji:'🐯',hi:'बाघ', cat:'a'}, {emoji:'🐕',hi:'कुत्ता', cat:'a'}, {emoji:'🚗',hi:'कार', cat:'b'}, {emoji:'🚌',hi:'बस', cat:'b'}, {emoji:'✈️',hi:'हवाई जहाज', cat:'b'}, {emoji:'🚂',hi:'ट्रेन', cat:'b'}, {emoji:'🚲',hi:'साइकिल', cat:'b'} ] },
+  { titleHi: 'उड़ने वाले vs पानी वाले', catA: {label:{en:'Flies', hi:'उड़ता है', gu:'ઉડે છે'}, emoji:'✈️'}, catB: {label:{en:'Swims', hi:'पानी में', gu:'પાણીમાં'}, emoji:'🐟'}, items: [ {emoji:'✈️',hi:'हवाई जहाज', cat:'a'}, {emoji:'🦅',hi:'चील', cat:'a'}, {emoji:'🦋',hi:'तितली', cat:'a'}, {emoji:'🦜',hi:'तोता', cat:'a'}, {emoji:'🚁',hi:'हेलीकॉप्टर', cat:'a'}, {emoji:'🐟',hi:'मछली', cat:'b'}, {emoji:'🐬',hi:'डॉल्फिन', cat:'b'}, {emoji:'🦈',hi:'शार्क', cat:'b'}, {emoji:'🐊',hi:'मगरमच्छ', cat:'b'}, {emoji:'🐸',hi:'मेंढक', cat:'b'} ] },
+  { titleHi: 'गर्म vs ठंडा', catA: {label:{en:'Hot', hi:'गर्म', gu:'ગરમ'}, emoji:'🔥'}, catB: {label:{en:'Cold', hi:'ठंडा', gu:'ઠંડુ'}, emoji:'🧊'}, items: [ {emoji:'☀️',hi:'सूरज', cat:'a'}, {emoji:'☕',hi:'चाय', cat:'a'}, {emoji:'🔥',hi:'आग', cat:'a'}, {emoji:'🌋',hi:'ज्वालामुखी', cat:'a'}, {emoji:'🍳',hi:'गर्म तवा', cat:'a'}, {emoji:'🧊',hi:'बर्फ', cat:'b'}, {emoji:'🍦',hi:'आइसक्रीम', cat:'b'}, {emoji:'❄️',hi:'स्नो', cat:'b'}, {emoji:'🥶',hi:'ठंड', cat:'b'}, {emoji:'⛄',hi:'स्नोमैन', cat:'b'} ] },
+  { titleHi: 'लाल vs नीला', catA: {label:{en:'Red', hi:'लाल', gu:'લાલ'}, emoji:'🔴'}, catB: {label:{en:'Blue', hi:'नीला', gu:'વાદળી'}, emoji:'🔵'}, items: [ {emoji:'🍎',hi:'लाल', cat:'a'}, {emoji:'🌹',hi:'लाल', cat:'a'}, {emoji:'🍅',hi:'लाल', cat:'a'}, {emoji:'🌶️',hi:'लाल', cat:'a'}, {emoji:'🎈',hi:'लाल', cat:'a'}, {emoji:'🫐',hi:'नीला', cat:'b'}, {emoji:'💧',hi:'नीला', cat:'b'}, {emoji:'🌊',hi:'नीला', cat:'b'}, {emoji:'🔷',hi:'नीला', cat:'b'}, {emoji:'🫙',hi:'नीला', cat:'b'} ] },
+  { titleHi: 'खिलौना vs फर्नीचर', catA: {label:{en:'Toys', hi:'खिलौने', gu:'રમકડાં'}, emoji:'🧸'}, catB: {label:{en:'Furniture', hi:'फर्नीचर', gu:'ફર્નિચર'}, emoji:'🪑'}, items: [ {emoji:'🧸',hi:'खिलौना', cat:'a'}, {emoji:'🪀',hi:'यो-यो', cat:'a'}, {emoji:'🪁',hi:'पतंग', cat:'a'}, {emoji:'🎮',hi:'गेम', cat:'a'}, {emoji:'🧩',hi:'पहेली', cat:'a'}, {emoji:'🪑',hi:'कुर्सी', cat:'b'}, {emoji:'🛏️',hi:'बिस्तर', cat:'b'}, {emoji:'🛋️',hi:'सोफा', cat:'b'}, {emoji:'🚪',hi:'दरवाजा', cat:'b'}, {emoji:'🛁',hi:'टब', cat:'b'} ] },
+  { titleHi: 'मीठा vs नमकीन', catA: {label:{en:'Sweet', hi:'मीठा', gu:'મીઠું'}, emoji:'🍩'}, catB: {label:{en:'Salty', hi:'नमकीन', gu:'નમકીન'}, emoji:'🥨'}, items: [ {emoji:'🍩',hi:'डोनट', cat:'a'}, {emoji:'🎂',hi:'केक', cat:'a'}, {emoji:'🍫',hi:'चॉकलेट', cat:'a'}, {emoji:'🍭',hi:'लॉलीपॉप', cat:'a'}, {emoji:'🍬',hi:'टॉफी', cat:'a'}, {emoji:'🥨',hi:'नमकीन', cat:'b'}, {emoji:'🍟',hi:'फ्रेंच फ्राइज़', cat:'b'}, {emoji:'🍕',hi:'पिज्ज़ा', cat:'b'}, {emoji:'🍿',hi:'पॉपकॉर्न', cat:'b'}, {emoji:'🧀',hi:'पनीर', cat:'b'} ] },
+  { titleHi: 'दिन vs रात', catA: {label:{en:'Day', hi:'दिन', gu:'દિવસ'}, emoji:'☀️'}, catB: {label:{en:'Night', hi:'रात', gu:'રાત'}, emoji:'🌙'}, items: [ {emoji:'☀️',hi:'सूरज', cat:'a'}, {emoji:'🌻',hi:'धूप', cat:'a'}, {emoji:'🌈',hi:'इंद्रधनुष', cat:'a'}, {emoji:'🕶️',hi:'धूप का चश्मा', cat:'a'}, {emoji:'🏖️',hi:'गर्मी', cat:'a'}, {emoji:'🌙',hi:'चांद', cat:'b'}, {emoji:'⭐',hi:'तारा', cat:'b'}, {emoji:'🌌',hi:'रात', cat:'b'}, {emoji:'🦉',hi:'उल्लू', cat:'b'}, {emoji:'🦇',hi:'चमगादड़', cat:'b'} ] }
+];"""
 
-  // Pick 4 pairs from this round type
-  currentPairs = shuffle([...rt.pairs]).slice(0, 4);
-  totalPairs = currentPairs.length;
+sort_path = os.path.join(act_dir, 'sorting-game.html')
+with open(sort_path, 'r', encoding='utf-8') as f:
+    sort_content = f.read()
 
-  const leftItems  = currentPairs.map(p => p.left);
-  const rightItems = shuffle(currentPairs.map(p => p.right));
+sort_content = re.sub(r'const ROUND_TYPES = \[.*?\];', sort_val, sort_content, flags=re.DOTALL)
+# Make sure sorting-game only selects 5 categories tops!
+sort_content = sort_content.replace('const TOTAL_ROUNDS = ROUND_TYPES.length;', 'const TOTAL_ROUNDS = Math.min(5, ROUND_TYPES.length);')
+# sorting-game uses `shuffle([...ROUND_TYPES])` in initGame:
+#   const rt = ROUND_TYPES[idx];
+# We need to change that so it shuffles only once and takes 5.
+import re
+def inject_sort_shuffle(m):
+    return "ROUND_TYPES = shuffle(ROUND_TYPES).slice(0, TOTAL_ROUNDS);\n  roundIdx = 0;"
+sort_content = re.sub(r'roundIdx = 0;.*?\n(.*?)hideFeedback\(\);', "hideFeedback();\n  // Shuffle ROUND_TYPES once\n  " + r"var currentRounds = shuffle(ROUND_TYPES).slice(0, TOTAL_ROUNDS);\n  window.currentRounds = currentRounds;\n  roundIdx = 0;\n  mistakes = 0; totalAnswered = 0;\n", sort_content, flags=re.DOTALL)
 
-  // Clear SVG connectors
-  document.getElementById('connector-svg').innerHTML = '';
+# Fixing the reference
+sort_content = sort_content.replace('const rt = ROUND_TYPES[idx];', 'const rt = window.currentRounds[idx];')
 
-  renderColumn('left-col',  leftItems,  true);
-  renderColumn('right-col', rightItems, false);
-
-  speak(currentPrompt);
-}
-
-function renderColumn(colId, items, isLeft) {
-  const col = document.getElementById(colId);
-  // Keep label, remove item cards
-  const label = col.querySelector('.match-col-label');
-  col.innerHTML = '';
-  col.appendChild(label);
-
-  items.forEach((item, idx) => {
-    const div = document.createElement('div');
-    div.className = 'match-item';
-    div.dataset.emoji = item.emoji;
-    div.dataset.hi    = item.hi;
-    div.dataset.en    = item.en;
-    div.dataset.gu    = item.gu || item.en;
-    div.innerHTML = `<span>${item.emoji}</span><span class="match-item-label">${t(item)}</span>`;
-    div.onclick = () => isLeft ? handleLeftTap(div) : handleRightTap(div);
-    col.appendChild(div);
-  });
-}
-
-function handleLeftTap(el) {
-  if (el.classList.contains('matched')) return;
-  // Deselect previous
-  document.querySelectorAll('#left-col .match-item.selected')
-    .forEach(e => e.classList.remove('selected'));
-  selectedLeft = el;
-  el.classList.add('selected');
-  speak({en: el.dataset.en, hi: el.dataset.hi, gu: el.dataset.gu});
-  hideFeedback();
-}
-
-function handleRightTap(el) {
-  if (!selectedLeft) {
-    speak(PROMPT_SELECT_LEFT);
-    return;
-  }
-  if (el.classList.contains('matched')) return;
-
-  // Find the correct right for the selected left
-  const leftEmoji = selectedLeft.dataset.emoji;
-  const pair = currentPairs.find(p => p.left.emoji === leftEmoji);
-  const correctHi = pair ? pair.right.hi : null;
-
-  if (el.dataset.hi === correctHi) {
-    // Correct!
-    el.classList.add('matched');
-    selectedLeft.classList.remove('selected');
-    selectedLeft.classList.add('matched');
-    drawConnector(selectedLeft, el);
-    selectedLeft = null;
-    matchedPairs++;
-    showFeedback(true);
-    speak({en: 'Correct!', hi: 'सही!', gu: 'સાચું!'});
-    if (matchedPairs >= totalPairs) {
-      round++;
-      setTimeout(() => { hideFeedback(); nextRound(); }, 1600);
-    }
-  } else {
-    // Wrong
-    mistakes++;
-    el.classList.add('wrong');
-    showFeedback(false);
-    setTimeout(() => el.classList.remove('wrong'), 600);
-  }
-}
-
-function drawConnector(leftEl, rightEl) {
-  const svg = document.getElementById('connector-svg');
-  const container = document.getElementById('match-columns');
-  const cr  = container.getBoundingClientRect();
-  const lr  = leftEl.getBoundingClientRect();
-  const rr  = rightEl.getBoundingClientRect();
-
-  const x1 = lr.right  - cr.left;
-  const y1 = lr.top + lr.height / 2 - cr.top;
-  const x2 = rr.left   - cr.left;
-  const y2 = rr.top + rr.height / 2 - cr.top;
-
-  const colors = ['#4CAF50','#2196F3','#FF8C00','#9C27B0','#F44336'];
-  const color  = colors[matchedPairs % colors.length];
-
-  const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-  line.setAttribute('x1', x1); line.setAttribute('y1', y1);
-  line.setAttribute('x2', x2); line.setAttribute('y2', y2);
-  line.setAttribute('stroke', color);
-  line.setAttribute('stroke-width', '5');
-  line.setAttribute('stroke-linecap', 'round');
-  line.setAttribute('opacity', '0.75');
-  svg.appendChild(line);
-}
-
-document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
-</script>
-</body>
-</html>
+with open(sort_path, 'w', encoding='utf-8') as f:
+    f.write(sort_content)
+    
+print("Updated sorting-game.html banks")

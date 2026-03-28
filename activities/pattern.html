@@ -18,7 +18,7 @@
   <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>📐 Pattern Game</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-  <span class="score-display" id="score-display">0/10</span>
+  <span class="score-display" id="score-display">0/5</span>
 </header>
 
 <div id="langSelector" class="language-selector">
@@ -93,7 +93,7 @@ function generatePatterns() {
 }
 
 let allPatterns = [];
-const TOTAL_ROUNDS = 10;
+const TOTAL_ROUNDS = 5;
 let round = 0, mistakes = 0, answered = false;
 const currentPrompt = {en: 'What comes next?', hi: 'आगे क्या आएगा?', gu: 'આગળ શું આવશે?'};
 

@@ -18,7 +18,7 @@
   <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
   <h1>🔀 Odd One Out</h1>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-  <span class="score-display" id="score-display">0/10</span>
+  <span class="score-display" id="score-display">0/5</span>
 </header>
 
 <div id="langSelector" class="language-selector">
@@ -65,9 +65,24 @@ const PUZZLES = [
   { items:['🐒','🦁','🐯','🚗'], odd:'🚗',  hint:'Animals vs Vehicle' },
   { items:['📱','💻','📺','🥦'], odd:'🥦',  hint:'Electronics vs Veggie' },
   { items:['🌸','🌺','🌻','🐘'], odd:'🐘',  hint:'Flowers vs Animal' },
+  { items:['🔴','🔴','🔴','🟦'], odd:'🟦',  hint:'3 Red vs 1 Blue' },
+  { items:['🍫','🎂','🍩','🥨'], odd:'🥨',  hint:'Sweet vs Salty' },
+  { items:['👕','👖','🧦','🧸'], odd:'🧸',  hint:'Clothes vs Toy' },
+  { items:['🐕','🐈','🐎','🦜'], odd:'🦜',  hint:'4 legs vs Bird' },
+  { items:['⚽','🏀','🎾','📱'], odd:'📱',  hint:'Balls vs Phone' },
+  { items:['🍓','🍒','🍉','🍋'], odd:'🍋',  hint:'Red Fruits vs Yellow' },
+  { items:['🌲','🌳','🌴','🌹'], odd:'🌹',  hint:'Trees vs Flower' },
+  { items:['🚢','🚤','🛶','✈️'], odd:'✈️',  hint:'Water vs Air' },
+  { items:['🐝','🦋','🐞','🐀'], odd:'🐀',  hint:'Insects vs Mammal' },
+  { items:['👨‍🍳','👨‍⚕️','👮‍♂️','🐕'], odd:'🐕',  hint:'Jobs vs Animal' },
+  { items:['🎹','🎸','🎺','🍔'], odd:'🍔',  hint:'Instruments vs Food' },
+  { items:['🥶','🧊','❄️','🔥'], odd:'🔥',  hint:'Cold vs Hot' },
+  { items:['🛏️','🛋️','🪑','🚗'], odd:'🚗',  hint:'Furniture vs Vehicle' },
+  { items:['👓','🧤','🧣','📸'], odd:'📸',  hint:'Wearable vs Camera' },
+  { items:['🌙','⭐','🌌','☀️'], odd:'☀️',  hint:'Night vs Day' },
 ];
 
-const TOTAL_ROUNDS = 10;
+const TOTAL_ROUNDS = 5;
 let round = 0, mistakes = 0, answered = false;
 let usedPuzzles = [];
 const currentPrompt = {en: "Which one doesn't belong?", hi: 'कौन सा अलग है?', gu: 'કયું અલગ છે?'};

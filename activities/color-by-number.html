@@ -140,10 +140,9 @@
 <div id="game-area">
   <!-- Scene Selector -->
   <div class="scene-selector">
-    <button class="scene-btn active" onclick="loadScene(0,this)">🪔 Diya</button>
-    <button class="scene-btn" onclick="loadScene(1,this)">🌸 Lotus</button>
-    <button class="scene-btn" onclick="loadScene(2,this)">🦚 Peacock</button>
-    <button class="scene-btn" onclick="loadScene(3,this)">🏡 House</button>
+    <button class="scene-btn active" onclick="loadScene(0,this)">🚜 Farm</button>
+    <button class="scene-btn" onclick="loadScene(1,this)">🐠 Ocean</button>
+    <button class="scene-btn" onclick="loadScene(2,this)">🚀 Space</button>
   </div>
   <div style="text-align:center; padding:4px 0">
     <button class="hear-btn" onclick="hearAgain()" aria-label="आवाज़ सुनो">🔊</button>
@@ -192,82 +191,61 @@ const COLORS = {
 
 // Scene definitions: array of SVG path defs with correct color numbers
 const SCENES = [
-  // 0: Diya (oil lamp)
+  // 1: Sunny Farmville
   {
-    name: 'Diya 🪔',
-    colors: [1,2,3,4,5],
+    name: 'Farm 🚜', colors: [1,2,3,4,5,6],
     regions: [
-      // Base/bowl
-      {id:'r1', num:4, label:'Bowl', path:'<ellipse id="r1" cx="200" cy="290" rx="90" ry="30" class="cbn-region" fill="#E0E0E0"/>'},
-      // Inner bowl
-      {id:'r2', num:5, label:'Inner', path:'<ellipse id="r2" cx="200" cy="285" rx="55" ry="18" class="cbn-region" fill="#E0E0E0"/>'},
-      // Flame outer
-      {id:'r3', num:1, label:'Flame', path:'<ellipse id="r3" cx="200" cy="220" rx="28" ry="50" class="cbn-region" fill="#E0E0E0"/>'},
-      // Flame inner
-      {id:'r4', num:4, label:'Inner Flame', path:'<ellipse id="r4" cx="200" cy="235" rx="14" ry="28" class="cbn-region" fill="#E0E0E0"/>'},
-      // Wick
-      {id:'r5', num:3, label:'Wick', path:'<rect id="r5" x="196" y="262" width="8" height="20" rx="4" class="cbn-region" fill="#E0E0E0"/>'},
-      // Decorations left
-      {id:'r6', num:2, label:'Decor L', path:'<circle id="r6" cx="130" cy="295" r="12" class="cbn-region" fill="#E0E0E0"/>'},
-      // Decorations right
-      {id:'r7', num:2, label:'Decor R', path:'<circle id="r7" cx="270" cy="295" r="12" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sky', num:2, label:'Sky', path:'<rect id="sky" x="0" y="0" width="400" height="200" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sun', num:4, label:'Sun', path:'<circle id="sun" cx="330" cy="70" r="45" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'cloud1', num:6, label:'Cloud1', path:'<ellipse id="cloud1" cx="100" cy="60" rx="40" ry="20" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'cloud2', num:6, label:'Cloud2', path:'<ellipse id="cloud2" cx="220" cy="90" rx="50" ry="25" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'grass', num:3, label:'Grass', path:'<rect id="grass" x="0" y="200" width="400" height="200" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'house_w', num:1, label:'Wall', path:'<rect id="house_w" x="50" y="160" width="120" height="100" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'house_r', num:5, label:'Roof', path:'<polygon id="house_r" points="110,90 30,160 190,160" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'house_d', num:6, label:'Door', path:'<rect id="house_d" x="90" y="200" width="40" height="60" rx="4" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'tractor_b', num:1, label:'Tractor', path:'<rect id="tractor_b" x="220" y="240" width="100" height="50" rx="8" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'tractor_c', num:5, label:'Cab', path:'<rect id="tractor_c" x="270" y="190" width="50" height="50" rx="4" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'wheel_b', num:6, label:'Wheel1', path:'<circle id="wheel_b" cx="300" cy="290" r="25" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'wheel_s', num:6, label:'Wheel2', path:'<circle id="wheel_s" cx="240" cy="300" r="15" class="cbn-region" fill="#E0E0E0"/>'}
     ]
   },
-  // 1: Lotus
+  // 2: Under the Sea
   {
-    name: 'Lotus 🌸',
-    colors: [1,2,3,4,7],
+    name: 'Ocean 🐠', colors: [2,3,4,5,7,1],
     regions: [
-      {id:'p1', num:7, label:'Petal 1', path:'<ellipse id="p1" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(-30 200 200)"/>'},
-      {id:'p2', num:7, label:'Petal 2', path:'<ellipse id="p2" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(0 200 200)"/>'},
-      {id:'p3', num:7, label:'Petal 3', path:'<ellipse id="p3" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(30 200 200)"/>'},
-      {id:'p4', num:1, label:'Petal 4', path:'<ellipse id="p4" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(60 200 200)"/>'},
-      {id:'p5', num:1, label:'Petal 5', path:'<ellipse id="p5" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(90 200 200)"/>'},
-      {id:'p6', num:1, label:'Petal 6', path:'<ellipse id="p6" cx="200" cy="200" rx="30" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(120 200 200)"/>'},
-      {id:'pc', num:4, label:'Center',  path:'<circle id="pc" cx="200" cy="200" r="35" class="cbn-region" fill="#E0E0E0"/>'},
-      {id:'pl', num:3, label:'Leaf',    path:'<ellipse id="pl" cx="200" cy="330" rx="60" ry="25" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'water', num:2, label:'Water', path:'<rect id="water" x="0" y="0" width="400" height="320" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sand', num:4, label:'Sand', path:'<ellipse id="sand" cx="200" cy="360" rx="250" ry="60" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sub_b', num:4, label:'Sub Base', path:'<ellipse id="sub_b" cx="200" cy="180" rx="80" ry="40" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sub_t', num:5, label:'Sub Top', path:'<rect id="sub_t" x="170" y="120" width="40" height="40" rx="5" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sub_w1', num:2, label:'Win1', path:'<circle id="sub_w1" cx="160" cy="180" r="15" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sub_w2', num:2, label:'Win2', path:'<circle id="sub_w2" cx="200" cy="180" r="15" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'sub_w3', num:2, label:'Win3', path:'<circle id="sub_w3" cx="240" cy="180" r="15" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'fish1', num:5, label:'Fish1', path:'<ellipse id="fish1" cx="80" cy="100" rx="25" ry="15" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'fish1t', num:1, label:'Tail1', path:'<polygon id="fish1t" points="55,100 35,85 35,115" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'fish2', num:7, label:'Fish2', path:'<ellipse id="fish2" cx="320" cy="240" rx="20" ry="12" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'weed1', num:3, label:'Weed', path:'<path id="weed1" d="M 60 400 Q 70 300 50 250 Q 30 200 60 150" class="cbn-region" fill="none" stroke="#E0E0E0" stroke-width="12"/>'},
+      {id:'weed2', num:3, label:'Weed', path:'<path id="weed2" d="M 350 400 Q 330 300 350 250 Q 360 200 330 160" class="cbn-region" fill="none" stroke="#E0E0E0" stroke-width="12"/>'}
     ]
   },
-  // 2: Peacock (simplified)
+  // 3: Space Adventure
   {
-    name: 'Peacock 🦚',
-    colors: [2,3,4,5,6],
+    name: 'Space 🚀', colors: [6,2,4,1,3,7],
     regions: [
-      // Body
-      {id:'pb', num:3, label:'Body',  path:'<ellipse id="pb" cx="200" cy="250" rx="60" ry="80" class="cbn-region" fill="#E0E0E0"/>'},
-      // Head
-      {id:'ph', num:2, label:'Head',  path:'<circle id="ph" cx="200" cy="150" r="35" class="cbn-region" fill="#E0E0E0"/>'},
-      // Neck
-      {id:'pn', num:3, label:'Neck',  path:'<rect id="pn" x="186" y="183" width="28" height="40" rx="10" class="cbn-region" fill="#E0E0E0"/>'},
-      // Tail feather 1
-      {id:'pt1', num:6, label:'Tail 1', path:'<ellipse id="pt1" cx="140" cy="200" rx="22" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(-20 140 200)"/>'},
-      // Tail feather 2
-      {id:'pt2', num:5, label:'Tail 2', path:'<ellipse id="pt2" cx="260" cy="200" rx="22" ry="70" class="cbn-region" fill="#E0E0E0" transform="rotate(20 260 200)"/>'},
-      // Eye
-      {id:'pe', num:4, label:'Eye',   path:'<circle id="pe" cx="212" cy="145" r="8" class="cbn-region" fill="#E0E0E0"/>'},
-      // Crown
-      {id:'pcr', num:4, label:'Crown', path:'<circle id="pcr" cx="200" cy="118" r="10" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'space', num:6, label:'Space Base', path:'<rect id="space" x="0" y="0" width="400" height="400" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'planet1', num:4, label:'Planet1', path:'<circle id="planet1" cx="80" cy="90" r="50" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'ring1', num:3, label:'Ring', path:'<ellipse id="ring1" cx="80" cy="90" rx="80" ry="15" class="cbn-region" fill="#E0E0E0" transform="rotate(20 80 90)"/>'},
+      {id:'moon', num:2, label:'Moon', path:'<circle id="moon" cx="300" cy="300" r="70" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'crater1', num:6, label:'Crater1', path:'<circle id="crater1" cx="280" cy="280" r="15" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'crater2', num:6, label:'Crater2', path:'<circle id="crater2" cx="330" cy="320" r="10" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'rocket_b', num:1, label:'Rocket Base', path:'<polygon id="rocket_b" points="200,100 170,220 230,220" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'rocket_w', num:2, label:'Window', path:'<circle id="rocket_w" cx="200" cy="160" r="12" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'rocket_f1', num:7, label:'Fin1', path:'<polygon id="rocket_f1" points="170,220 150,250 180,220" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'rocket_f2', num:7, label:'Fin2', path:'<polygon id="rocket_f2" points="230,220 250,250 220,220" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'flame', num:4, label:'Flame', path:'<polygon id="flame" points="180,220 220,220 200,280" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'star1', num:4, label:'Star', path:'<circle id="star1" cx="350" cy="50" r="6" class="cbn-region" fill="#E0E0E0"/>'},
+      {id:'star2', num:4, label:'Star', path:'<circle id="star2" cx="50" cy="300" r="5" class="cbn-region" fill="#E0E0E0"/>'}
     ]
-  },
-  // 3: House
-  {
-    name: 'House 🏡',
-    colors: [1,2,3,4,5],
-    regions: [
-      // Roof
-      {id:'hr', num:1, label:'Roof',    path:'<polygon id="hr" points="200,60 320,180 80,180" class="cbn-region" fill="#E0E0E0"/>'},
-      // Wall
-      {id:'hw', num:4, label:'Wall',    path:'<rect id="hw" x="100" y="180" width="200" height="160" class="cbn-region" fill="#E0E0E0"/>'},
-      // Door
-      {id:'hd', num:5, label:'Door',    path:'<rect id="hd" x="170" y="260" width="60" height="80" rx="8" class="cbn-region" fill="#E0E0E0"/>'},
-      // Window L
-      {id:'hwl', num:2, label:'Window', path:'<rect id="hwl" x="115" y="210" width="50" height="45" rx="6" class="cbn-region" fill="#E0E0E0"/>'},
-      // Window R
-      {id:'hwr', num:2, label:'Window', path:'<rect id="hwr" x="235" y="210" width="50" height="45" rx="6" class="cbn-region" fill="#E0E0E0"/>'},
-      // Ground
-      {id:'hg', num:3, label:'Grass',   path:'<ellipse id="hg" cx="200" cy="345" rx="140" ry="18" class="cbn-region" fill="#E0E0E0"/>'},
-    ]
-  },
+  }
 ];
 
 let currentScene = 0;
