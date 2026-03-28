@@ -1,122 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Maze 🎮 Kids Fun Learn</title>
-<meta name="description" content="Navigate through exciting mazes from start to finish! A problem-solving adventure game for kids aged 4-6."/>
-<meta property="og:title" content="Maze Adventure 🎮 Kids Fun Learn"/>
-<meta property="og:description" content="Navigate through exciting mazes from start to finish! A problem-solving adventure game for kids aged 4-6."/>
-<meta property="og:type" content="website"/>
-<link rel="stylesheet" href="../css/style.css"/>
-<style>
-#maze-container { display:flex; flex-direction:column; align-items:center; gap:.8rem; padding:1rem; }
-#difficulty-btns { display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; }
-.diff-btn {
-  padding:.5rem 1rem; border-radius:20px; border:2px solid #e0a030;
-  background:#fff8e1; font-size:1rem; cursor:pointer; transition:all .2s;
-  min-height:44px; touch-action:manipulation;
-}
-.diff-btn.active { background:#e0a030; color:#fff; }
-#stats-bar { display:flex; gap:1.2rem; font-size:1rem; font-weight:bold; color:#5C4A1E; }
-#maze-scroll { overflow:auto; max-width:100vw; padding:4px; }
-#maze-grid { display:grid; gap:0; touch-action:none; user-select:none; }
-.maze-cell {
-  display:flex; align-items:center; justify-content:center;
-  cursor:pointer; box-sizing:border-box; transition:background-color .15s;
-  -webkit-tap-highlight-color:transparent; position:relative;
-}
-.maze-cell.visited  { background:rgba(144,238,144,.45); }
-.maze-cell.current  { background:rgba(255,215,0,.38); z-index:2; }
-.maze-cell.end-cell { background:rgba(76,175,80,.22); }
-.maze-cell.shake    { animation:cell-shake .3s ease; }
-@keyframes cell-shake {
-  0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
-}
-.maze-cell span { pointer-events:none; line-height:1; }
-</style>
-<meta name="theme-color" content="#FFD700"/>
-</head>
-<body>
-<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+import os
+import re
 
-<header class="activity-header">
-  <button class="back-btn" onclick="goHome()" aria-label="Go Home" aria-label="Go Home">🏠</button>
-  <h1>🌀 Maze</h1>
-  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill"></div></div>
-  <span class="score-display" id="score-display">0</span>
-</header>
+cur_dir = os.path.dirname(__file__)
+act_dir = os.path.join(cur_dir, 'activities')
+maze_path = os.path.join(act_dir, 'maze.html')
 
-<div id="langSelector" class="language-selector">
-  <button class="lang-btn" data-lang="en">🇬🇧 En</button>
-  <button class="lang-btn" data-lang="hi">🇮🇳 हि</button>
-  <button class="lang-btn" data-lang="gu">🇮🇳 ગુ</button>
-</div>
+with open(maze_path, 'r', encoding='utf-8') as f:
+    maze = f.read()
 
-<div id="game-area">
-  <div id="maze-container">
-    <p class="question-text" id="prompt-text"></p>
-    
-    <div id="stats-bar">
-      <span id="wrong-count">❌ 0</span>
-      <span id="steps-count">👣 0</span>
-    </div>
-    <div id="maze-scroll">
-      <div id="maze-grid"></div>
-    </div>
-  </div>
-  <div id="feedback-banner" class="feedback-banner"></div>
-</div>
+# 1. Remove the Difficulty Buttons UI
+maze = re.sub(r'<div id="difficulty-btns">.*?</div>', '', maze, flags=re.DOTALL)
 
-<div id="completion-screen" class="completion-screen">
-  <div class="completion-stars" id="completion-stars">⭐⭐⭐</div>
-  <div class="completion-title" id="completion-title"></div>
-  <div class="completion-score" id="completion-score"></div>
-  <div class="completion-best"  id="completion-best"></div>
-  <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-    <button class="play-again-btn" id="play-again-btn" onclick="initGame()">🔄 Play Again</button>
-    
-  </div>
-</div>
+# 1.5 Remove the Next Level button from completion screen
+maze = re.sub(r'<button class="play-again-btn" id="next-lvl-btn".*?</button>', '', maze, flags=re.DOTALL)
 
-<script src="../js/common.js"></script>
-<script>
-/* ── Seeded LCG random ── */
-function seededRand(seed) {
-  let s = seed | 0;
-  return () => { s = Math.imul(1664525, s) + 1013904223 | 0; return (s >>> 0) / 4294967296; };
-}
-
-/* ── Iterative DFS maze generation ── */
-function generateMaze(size, seed) {
-  const rand = seededRand(seed);
-  const shuffleR = arr => {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
-    return a;
-  };
-  const walls = Array.from({length:size}, () =>
-    Array.from({length:size}, () => ({N:true,S:true,E:true,W:true})));
-  const visited = Array.from({length:size}, () => new Array(size).fill(false));
-  const DIRS = [[-1,0,'N','S'],[1,0,'S','N'],[0,1,'E','W'],[0,-1,'W','E']];
-  const stack = [[0,0]];
-  visited[0][0] = true;
-  while (stack.length) {
-    const [r,c] = stack[stack.length-1];
-    const unv = shuffleR(DIRS).filter(([dr,dc]) => {
-      const nr=r+dr, nc=c+dc;
-      return nr>=0&&nr<size&&nc>=0&&nc<size&&!visited[nr][nc];
-    });
-    if (!unv.length) { stack.pop(); continue; }
-    const [dr,dc,w,opp] = unv[0];
-    const nr=r+dr, nc=c+dc;
-    walls[r][c][w]=false; walls[nr][nc][opp]=false;
-    visited[nr][nc]=true; stack.push([nr,nc]);
-  }
-  return walls;
-}
-
-/* ── Config & Bank ── */
+# 2. Modify the JS to use a bank of 20 randomized seeds and a 5-round limit
+js_logic_replacement = """/* ── Config & Bank ── */
 const TOTAL_ROUNDS = 5;
 let round = 0;
 let totalMistakes = 0;
@@ -288,6 +187,12 @@ function endGame() {
 }
 
 document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initGame(); });
-</script>
-</body>
-</html>
+"""
+
+# Inject using regex up until the end 
+maze = re.sub(r'/\* ── Config ── \*/.*?document.addEventListener', js_logic_replacement + '\n// document.addEventListener', maze, flags=re.DOTALL)
+
+with open(maze_path, 'w', encoding='utf-8') as f:
+    f.write(maze)
+
+print("maze updated successfully")

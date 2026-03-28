@@ -232,8 +232,31 @@ function showCompletion(activity, mistakes, total) {
 
   const screen = document.getElementById('completion-screen');
   const game   = document.getElementById('game-area');
-  if (game)   game.classList.add('hidden');
-  if (screen) screen.classList.add('show');
+  if (game)   game.style.filter = 'blur(5px)';
+  if (screen) {
+    screen.style.backgroundColor = 'rgba(255, 255, 255, 0.85)';
+    screen.classList.add('show');
+    
+    // Auto-inject Home button option
+    if (!document.getElementById('home-btn-completion')) {
+      const btnGroup = document.createElement('div');
+      btnGroup.style.display = 'flex';
+      btnGroup.style.gap = '10px';
+      btnGroup.style.justifyContent = 'center';
+      btnGroup.style.flexWrap = 'wrap';
+      btnGroup.style.marginTop = '15px';
+      
+      const homeBtn = document.createElement('button');
+      homeBtn.id = 'home-btn-completion';
+      homeBtn.className = 'play-again-btn';
+      homeBtn.style.background = 'linear-gradient(135deg, #1976D2, #1565C0)';
+      homeBtn.onclick = goHome;
+      homeBtn.textContent = '🏠 Home';
+      
+      btnGroup.appendChild(homeBtn);
+      screen.appendChild(btnGroup);
+    }
+  }
 
   const starsEl = document.getElementById('completion-stars');
   const titleEl = document.getElementById('completion-title');
