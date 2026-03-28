@@ -342,6 +342,8 @@ function handleSlotClick(cell) {
     piece.style.width = '100%';
     piece.style.height = '100%';
     cell.appendChild(piece);
+    selectedPiece.classList.remove('selected');
+    selectedPiece = null;
     
     correctlyPlaced++;
     if (correctlyPlaced === currentLevel.holes.length) {
@@ -422,9 +424,7 @@ window.runTrain = function() {
 };
 
 function endGame() {
-  let stars = calculateStars(mistakes, TOTAL_ROUNDS);
-  showCompletionScreen(stars);
-  saveProgress('trainTrack', stars);
+  showCompletion('trainTrack', mistakes, TOTAL_ROUNDS);
 }
 
 initGame();
