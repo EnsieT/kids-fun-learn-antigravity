@@ -4,71 +4,147 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Train Sandbox 🚂 Kids Fun Learn</title>
-<meta name="description" content="Build your own continuous train track! Place rails on a 10x10 grid and unleash the train to test if your design holds up."/>
+<meta name="description" content="Build your own train track! Place rails on the grid, connect station to destination, and watch the train go!"/>
 <link rel="stylesheet" href="../css/style.css"/>
 <style>
-/* Game Area & Utilities */
+:root { --cell: 52px; }
+@media (max-width: 500px) { :root { --cell: 42px; } }
+
 .game-container {
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-  padding: 10px; box-sizing: border-box; touch-action: manipulation;
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 10px; box-sizing: border-box;
+  touch-action: manipulation;
 }
+
+/* ─── Grid ─── */
 .sandbox-grid {
   display: grid;
-  grid-template-columns: repeat(10, 45px); /* 10x10 */
-  grid-template-rows: repeat(10, 45px);
+  grid-template-columns: repeat(8, var(--cell));
+  grid-template-rows:    repeat(8, var(--cell));
   gap: 0;
-  background: #795548; /* Dirt background */
+  background: #6D4C41;
   border: 4px solid #4CAF50;
-  border-radius: 8px;
+  border-radius: 10px;
   position: relative;
   overflow: hidden;
 }
+
 .cell {
-  width: 45px; height: 45px;
-  background-color: #8BC34A; /* Grass */
-  border: 1px dashed rgba(255,255,255,0.3);
+  width: var(--cell); height: var(--cell);
+  background-color: #8BC34A;
+  border: 1px dashed rgba(255,255,255,0.22);
   box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
   position: relative;
-  touch-action: none;
+  cursor: pointer;
+  transition: background-color 0.1s;
 }
-.cell.error { background-color: #F44336; } /* highlight bad connections */
-.cell.start-cell { background-color: #8D6E63; } /* Factory */
+.cell:hover { background-color: #9CCC65; }
+.cell.has-track { background-color: #7CB342; }
+.cell.error { background-color: #EF5350 !important; animation: cellShake 0.4s; }
+@keyframes cellShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
 
-/* SVGs - Base64 encoded for bulletproof rendering */
-.track { width: 100%; height: 100%; background-size: cover; z-index: 10; pointer-events: none; }
-.track-h { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHJlY3QgeD0nMCcgeT0nMzAnIHdpZHRoPSc4MCcgaGVpZ2h0PScyMCcgZmlsbD0nIzlFOUU5RScvPjxyZWN0IHg9JzEwJyB5PScyMCcgd2lkdGg9JzEwJyBoZWlnaHQ9JzQwJyBmaWxsPScjNUQ0MDM3Jy8+PHJlY3QgeD0nMzUnIHk9JzIwJyB3aWR0aD0nMTAnIGhlaWdodD0nNDAnIGZpbGw9JyM1RDQwMzcnLz48cmVjdCB4PSc2MCcgeT0nMjAnIHdpZHRoPScxMCcgaGVpZ2h0PSc0MCcgZmlsbD0nIzVENDAzNycvPjwvc3ZnPg=='); }
-.track-v { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHJlY3QgeD0nMzAnIHk9JzAnIHdpZHRoPScyMCcgaGVpZ2h0PSc4MCcgZmlsbD0nIzlFOUU5RScvPjxyZWN0IHg9JzMjAnIHk9JzEwJyB3aWR0aD0nNDAnIGhlaWdodD0nMTAnIGZpbGw9JyM1RDQwMzcnLz48cmVjdCB4PScyMCcgeT0nMzUnIHdpZHRoPSc0MCcgaGVpZ2h0PScxMCcgZmlsbD0nIzVENDAzNycvPjxyZWN0IHg9JzIwJyB5PSc2MCcgd2lkdGg9JzQwJyBoZWlnaHQ9JzEwJyBmaWxsPScjNUQ0MDM3Jy8+PC9zdmc+'); }
-.track-br { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHBhdGggZD0nTSA0MCA4MCBRIDQwIDQwIDgwIDQwIEwgODAgNjAgUSA2MCA2MCA2MCA4MCBaJyBmaWxsPScjOUU5RTlFJy8+PHBhdGggZD0nTSA1MCA4MCBMIDcwIDgwJyBzdHJva2U9JyM1RDQwMzcnIHN0cm9rZS13aWR0aD0nMTAnLz48cGF0aCBkPSdNIDgwIDUwIEwgODAgNzAnIHN0cm9rZT0nIzVENDAzNycgc3Ryb2tlLXdpZHRoPScxMCcvPjwvc3ZnPg=='); }
-.track-bl { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHBhdGggZD0nTSA0MCA4MCBRIDQwIDQwIDAgNDAgTCAwIDYwIFEgMjAgNjAgMjAgODAgWicgZmlsbD0nIzlFOUU5RScvPjwvc3ZnPg=='); }
-.track-tr { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHBhdGggZD0nTSA0MCAwIFEgNDAgNDAgODAgNDAgTCA4MCAyMCBRIDYwIDIwIDYwIDAgWicgZmlsbD0nIzlFOUU5RScvPjwvc3ZnPg=='); }
-.track-tl { background-image: url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PScwIDAgODAgODAnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zyc+PHBhdGggZD0nTSA0MCAwIFEgNDAgNDAgMCA0MCBMIDAgMjAgUSAyMCAyMCAyMCAwIFonIGZpbGw9JyM5RTlFOUUnLz48L3N2Zz4='); }
+/* ─── Track Visuals (Canvas-drawn) ─── */
+.track-canvas {
+  width: 100%; height: 100%;
+  pointer-events: none;
+  display: block;
+}
 
-.track-start { background: #8D6E63; font-size: 28px; display:flex; align-items:center; justify-content:center; }
-.track-start::after { content: "🏭"; }
+/* ─── Toolbox ─── */
 .toolbox {
-  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-  margin-top: 15px; padding: 10px; background: #E0E0E0; border-radius: 12px;
-  box-shadow: inset 0 3px 6px rgba(0,0,0,0.1); width: 100%; max-width: 450px;
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  margin-top: 14px; padding: 14px 12px;
+  background: linear-gradient(135deg, #ECEFF1, #CFD8DC);
+  border-radius: 14px;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.08);
+  width: 100%; max-width: 520px;
 }
 .tool-item {
-  width: 45px; height: 45px; background: #fff; border: 2px solid transparent;
-  border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  width: 54px; height: 54px;
+  background: #fff;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.tool-item:hover { transform: scale(1.08); border-color: #FFB74D; }
+.tool-item.selected {
+  border-color: #FF9800;
+  background: #FFF3E0;
+  transform: scale(1.12);
+  box-shadow: 0 4px 12px rgba(255,152,0,0.35);
+}
+.tool-item canvas {
+  width: 44px; height: 44px;
+  pointer-events: none;
+}
+.tool-label {
+  position: absolute; bottom: -15px; font-size: 8px;
+  color: #555; white-space: nowrap; font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ─── Action Buttons ─── */
+.action-buttons {
+  margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.action-buttons .controls-btn {
+  padding: 10px 22px; font-size: 1.1rem; font-weight: 700;
+  border: none; border-radius: 30px; cursor: pointer; color: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
   transition: transform 0.1s;
 }
-.tool-item.selected { border-color: #FFA000; background: #FFECB3; transform: scale(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-.eraser-tool { font-size: 24px; }
-.action-buttons { margin-top: 20px; display: flex; gap: 15px; }
+.action-buttons .controls-btn:hover { transform: scale(1.05); }
+.action-buttons .controls-btn:active { transform: scale(0.97); }
+.action-buttons .controls-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* The Train */
-#train {
-  position: absolute; width: 45px; height: 45px; font-size: 32px;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 50; transition: transform 0.4s linear; display: none;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+/* ─── Instructions ─── */
+.instructions {
+  margin-top: 12px; padding: 10px 16px;
+  background: rgba(255,255,255,0.75); border-radius: 10px;
+  font-size: 0.85rem; color: #555; text-align: center;
+  max-width: 520px; line-height: 1.5;
 }
-.smoke { position:absolute; top:-10px; font-size:16px; animation: floatUp 1s infinite alternate; }
-@keyframes floatUp { 0% { transform:translateY(0) scale(0.8); opacity:0.8; } 100% { transform:translateY(-15px) scale(1.2); opacity:0; } }
+
+/* ─── Train ─── */
+#train {
+  position: absolute;
+  width: var(--cell); height: var(--cell);
+  font-size: 28px;
+  display: none;
+  align-items: center; justify-content: center;
+  z-index: 50;
+  transition: transform 0.35s linear;
+  text-shadow: 1px 2px 4px rgba(0,0,0,0.3);
+  pointer-events: none;
+}
+.smoke {
+  position: absolute; top: -8px; font-size: 13px;
+  animation: floatUp 1s infinite alternate;
+}
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.8); opacity: 0.7; }
+  100% { transform: translateY(-12px) scale(1.3); opacity: 0; }
+}
+
+.track-counter {
+  margin-top: 8px; font-size: 0.95rem; font-weight: 600; color: #5D4037;
+}
+
+/* Mode indicator */
+.mode-info {
+  margin-top: 4px; font-size: 0.82rem; color: #795548;
+  background: #EFEBE9; padding: 4px 12px; border-radius: 8px;
+}
 </style>
 </head>
 <body>
@@ -83,24 +159,29 @@
 </div>
 
 <div class="game-container" id="game-area">
-  <div class="title" style="margin-bottom:10px; text-align:center;" data-hi="अपना रेलवे ट्रैक बनाओ!" data-en="Design a huge train track!" data-gu="તમારો પોતાનો રેલમાર્ગ બનાવો!">Design a huge train track!</div>
-  
+  <div class="title" style="margin-bottom:6px; text-align:center;"
+       data-hi="अपना रेलवे ट्रैक बनाओ!" data-en="Build your own railway track!"
+       data-gu="તમારો પોતાનો રેલમાર્ગ બનાવો!">Build your own railway track!</div>
+
   <div class="sandbox-grid" id="sandbox-grid">
-    <div id="train">🚂<div class="smoke">☁️</div></div>
+    <div id="train">🚂<div class="smoke">💨</div></div>
   </div>
-  
-  <div class="toolbox" id="toolbox">
-    <div class="tool-item track track-start selected" data-tool="start" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-h" data-tool="h" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-v" data-tool="v" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-br" data-tool="br" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-bl" data-tool="bl" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-tr" data-tool="tr" onclick="selectTool(this)"></div>
-    <div class="tool-item track track-tl" data-tool="tl" onclick="selectTool(this)"></div>
-    <div class="tool-item eraser-tool" data-tool="erase" onclick="selectTool(this)">🧹</div>
+
+  <!-- Toolbox -->
+  <div class="toolbox" id="toolbox"></div>
+
+  <div class="track-counter" id="track-counter">🛤️ Tracks: 0</div>
+  <div class="mode-info" id="mode-info">🏭 → 🏠 Connect Station to Destination!</div>
+
+  <div class="instructions"
+       data-en="<b>How to play:</b> Select a track piece, then click grid cells to place it. Connect the 🏭 Station to the 🏠 Destination with tracks. Press <b>Go!</b> to watch the train ride! You can also build loops!"
+       data-hi="<b>कैसे खेलें:</b> ट्रैक चुनें, फिर ग्रिड पर क्लिक करें। 🏭 स्टेशन को 🏠 मंज़िल से जोड़ें। <b>चलाओ!</b> दबाएं!"
+       data-gu="<b>કેવી રીતે રમવું:</b> ટ્રેક પસંદ કરો, ગ્રિડ પર ક્લિક કરો. 🏭 સ્ટેશન ને 🏠 મંજિલ સાથે જોડો. <b>ચલાવો!</b> દબાવો!">
+    <b>How to play:</b> Select a track piece, then click grid cells to place it. Connect the 🏭 Station to the 🏠 Destination with tracks. Press <b>Go!</b> to watch the train ride! You can also build loops!
   </div>
-  
+
   <div class="action-buttons">
+    <button class="controls-btn" style="background:#78909C;" onclick="clearAll()">🗑️ Clear</button>
     <button class="controls-btn" style="background:#f44336;" onclick="stopTrain()">🛑 Stop</button>
     <button class="controls-btn" id="run-btn" style="background:#4CAF50;" onclick="runTrain()">▶️ Go!</button>
   </div>
@@ -108,86 +189,381 @@
 
 <script src="../js/common.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════════
+   Train Track Freeplay – Canvas-based rendering
+   ═══════════════════════════════════════════════════════ */
+
+const GRID = 8;
 let activeTool = 'start';
 let isRunning = false;
 let moveTimeout = null;
-let gridData = Array(10).fill(null).map(()=>Array(10).fill('none')); // 10x10 state
-const startPos = {r: 4, c: 4}; // Default start
-gridData[4][4] = 'start'; // prepopulate start
+let gridData = Array.from({length: GRID}, () => Array(GRID).fill('none'));
 
+// Default placement
+gridData[3][2] = 'start';
+gridData[3][5] = 'end';
+
+/* ═══ Track drawing on <canvas> ═══ */
+const RAIL_COLOR = '#90A4AE';
+const RAIL_SHINE = '#B0BEC5';
+const WOOD_COLOR = '#6D4C41';
+const WOOD_LIGHT = '#8D6E63';
+
+function drawTrack(canvas, type, size) {
+  const s = size || 80;
+  canvas.width = s; canvas.height = s;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, s, s);
+
+  const u = s / 80; // unit scale
+
+  function drawWoodenTie(x1, y1, x2, y2, w) {
+    ctx.strokeStyle = WOOD_COLOR;
+    ctx.lineWidth = w * u;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1*u, y1*u); ctx.lineTo(x2*u, y2*u); ctx.stroke();
+    // highlight
+    ctx.strokeStyle = WOOD_LIGHT;
+    ctx.lineWidth = (w - 2) * u;
+    ctx.beginPath(); ctx.moveTo(x1*u, y1*u); ctx.lineTo(x2*u, y2*u); ctx.stroke();
+  }
+
+  function drawRail(x1, y1, x2, y2, w) {
+    ctx.strokeStyle = RAIL_COLOR;
+    ctx.lineWidth = (w + 2) * u;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1*u, y1*u); ctx.lineTo(x2*u, y2*u); ctx.stroke();
+    ctx.strokeStyle = RAIL_SHINE;
+    ctx.lineWidth = w * u;
+    ctx.beginPath(); ctx.moveTo(x1*u, y1*u); ctx.lineTo(x2*u, y2*u); ctx.stroke();
+  }
+
+  function drawCurveRail(cx, cy, r, startAngle, endAngle, w) {
+    ctx.strokeStyle = RAIL_COLOR;
+    ctx.lineWidth = (w + 2) * u;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.arc(cx*u, cy*u, r*u, startAngle, endAngle); ctx.stroke();
+    ctx.strokeStyle = RAIL_SHINE;
+    ctx.lineWidth = w * u;
+    ctx.beginPath(); ctx.arc(cx*u, cy*u, r*u, startAngle, endAngle); ctx.stroke();
+  }
+
+  switch(type) {
+    case 'h': // horizontal
+      drawWoodenTie(10, 20, 10, 60, 8);
+      drawWoodenTie(30, 20, 30, 60, 8);
+      drawWoodenTie(50, 20, 50, 60, 8);
+      drawWoodenTie(70, 20, 70, 60, 8);
+      drawRail(0, 28, 80, 28, 5);
+      drawRail(0, 52, 80, 52, 5);
+      break;
+
+    case 'v': // vertical
+      drawWoodenTie(20, 10, 60, 10, 8);
+      drawWoodenTie(20, 30, 60, 30, 8);
+      drawWoodenTie(20, 50, 60, 50, 8);
+      drawWoodenTie(20, 70, 60, 70, 8);
+      drawRail(28, 0, 28, 80, 5);
+      drawRail(52, 0, 52, 80, 5);
+      break;
+
+    case 'br': // curve: connects Bottom + Right
+      for (let a = 180; a <= 270; a += 22.5) {
+        const rad = a * Math.PI / 180;
+        ctx.strokeStyle = WOOD_COLOR; ctx.lineWidth = 7 * u; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(80*u + Math.cos(rad)*20*u, 80*u + Math.sin(rad)*20*u);
+        ctx.lineTo(80*u + Math.cos(rad)*60*u, 80*u + Math.sin(rad)*60*u);
+        ctx.stroke();
+        ctx.strokeStyle = WOOD_LIGHT; ctx.lineWidth = 5 * u;
+        ctx.beginPath();
+        ctx.moveTo(80*u + Math.cos(rad)*20*u, 80*u + Math.sin(rad)*20*u);
+        ctx.lineTo(80*u + Math.cos(rad)*60*u, 80*u + Math.sin(rad)*60*u);
+        ctx.stroke();
+      }
+      drawCurveRail(80, 80, 28, Math.PI, 3*Math.PI/2, 5);
+      drawCurveRail(80, 80, 52, Math.PI, 3*Math.PI/2, 5);
+      break;
+
+    case 'bl': // curve: connects Bottom + Left
+      for (let a = 270; a <= 360; a += 22.5) {
+        const rad = a * Math.PI / 180;
+        ctx.strokeStyle = WOOD_COLOR; ctx.lineWidth = 7 * u; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(rad)*20*u, 80*u + Math.sin(rad)*20*u);
+        ctx.lineTo(Math.cos(rad)*60*u, 80*u + Math.sin(rad)*60*u);
+        ctx.stroke();
+        ctx.strokeStyle = WOOD_LIGHT; ctx.lineWidth = 5 * u;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(rad)*20*u, 80*u + Math.sin(rad)*20*u);
+        ctx.lineTo(Math.cos(rad)*60*u, 80*u + Math.sin(rad)*60*u);
+        ctx.stroke();
+      }
+      drawCurveRail(0, 80, 28, -Math.PI/2, 0, 5);
+      drawCurveRail(0, 80, 52, -Math.PI/2, 0, 5);
+      break;
+
+    case 'tr': // curve: connects Top + Right
+      for (let a = 90; a <= 180; a += 22.5) {
+        const rad = a * Math.PI / 180;
+        const cx = 80;
+        ctx.strokeStyle = WOOD_COLOR; ctx.lineWidth = 7 * u; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(cx*u + Math.cos(rad)*20*u, Math.sin(rad)*20*u);
+        ctx.lineTo(cx*u + Math.cos(rad)*60*u, Math.sin(rad)*60*u);
+        ctx.stroke();
+        ctx.strokeStyle = WOOD_LIGHT; ctx.lineWidth = 5 * u;
+        ctx.beginPath();
+        ctx.moveTo(cx*u + Math.cos(rad)*20*u, Math.sin(rad)*20*u);
+        ctx.lineTo(cx*u + Math.cos(rad)*60*u, Math.sin(rad)*60*u);
+        ctx.stroke();
+      }
+      drawCurveRail(80, 0, 28, Math.PI/2, Math.PI, 5);
+      drawCurveRail(80, 0, 52, Math.PI/2, Math.PI, 5);
+      break;
+
+    case 'tl': // curve: connects Top + Left
+      for (let a = 0; a <= 90; a += 22.5) {
+        const rad = a * Math.PI / 180;
+        const r1 = 20, r2 = 60;
+        ctx.strokeStyle = WOOD_COLOR; ctx.lineWidth = 7 * u; ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(rad) * r1 * u, Math.sin(rad) * r1 * u);
+        ctx.lineTo(Math.cos(rad) * r2 * u, Math.sin(rad) * r2 * u);
+        ctx.stroke();
+        ctx.strokeStyle = WOOD_LIGHT; ctx.lineWidth = 5 * u;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(rad) * r1 * u, Math.sin(rad) * r1 * u);
+        ctx.lineTo(Math.cos(rad) * r2 * u, Math.sin(rad) * r2 * u);
+        ctx.stroke();
+      }
+      drawCurveRail(0, 0, 28, 0, Math.PI/2, 5);
+      drawCurveRail(0, 0, 52, 0, Math.PI/2, 5);
+      break;
+
+    case 'start': // Station building
+      ctx.fillStyle = '#8D6E63';
+      ctx.fillRect(10*u, 25*u, 60*u, 42*u);
+      ctx.fillStyle = '#A1887F';
+      ctx.fillRect(15*u, 14*u, 50*u, 16*u);
+      ctx.fillStyle = '#FFE0B2';
+      ctx.fillRect(18*u, 34*u, 14*u, 12*u);
+      ctx.fillRect(48*u, 34*u, 14*u, 12*u);
+      ctx.fillStyle = '#5D4037';
+      ctx.fillRect(32*u, 46*u, 16*u, 21*u);
+      // chimney
+      ctx.fillStyle = '#BDBDBD';
+      ctx.fillRect(14*u, 4*u, 7*u, 14*u);
+      ctx.fillStyle = '#F44336';
+      ctx.beginPath(); ctx.arc(17.5*u, 4*u, 4*u, 0, Math.PI*2); ctx.fill();
+      // label
+      ctx.fillStyle = '#FFF';
+      ctx.font = `bold ${10*u}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('🏭', 40*u, 73*u);
+      break;
+
+    case 'end': // Destination building
+      // cute house
+      ctx.fillStyle = '#E57373';
+      ctx.fillRect(15*u, 35*u, 50*u, 35*u);
+      // roof
+      ctx.fillStyle = '#C62828';
+      ctx.beginPath();
+      ctx.moveTo(10*u, 38*u);
+      ctx.lineTo(40*u, 12*u);
+      ctx.lineTo(70*u, 38*u);
+      ctx.closePath();
+      ctx.fill();
+      // door
+      ctx.fillStyle = '#5D4037';
+      ctx.fillRect(33*u, 48*u, 14*u, 22*u);
+      // window
+      ctx.fillStyle = '#BBDEFB';
+      ctx.fillRect(20*u, 42*u, 10*u, 10*u);
+      ctx.fillRect(50*u, 42*u, 10*u, 10*u);
+      // label
+      ctx.fillStyle = '#FFF';
+      ctx.font = `bold ${10*u}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('🏠', 40*u, 75*u);
+      break;
+  }
+}
+
+/* ═══ Tool definitions ═══ */
+const TOOLS = [
+  { id: 'start', label: 'Station',  emoji: '🏭' },
+  { id: 'end',   label: 'Dest.',    emoji: '🏠' },
+  { id: 'h',     label: 'Horiz.',   emoji: null },
+  { id: 'v',     label: 'Vert.',    emoji: null },
+  { id: 'br',    label: '↓→',       emoji: null },
+  { id: 'bl',    label: '↓←',       emoji: null },
+  { id: 'tr',    label: '↑→',       emoji: null },
+  { id: 'tl',    label: '↑←',       emoji: null },
+  { id: 'erase', label: 'Erase',    emoji: '🧹' },
+];
+
+/* ═══ Build the toolbox ═══ */
+function buildToolbox() {
+  const toolbox = document.getElementById('toolbox');
+  toolbox.innerHTML = '';
+
+  TOOLS.forEach((tool, i) => {
+    const div = document.createElement('div');
+    div.className = 'tool-item' + (tool.id === activeTool ? ' selected' : '');
+    div.dataset.tool = tool.id;
+    div.title = tool.label;
+    div.addEventListener('click', () => selectTool(div));
+
+    if (tool.id === 'erase') {
+      div.textContent = tool.emoji;
+      div.style.fontSize = '26px';
+    } else {
+      const canvas = document.createElement('canvas');
+      drawTrack(canvas, tool.id, 80);
+      div.appendChild(canvas);
+    }
+
+    // Label
+    const lbl = document.createElement('span');
+    lbl.className = 'tool-label';
+    lbl.textContent = tool.label;
+    div.appendChild(lbl);
+
+    toolbox.appendChild(div);
+  });
+}
+
+/* ═══ Initialize Grid ═══ */
 function initSandbox() {
   const grid = document.getElementById('sandbox-grid');
-  // clear cells
-  const oldCells = document.querySelectorAll('.cell');
-  oldCells.forEach(c => c.remove());
-  
-  for (let r=0; r<10; r++) {
-    for (let c=0; c<10; c++) {
+  grid.querySelectorAll('.cell').forEach(c => c.remove());
+
+  for (let r = 0; r < GRID; r++) {
+    for (let c = 0; c < GRID; c++) {
       const cell = document.createElement('div');
       cell.className = 'cell';
-      cell.dataset.r = r; cell.dataset.c = c;
+      cell.dataset.r = r;
+      cell.dataset.c = c;
       cell.id = `cell-${r}-${c}`;
-      cell.addEventListener('pointerdown', (e) => applyTool(e, r, c));
+      cell.addEventListener('pointerdown', (e) => { e.preventDefault(); applyTool(r, c); });
       cell.addEventListener('pointerenter', (e) => {
-        if(e.buttons === 1) applyTool(e, r, c); // Draw routing drag
+        if (e.buttons === 1) applyTool(r, c);
       });
-      
-      // render initial
-      if(gridData[r][c] !== 'none') {
-        const div = document.createElement('div');
-        div.className = `track track-${gridData[r][c]}`;
-        cell.appendChild(div);
+
+      if (gridData[r][c] !== 'none') {
+        renderCell(cell, gridData[r][c]);
       }
       grid.appendChild(cell);
     }
   }
+  updateCounter();
 }
 
+/* ═══ Render a cell ═══ */
+function renderCell(cell, type) {
+  cell.innerHTML = '';
+  cell.classList.remove('has-track');
+  if (type === 'none') return;
+  cell.classList.add('has-track');
+
+  const canvas = document.createElement('canvas');
+  canvas.className = 'track-canvas';
+  const cellSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--cell')) || 52;
+  drawTrack(canvas, type, cellSize * 2); // 2x for retina
+  canvas.style.width = cellSize + 'px';
+  canvas.style.height = cellSize + 'px';
+  cell.appendChild(canvas);
+}
+
+/* ═══ Tool selection ═══ */
 function selectTool(element) {
   document.querySelectorAll('.tool-item').forEach(el => el.classList.remove('selected'));
   element.classList.add('selected');
   activeTool = element.dataset.tool;
-  playSound('pop');
+  try { playSound('pop'); } catch(e) {}
 }
 
-function applyTool(e, r, c) {
-  if (isRunning) return; // Prevent painting while train runs
-  
-  // Rule: Only one start point
+/* ═══ Apply tool ═══ */
+function applyTool(r, c) {
+  if (isRunning) return;
+
+  // Only one station allowed
   if (activeTool === 'start') {
-    // Clear old start
-    for(let rr=0; rr<10; rr++) {
-      for(let cc=0; cc<10; cc++) {
+    for (let rr = 0; rr < GRID; rr++)
+      for (let cc = 0; cc < GRID; cc++)
         if (gridData[rr][cc] === 'start') {
           gridData[rr][cc] = 'none';
-          document.getElementById(`cell-${rr}-${cc}`).innerHTML = '';
+          renderCell(document.getElementById(`cell-${rr}-${cc}`), 'none');
         }
-      }
-    }
   }
-  
-  gridData[r][c] = (activeTool === 'erase') ? 'none' : activeTool;
+  // Only one destination allowed
+  if (activeTool === 'end') {
+    for (let rr = 0; rr < GRID; rr++)
+      for (let cc = 0; cc < GRID; cc++)
+        if (gridData[rr][cc] === 'end') {
+          gridData[rr][cc] = 'none';
+          renderCell(document.getElementById(`cell-${rr}-${cc}`), 'none');
+        }
+  }
+
+  const prevType = gridData[r][c];
+  const newType = (activeTool === 'erase') ? 'none' : activeTool;
+  if (prevType === newType) return;
+
+  gridData[r][c] = newType;
   const cell = document.getElementById(`cell-${r}-${c}`);
-  cell.innerHTML = '';
   cell.classList.remove('error');
-  
-  if (activeTool !== 'erase') {
-    const div = document.createElement('div');
-    div.className = `track track-${activeTool}`;
-    cell.appendChild(div);
-  }
+  renderCell(cell, newType);
+  updateCounter();
+
+  // Pop animation
+  cell.style.transition = 'transform 0.12s';
+  cell.style.transform = 'scale(0.88)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cell.style.transform = 'scale(1)';
+  }));
 }
 
-// Map the physical ports of each rail
+function updateCounter() {
+  let count = 0;
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      if (gridData[r][c] !== 'none') count++;
+  document.getElementById('track-counter').textContent = `🛤️ Tracks: ${count}`;
+}
+
+function clearAll() {
+  if (isRunning) stopTrain();
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      gridData[r][c] = 'none';
+  gridData[3][2] = 'start';
+  gridData[3][5] = 'end';
+  initSandbox();
+}
+
+/* ═══ Connection logic ═══ */
 const PORTS = {
-  'h': ['Left', 'Right'], 'v': ['Up', 'Down'], 'tr': ['Up', 'Right'],
-  'tl': ['Up', 'Left'], 'br': ['Down', 'Right'], 'bl': ['Down', 'Left'],
-  'start': ['Right', 'Left', 'Up', 'Down'] // start naturally exports anything
+  'h':     ['Left', 'Right'],
+  'v':     ['Up', 'Down'],
+  'tr':    ['Up', 'Right'],
+  'tl':    ['Up', 'Left'],
+  'br':    ['Down', 'Right'],
+  'bl':    ['Down', 'Left'],
+  'start': ['Right', 'Left', 'Up', 'Down'],
+  'end':   ['Right', 'Left', 'Up', 'Down']
+};
+const OPPOSITE = { 'Left':'Right', 'Right':'Left', 'Up':'Down', 'Down':'Up' };
+const DIRS = {
+  'Left':  { dr:0, dc:-1 },
+  'Right': { dr:0, dc: 1 },
+  'Up':    { dr:-1, dc:0 },
+  'Down':  { dr: 1, dc:0 }
 };
 
-const OPPOSITE = {'Left': 'Right', 'Right': 'Left', 'Up': 'Down', 'Down': 'Up'};
-const DIRS = {'Left': {dr: 0, dc: -1}, 'Right': {dr: 0, dc: 1}, 'Up': {dr: -1, dc: 0}, 'Down': {dr: 1, dc: 0}};
-
+/* ═══ Train sound ═══ */
 let chugInterval;
 function startTrainSound() {
   try {
@@ -196,118 +572,178 @@ function startTrainSound() {
     let chugCount = 0;
     if (chugInterval) clearInterval(chugInterval);
     chugInterval = setInterval(() => {
-      let volume = chugCount % 4 === 0 ? 0.3 : 0.1;
+      const vol = chugCount % 4 === 0 ? 0.2 : 0.06;
       chugCount++;
-      const bufferSize = audioCtx.sampleRate * 0.1;
-      const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
-      const noise = audioCtx.createBufferSource(); noise.buffer = buffer;
-      const filter = audioCtx.createBiquadFilter(); filter.type = 'lowpass'; filter.frequency.value = 500;
-      const gainNode = audioCtx.createGain(); gainNode.gain.setValueAtTime(volume, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-      noise.connect(filter); filter.connect(gainNode); gainNode.connect(audioCtx.destination);
-      noise.start();
-    }, 250);
+      const len = audioCtx.sampleRate * 0.07;
+      const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      const src = audioCtx.createBufferSource(); src.buffer = buf;
+      const flt = audioCtx.createBiquadFilter(); flt.type = 'lowpass'; flt.frequency.value = 350;
+      const gn = audioCtx.createGain();
+      gn.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gn.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.07);
+      src.connect(flt); flt.connect(gn); gn.connect(audioCtx.destination);
+      src.start();
+    }, 180);
   } catch(e) {}
 }
+function stopTrainSound() { if (chugInterval) { clearInterval(chugInterval); chugInterval = null; } }
 
-function stopTrainSound() { if (chugInterval) clearInterval(chugInterval); }
-
+/* ═══ Stop ═══ */
 function stopTrain() {
   isRunning = false;
   document.getElementById('train').style.display = 'none';
   clearTimeout(moveTimeout);
   stopTrainSound();
-  document.getElementById('run-btn').style.display = 'block';
-  // Clear error hues
+  document.getElementById('run-btn').disabled = false;
   document.querySelectorAll('.cell.error').forEach(c => c.classList.remove('error'));
 }
 
-async function runTrain() {
+/* ═══ Run ═══ */
+function runTrain() {
   if (isRunning) return;
-  // Locate Start Node
+
+  // Find station
   let sr = -1, sc = -1;
-  for(let r=0; r<10; r++) { for(let c=0; c<10; c++) { if (gridData[r][c] === 'start') { sr = r; sc = c; } } }
-  if (sr === -1) { speak({en: 'Place a start station first!', hi: 'पहले स्टेशन लगाओ!', gu: 'પહેલા સ્ટેશન મૂકો!'}); return; }
-  
+  for (let r = 0; r < GRID; r++)
+    for (let c = 0; c < GRID; c++)
+      if (gridData[r][c] === 'start') { sr = r; sc = c; }
+
+  if (sr === -1) {
+    try { speak({ en:'Place a station first!', hi:'पहले स्टेशन लगाओ!', gu:'પહેલા સ્ટેશન મૂકો!' }); } catch(e) {}
+    return;
+  }
+
   isRunning = true;
-  document.getElementById('run-btn').style.display = 'none';
+  document.getElementById('run-btn').disabled = true;
   document.querySelectorAll('.cell.error').forEach(c => c.classList.remove('error'));
-  
+
+  const cellPx = document.querySelector('.cell').offsetWidth;
   const train = document.getElementById('train');
   train.style.display = 'flex';
-  train.style.transform = `translate(${sc * 45}px, ${sr * 45}px)`; // 45px sizing
-  
-  playSound('pop'); startTrainSound();
-  
-  // Determine initial launch direction (find first neighbor that connects)
-  let curPos = {r: sr, c: sc};
-  let curDir = null; // What vector we ARE facing/moving
-  
-  // Quick scan out of START
-  for (let d of ['Right', 'Left', 'Bottom', 'Top']) {
-    let checkDir = d; if (d==='Top') checkDir='Up'; if(d==='Bottom') checkDir='Down';
-    let nr = sr + DIRS[checkDir].dr, nc = sc + DIRS[checkDir].dc;
-    if (nr>=0 && nr<10 && nc>=0 && nc<10) {
-      let neighborType = gridData[nr][nc];
-      if (neighborType !== 'none' && neighborType !== 'start') {
-        if (PORTS[neighborType].includes(OPPOSITE[checkDir])) {
-           curDir = checkDir; break;
+  train.style.transform = `translate(${sc * cellPx}px, ${sr * cellPx}px)`;
+
+  try { playSound('pop'); } catch(e) {}
+  startTrainSound();
+
+  let curPos = { r: sr, c: sc };
+  let curDir = null;
+  const visited = new Set();
+  visited.add(`${sr},${sc}`);
+
+  // Find initial direction
+  for (const d of ['Right', 'Down', 'Left', 'Up']) {
+    const nr = sr + DIRS[d].dr, nc = sc + DIRS[d].dc;
+    if (nr >= 0 && nr < GRID && nc >= 0 && nc < GRID) {
+      const ntype = gridData[nr][nc];
+      if (ntype !== 'none' && ntype !== 'start') {
+        if (PORTS[ntype].includes(OPPOSITE[d])) {
+          curDir = d; break;
         }
       }
     }
   }
-  
+
   if (!curDir) {
-    // Derail immediately
-    derail(sr, sc, 'No track connected!');
+    derail(sr, sc, 'No track connected to the station!');
     return;
   }
-  
-  // The crawler engine
-  async function crawl() {
+
+  let stepCount = 0;
+  const maxSteps = GRID * GRID + 5;
+
+  function crawl() {
     if (!isRunning) return;
-    let nextR = curPos.r + DIRS[curDir].dr;
-    let nextC = curPos.c + DIRS[curDir].dc;
-    
-    // Bounds check
-    if (nextR < 0 || nextR >= 10 || nextC < 0 || nextC >= 10) { derail(curPos.r, curPos.c, 'Fell off map!'); return; }
-    
-    let destType = gridData[nextR][nextC];
-    if (destType === 'none') { derail(nextR, nextC, 'Track broke!'); return; }
-    if (destType === 'start') { speak({en:'Yay! A loop!', hi:'लूप्!', gu:'લૂપ!'}); stopTrain(); launchConfetti(); return; } // Complete loop!
-    
-    // Validate the destination can accept our movement vector (we enter its opposite port)
-    let inPort = OPPOSITE[curDir];
-    if (!PORTS[destType].includes(inPort)) { derail(nextR, nextC, 'Crash!'); return; }
-    
-    // Move train visually
-    train.style.transform = `translate(${nextC * 45}px, ${nextR * 45}px)`;
-    curPos = {r: nextR, c: nextC};
-    
-    // Calculate new exit vector
-    let outPort = PORTS[destType].find(p => p !== inPort);
-    curDir = outPort; // our new travel trajectory
-    
-    moveTimeout = setTimeout(crawl, 400); // 400ms speed
+    stepCount++;
+    if (stepCount > maxSteps) { derail(curPos.r, curPos.c, 'Too many steps!'); return; }
+
+    const nr = curPos.r + DIRS[curDir].dr;
+    const nc = curPos.c + DIRS[curDir].dc;
+
+    if (nr < 0 || nr >= GRID || nc < 0 || nc >= GRID) {
+      derail(curPos.r, curPos.c, 'Track goes off the edge!');
+      return;
+    }
+
+    const destType = gridData[nr][nc];
+
+    if (destType === 'none') {
+      derail(nr, nc, 'Missing track!');
+      return;
+    }
+
+    // Reached destination!
+    if (destType === 'end') {
+      train.style.transform = `translate(${nc * cellPx}px, ${nr * cellPx}px)`;
+      setTimeout(() => {
+        try {
+          speak({ en:'🎉 The train reached its destination!', hi:'🎉 ट्रेन मंज़िल पर पहुँच गई!', gu:'🎉 ટ્રેન મંજિલ પર પહોંચી ગઈ!' });
+          launchConfetti();
+          playSound('tada');
+        } catch(e) {}
+        stopTrain();
+      }, 400);
+      return;
+    }
+
+    // Looped back to start!
+    if (destType === 'start') {
+      train.style.transform = `translate(${nc * cellPx}px, ${nr * cellPx}px)`;
+      setTimeout(() => {
+        try {
+          speak({ en:'🎉 The train completed a loop!', hi:'🎉 ट्रेन ने लूप पूरा किया!', gu:'🎉 ટ્રેને લૂપ પૂરો કર્યો!' });
+          launchConfetti();
+          playSound('tada');
+        } catch(e) {}
+        stopTrain();
+      }, 400);
+      return;
+    }
+
+    // Check valid connection
+    const inPort = OPPOSITE[curDir];
+    if (!PORTS[destType].includes(inPort)) {
+      derail(nr, nc, 'Track pieces don\'t connect!');
+      return;
+    }
+
+    const key = `${nr},${nc}`;
+    if (visited.has(key)) {
+      derail(nr, nc, 'Stuck in a loop without a destination!');
+      return;
+    }
+    visited.add(key);
+
+    train.style.transform = `translate(${nc * cellPx}px, ${nr * cellPx}px)`;
+    curPos = { r: nr, c: nc };
+
+    const outPort = PORTS[destType].find(p => p !== inPort);
+    curDir = outPort;
+
+    moveTimeout = setTimeout(crawl, 350);
   }
-  
-  moveTimeout = setTimeout(crawl, 600); // initial start wait
+
+  moveTimeout = setTimeout(crawl, 500);
 }
 
 function derail(r, c, reason) {
   stopTrain();
-  playSound('wrong');
-  document.getElementById(`cell-${r}-${c}`).classList.add('error');
-  speak({
-    en: 'Oh no, the track is broken!',
-    hi: 'अरे नहीं, ट्रैक टूट गया!',
-    gu: 'અરે નહી, ટ્રેક તૂટી ગયો છે!'
-  });
+  try { playSound('wrong'); } catch(e) {}
+  if (r >= 0 && r < GRID && c >= 0 && c < GRID) {
+    document.getElementById(`cell-${r}-${c}`).classList.add('error');
+  }
+  try {
+    speak({ en: `Oh no! ${reason}`, hi: 'अरे नहीं, ट्रैक टूट गया!', gu: 'અરે નહીં, ટ્રેક તૂટી ગયો!' });
+  } catch(e) {}
 }
 
-document.addEventListener('DOMContentLoaded', () => { initLanguageSelector(); initSandbox(); });
+/* ═══ Init ═══ */
+document.addEventListener('DOMContentLoaded', () => {
+  try { initLanguageSelector(); } catch(e) {}
+  buildToolbox();
+  initSandbox();
+});
 </script>
 </body>
 </html>
